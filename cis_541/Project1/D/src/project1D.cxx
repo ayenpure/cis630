@@ -39,6 +39,19 @@ void WriteImage(vtkImageData *img, const char *filename) {
 	writer->Delete();
 }
 
+/**
+ * This function interpolates the value at quest_point based on
+ * values value_1 and value_2 at points point_1 and point_2 respectively
+ */
+double interpolate(double point_1, double point_2, double value_1,
+		double value_2, double quest_point) {
+	double diff = point_2 - point_1;
+	double change_prop =
+			(diff != 0) ? (quest_point - point_1) / (point_2 - point_1) : 0;
+	double value_at_quest = value_1 + (change_prop * (value_2 - value_1));
+	return value_at_quest;
+}
+
 class Triangle {
 public:
 	double X[3];
@@ -184,7 +197,10 @@ public:
 				(slope == 0) ?
 						top_vertex[0] :
 						(double(split_vertex[1] - offset)) / slope;
-		//TODO : Interpolate Z and Colors for the new vertex;
+
+		/*
+		 * Calculate for the value of Z buffer and colors for the new vertex
+		 */
 		double z_split = interpolate(top_vertex[1], bottom_vertex[1],
 				Z[top_index], Z[bottom_index], split_vertex[1]);
 		double split_colors[3];
@@ -236,14 +252,34 @@ public:
 		t2->colors[2][2] = split_colors[2];
 	}
 
-	double interpolate(double point_1, double point_2, double value_1,
-			double value_2, double quest_point) {
-		double diff = point_2 - point_1;
-		double change_prop =
-				(diff != 0) ? (quest_point - point_1) / (point_2 - point_1) : 0;
-		double value_at_quest = value_1 + (change_prop * (value_2 - value_1));
-		return value_at_quest;
+	/*
+	 * This method helps to calculate the colors at extremes of the scanline
+	 * corresponding to quest_point
+	 */
+	void calculate_color_for_scanline_extremes(double quest_point,
+			double *color_at_left_intercept, double *color_at_right_intercept) {
+
+		color_at_left_intercept[0] = interpolate(offset_vertex[1],
+				left_vertex[1], colors[offset_index][0], colors[left_index][0],
+				quest_point);
+		color_at_left_intercept[1] = interpolate(offset_vertex[1],
+				left_vertex[1], colors[offset_index][1], colors[left_index][1],
+				quest_point);
+		color_at_left_intercept[2] = interpolate(offset_vertex[1],
+				left_vertex[1], colors[offset_index][2], colors[left_index][2],
+				quest_point);
+
+		color_at_right_intercept[0] = interpolate(offset_vertex[1],
+				right_vertex[1], colors[offset_index][0],
+				colors[right_index][0], quest_point);
+		color_at_right_intercept[1] = interpolate(offset_vertex[1],
+				right_vertex[1], colors[offset_index][1],
+				colors[right_index][1], quest_point);
+		color_at_right_intercept[2] = interpolate(offset_vertex[1],
+				right_vertex[1], colors[offset_index][2],
+				colors[right_index][2], quest_point);
 	}
+
 };
 
 class Screen {
@@ -252,7 +288,6 @@ public:
 	double *depth_buffer;
 	int width, height;
 
-	//TODO : make colors proportional
 	void findPixelAndColor(int x, int y, double *color, double current_depth) {
 		/*
 		 * Ensure the pixels to be painted are in the frame.
@@ -268,6 +303,26 @@ public:
 				depth_buffer[depth_buffer_index] = current_depth;
 			}
 		}
+	}
+
+	/*
+	 * This method calculates the color for a certain pixel in a trangle given
+	 * its intercepts for a scanline and the colors at the intercepts.
+	 */
+	void calculate_color_for_pixel(double left_intercept,
+			double right_intercept, double current_x_pos,
+			double *color_at_left_intercept, double *color_at_right_intercept,
+			double *current_color) {
+
+		current_color[0] = interpolate(left_intercept, right_intercept,
+				color_at_left_intercept[0], color_at_right_intercept[0],
+				current_x_pos);
+		current_color[1] = interpolate(left_intercept, right_intercept,
+				color_at_left_intercept[1], color_at_right_intercept[1],
+				current_x_pos);
+		current_color[2] = interpolate(left_intercept, right_intercept,
+				color_at_left_intercept[2], color_at_right_intercept[2],
+				current_x_pos);
 	}
 };
 
@@ -342,52 +397,6 @@ std::vector<Triangle> GetTriangles(void) {
 	return tris;
 }
 
-void calculate_color_for_pixel(Triangle *t, double left_intercept,
-		double right_intercept, double current_x_pos, double current_y_pos, double *current_color) {
-	double color_at_left_intercept[3];
-	double color_at_right_intercept[3];
-
-	color_at_left_intercept[0] = t->interpolate(t->offset_vertex[1],
-			t->left_vertex[1], t->colors[t->offset_index][0],
-			t->colors[t->left_index][0], current_y_pos);
-	color_at_left_intercept[1] = t->interpolate(t->offset_vertex[1],
-			t->left_vertex[1], t->colors[t->offset_index][1],
-			t->colors[t->left_index][1], current_y_pos);
-	color_at_left_intercept[2] = t->interpolate(t->offset_vertex[1],
-			t->left_vertex[1], t->colors[t->offset_index][2],
-			t->colors[t->left_index][2], current_y_pos);
-
-	color_at_right_intercept[0] = t->interpolate(t->offset_vertex[1],
-			t->right_vertex[1], t->colors[t->offset_index][0],
-			t->colors[t->right_index][0], current_y_pos);
-	color_at_right_intercept[1] = t->interpolate(t->offset_vertex[1],
-			t->right_vertex[1], t->colors[t->offset_index][1],
-			t->colors[t->right_index][1], current_y_pos);
-	color_at_right_intercept[2] = t->interpolate(t->offset_vertex[1],
-			t->right_vertex[1], t->colors[t->offset_index][2],
-			t->colors[t->right_index][2], current_y_pos);
-
-	/*if (current_x_pos == ceil441(left_intercept)) {
-		current_color[0] = color_at_left_intercept[0];
-		current_color[1] = color_at_left_intercept[1];
-		current_color[2] = color_at_left_intercept[2];
-	} else if (current_x_pos == floor441(right_intercept)) {
-		current_color[0] = color_at_right_intercept[0];
-		current_color[1] = color_at_right_intercept[1];
-		current_color[2] = color_at_right_intercept[2];
-	} else {*/
-		current_color[0] = t->interpolate(left_intercept, right_intercept,
-				color_at_left_intercept[0], color_at_right_intercept[0],
-				current_x_pos);
-		current_color[1] = t->interpolate(left_intercept, right_intercept,
-				color_at_left_intercept[1], color_at_right_intercept[1],
-				current_x_pos);
-		current_color[2] = t->interpolate(left_intercept, right_intercept,
-				color_at_left_intercept[2], color_at_right_intercept[2],
-				current_x_pos);
-	//}
-}
-
 void scan_line(Triangle *t, Screen *s) {
 	/*
 	 * Execute scan line algorithm for the current triangle.
@@ -399,27 +408,30 @@ void scan_line(Triangle *t, Screen *s) {
 	// Determine the orientation for the triangle
 	t->determine_triangle_orientation();
 	// Color the pixels that are inside the triangle
-	for (int scan_pos = ceil441(y_min); scan_pos <= floor441(y_max);
-			scan_pos++) {
-		double left_intercept = t->get_left_x_intercept(scan_pos);
-		double right_intercept = t->get_right_x_intercept(scan_pos);
-		double z_left_intercept = t->interpolate(t->offset_vertex[1],t->left_vertex[1], t->Z[t->offset_index], t->Z[t->left_index], scan_pos);
-		double z_right_intercept = t->interpolate(t->offset_vertex[1],t->right_vertex[1], t->Z[t->offset_index], t->Z[t->right_index], scan_pos);
-		for (int scan_lim = ceil441(left_intercept);
-				scan_lim <= floor441(right_intercept); scan_lim++) {
-			double z_current;
-			/*if (scan_lim == ceil441(left_intercept))
-				z_current = z_left_intercept;
-			else if (scan_lim == floor441(right_intercept))
-				z_current = z_right_intercept;
-			else*/
-				z_current = t->interpolate(left_intercept, right_intercept,
-						z_left_intercept, z_right_intercept, scan_lim);
+	for (int current_y = ceil441(y_min); current_y <= floor441(y_max);
+			current_y++) {
+		double left_intercept = t->get_left_x_intercept(current_y);
+		double right_intercept = t->get_right_x_intercept(current_y);
+		double z_left_intercept = interpolate(t->offset_vertex[1],
+				t->left_vertex[1], t->Z[t->offset_index], t->Z[t->left_index],
+				current_y);
+		double z_right_intercept = interpolate(t->offset_vertex[1],
+				t->right_vertex[1], t->Z[t->offset_index], t->Z[t->right_index],
+				current_y);
+		double color_at_left_intercept[3], color_at_right_intercept[3];
+		t->calculate_color_for_scanline_extremes(current_y,
+				color_at_left_intercept, color_at_right_intercept);
 
-			double color[3] = { 0, 0, 0 };
-			calculate_color_for_pixel(t, left_intercept, right_intercept,
-					scan_lim, scan_pos, color);
-			s->findPixelAndColor(scan_lim, scan_pos, color, z_current);
+		for (int current_x = ceil441(left_intercept);
+				current_x <= floor441(right_intercept); current_x++) {
+			double current_z = interpolate(left_intercept, right_intercept,
+					z_left_intercept, z_right_intercept, current_x);
+			double color_for_current_pixel[3] = { 0, 0, 0 };
+			s->calculate_color_for_pixel(left_intercept, right_intercept,
+					current_x, color_at_left_intercept,
+					color_at_right_intercept, color_for_current_pixel);
+			s->findPixelAndColor(current_x, current_y, color_for_current_pixel,
+					current_z);
 		}
 	}
 }
@@ -442,12 +454,6 @@ int main() {
 	screen.height = 1000;
 	for (int vecIndex = 0; vecIndex < triangles.size(); vecIndex++) {
 		Triangle t = triangles[vecIndex];
-		/*cout << "\nFor Triangle : " << vecIndex + 1 << "\n" << t.X[0] << " " << t.X[1] << " " << t.X[2];
-		 cout << "\n" << t.Y[0] << " " << t.Y[1] << " " << t.Y[2];
-		 cout << "\n" << t.Z[0] << " " << t.Z[1] << " " << t.Z[2];
-		 cout << "\n" << t.colors[0][0] << " " << t.colors[0][1] << " " << t.colors[0][2];
-		 cout << "\n" << t.colors[1][0] << " " << t.colors[1][1] << " " << t.colors[1][2];
-		 cout << "\n" << t.colors[2][0] << " " << t.colors[2][1] << " " << t.colors[2][2];*/
 		if (t.is_flat_bottom_triangle()) {
 			scan_line(&t, &screen);
 		} else {
