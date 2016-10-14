@@ -288,7 +288,7 @@ public:
 	double *depth_buffer;
 	int width, height;
 
-	void findPixelAndColor(int x, int y, double *color, double current_depth) {
+	void find_pixel_and_color(int x, int y, double *color, double current_depth) {
 		/*
 		 * Ensure the pixels to be painted are in the frame.
 		 */
@@ -430,7 +430,7 @@ void scan_line(Triangle *t, Screen *s) {
 			s->calculate_color_for_pixel(left_intercept, right_intercept,
 					current_x, color_at_left_intercept,
 					color_at_right_intercept, color_for_current_pixel);
-			s->findPixelAndColor(current_x, current_y, color_for_current_pixel,
+			s->find_pixel_and_color(current_x, current_y, color_for_current_pixel,
 					current_z);
 		}
 	}
