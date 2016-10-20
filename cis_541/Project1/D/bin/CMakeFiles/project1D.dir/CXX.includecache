@@ -6,30 +6,6 @@
 
 #IncludeRegexTransform: 
 
-/home/abhishek/Projects/cis_541/Project1/D/src/project1D.cxx
-iostream
--
-vtkDataSet.h
--
-vtkImageData.h
--
-vtkPNGWriter.h
--
-vtkPointData.h
--
-vtkPolyData.h
--
-vtkPolyDataReader.h
--
-vtkPoints.h
--
-vtkUnsignedCharArray.h
--
-vtkFloatArray.h
--
-vtkCellArray.h
--
-
 /home/abhishek/VTK-6.3.0/Common/Core/vtkABI.h
 
 /home/abhishek/VTK-6.3.0/Common/Core/vtkAbstractArray.h
@@ -643,4 +619,28 @@ vtkAutoInit.h
 /home/abhishek/VTK-6.3.0_b/IO/Image/vtkAutoInit.h
 
 /home/abhishek/VTK-6.3.0_b/IO/Legacy/vtkIOLegacyModule.h
+
+/home/abhishek/projects/cis_541/Project1/D/src/project1D.cxx
+iostream
+-
+vtkDataSet.h
+-
+vtkImageData.h
+-
+vtkPNGWriter.h
+-
+vtkPointData.h
+-
+vtkPolyData.h
+-
+vtkPolyDataReader.h
+-
+vtkPoints.h
+-
+vtkUnsignedCharArray.h
+-
+vtkFloatArray.h
+-
+vtkCellArray.h
+-
 
