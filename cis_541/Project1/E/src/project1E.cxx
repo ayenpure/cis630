@@ -15,7 +15,6 @@
 #include <vtkDataSetWriter.h>
 #include <string.h>
 #include <cmath>
-#include <math.h>
 #include <algorithm>
 
 using std::cerr;
@@ -24,8 +23,6 @@ using std::min;
 using std::max;
 using std::abs;
 using std::pow;
-
-bool printVecs = false;
 
 struct LightingParameters {
 	LightingParameters(void) {
@@ -38,7 +35,6 @@ struct LightingParameters {
 		alpha = 7.5;
 	}
 	;
-
 	double lightDir[3]; // The direction of the light source
 	double Ka;           // The coefficient for ambient lighting.
 	double Kd;           // The coefficient for diffuse lighting.
@@ -47,7 +43,7 @@ struct LightingParameters {
 };
 
 LightingParameters lp;
-double view_direction[3] = {0,0,-1};
+double view_direction[3] = { 0, 0, -1 };
 
 double ceil441(double f) {
 	return ceil(f - 0.00001);
@@ -89,49 +85,32 @@ double interpolate(double point_1, double point_2, double value_1,
 }
 
 /**
- * This function interpolates over the vectors vector_1 and vector_2 to yield
- * the vector calc_vector for the point (current_x,current_y) in space.
+ * This function interpolates over the vectors normal_1 and normal_2 to yield
+ * the vector quest_normal for the point (quest_point[0],quest_point[1]) in space.
  */
-void interpolate_vector(double* point_1, double* point_2,
-		double* normal_1,double* normal_2,
-		double* quest_point, double* quest_normal) {
-		/*double diff = point_2 - point_1;
-		double change_prop =
-				(diff != 0) ? (quest_point - point_1) / (point_2 - point_1) : 0;
-		double diff_vector[3] = {	normal_2[0] - normal_1[0],
-		 													normal_2[1] - normal_1[1],
-															normal_2[2] - normal_1[2]};
-		diff_vector[0] = change_prop * diff_vector[0];
-		diff_vector[1] = change_prop * diff_vector[1];
-		diff_vector[2] = change_prop * diff_vector[2];
-		quest_normal[0] = normal_1[0] + diff_vector[0];
-		quest_normal[1] = normal_1[1] + diff_vector[1];
-		quest_normal[2] = normal_1[2] + diff_vector[2];
-		double norm = sqrt((quest_normal[0]*quest_normal[0])
-										 + (quest_normal[1]*quest_normal[1])
-										 + (quest_normal[2]*quest_normal[2]));
-		quest_normal[0] = quest_normal[0] / norm;
-	 	quest_normal[1] = quest_normal[1] / norm;
-	 	quest_normal[2] = quest_normal[2] / norm;*/
-		double proportion = sqrt(pow((quest_point[0] - point_1[0]),2) +
-															pow((quest_point[1] - point_1[1]),2)) /
-												sqrt(pow((point_2[0] - point_1[0]),2) +
-															pow((point_2[1]-point_1[1]),2));
-		double diff_vector[3] = {	normal_2[0] - normal_1[0],
-		 													normal_2[1] - normal_1[1],
-															normal_2[2] - normal_1[2]};
-		diff_vector[0] = proportion * diff_vector[0];
-		diff_vector[1] = proportion * diff_vector[1];
-		diff_vector[2] = proportion * diff_vector[2];
-		quest_normal[0] = normal_1[0] + diff_vector[0];
-		quest_normal[1] = normal_1[1] + diff_vector[1];
-		quest_normal[2] = normal_1[2] + diff_vector[2];
-		double norm = sqrt((quest_normal[0]*quest_normal[0])
-										 + (quest_normal[1]*quest_normal[1])
-										 + (quest_normal[2]*quest_normal[2]));
-	 	quest_normal[0] = quest_normal[0] / norm;
-	 	quest_normal[1] = quest_normal[1] / norm;
-	 	quest_normal[2] = quest_normal[2] / norm;
+void interpolate_vector(double* point_1, double* point_2, double* normal_1,
+		double* normal_2, double* quest_point, double* quest_normal) {
+	double proportion = sqrt(
+			pow((quest_point[0] - point_1[0]), 2)
+					+ pow((quest_point[1] - point_1[1]), 2))
+			/ sqrt(
+					pow((point_2[0] - point_1[0]), 2)
+							+ pow((point_2[1] - point_1[1]), 2));
+	double diff_vector[3] = { normal_2[0] - normal_1[0], normal_2[1]
+			- normal_1[1], normal_2[2] - normal_1[2] };
+	diff_vector[0] = proportion * diff_vector[0];
+	diff_vector[1] = proportion * diff_vector[1];
+	diff_vector[2] = proportion * diff_vector[2];
+	quest_normal[0] = normal_1[0] + diff_vector[0];
+	quest_normal[1] = normal_1[1] + diff_vector[1];
+	quest_normal[2] = normal_1[2] + diff_vector[2];
+	double norm = sqrt(
+			(quest_normal[0] * quest_normal[0])
+					+ (quest_normal[1] * quest_normal[1])
+					+ (quest_normal[2] * quest_normal[2]));
+	quest_normal[0] = quest_normal[0] / norm;
+	quest_normal[1] = quest_normal[1] / norm;
+	quest_normal[2] = quest_normal[2] / norm;
 }
 
 class Triangle {
@@ -294,19 +273,9 @@ public:
 		split_colors[2] = interpolate(top_vertex[1], bottom_vertex[1],
 				colors[top_index][2], colors[bottom_index][2], split_vertex[1]);
 
-		/*double top_triple[3] = { X[top_index], Y[top_index], Z[top_index] };
-		double bottom_triple[3] = { X[bottom_index], Y[bottom_index],
-				Z[bottom_index] };*/
-
-		double split_vector[3];
-		/*interpolate_vector(top_vertex[1], bottom_vertex[1],
-			 normals[top_index], normals[bottom_index], split_vertex[1],
-			 split_vector);*/
-		interpolate_vector(top_vertex, bottom_vertex,
-			 normals[top_index], normals[bottom_index], split_vertex,
-			 split_vector);
-
-		//TODO : interpolate vertex nornals
+		double split_normal[3];
+		interpolate_vector(top_vertex, bottom_vertex, normals[top_index],
+				normals[bottom_index], split_vertex, split_normal);
 
 		t1->X[0] = top_vertex[0];
 		t1->Y[0] = top_vertex[1];
@@ -317,12 +286,9 @@ public:
 		t1->Z[0] = Z[top_index];
 		t1->Z[1] = Z[middle_index];
 		t1->Z[2] = z_split;
-		/*t1->normals[0] = normals[top_index];
-		 t1->normals[1] = normals[middle_index];
-		 t1->normals[2] = split_vector;*/
 		memcpy(t1->normals[0], this->normals[top_index], 3 * sizeof(double));
 		memcpy(t1->normals[1], this->normals[middle_index], 3 * sizeof(double));
-		memcpy(t1->normals[2], split_vector, 3 * sizeof(double));
+		memcpy(t1->normals[2], split_normal, 3 * sizeof(double));
 
 		t1->colors[0][0] = colors[top_index][0];
 		t1->colors[0][1] = colors[top_index][1];
@@ -343,12 +309,9 @@ public:
 		t2->Z[0] = Z[bottom_index];
 		t2->Z[1] = Z[middle_index];
 		t2->Z[2] = z_split;
-		/*t2->normals[0] = normals[bottom_index];
-		 t2->normals[1] = normals[middle_index];
-		 t2->normals[2] = split_vector;*/
 		memcpy(t2->normals[0], this->normals[bottom_index], 3 * sizeof(double));
 		memcpy(t2->normals[1], this->normals[middle_index], 3 * sizeof(double));
-		memcpy(t2->normals[2], split_vector, 3 * sizeof(double));
+		memcpy(t2->normals[2], split_normal, 3 * sizeof(double));
 
 		t2->colors[0][0] = colors[bottom_index][0];
 		t2->colors[0][1] = colors[bottom_index][1];
@@ -396,29 +359,27 @@ double dot_product(double* vector_1, double* vector_2) {
 			+ (vector_1[2] * vector_2[2]);
 }
 
-double calculate_for_specular_lighting(double *V, double* N) {
+double calculate_for_specular_lighting(LightingParameters lp, double *V,
+		double* N) {
 	/* R = 2*(L . N)*N - L
-	 * V . R
-	 * max(0, S*(R V) γ )
+	 * return ==> V . R
 	 */
-	double two_L_dot_N = 2*dot_product(lp.lightDir, N);
-	double two_L_dot_N_N[3] =  {
-			two_L_dot_N * N[0],
-			two_L_dot_N * N[1],
-			two_L_dot_N * N[2]
-	};
-	double R[3] = {
-		two_L_dot_N_N[0] - lp.lightDir[0],
-		two_L_dot_N_N[1] - lp.lightDir[1],
-		two_L_dot_N_N[2] - lp.lightDir[2]
-	};
+	double two_L_dot_N = 2 * dot_product(lp.lightDir, N);
+	double two_L_dot_N_N[3] = { two_L_dot_N * N[0], two_L_dot_N * N[1],
+			two_L_dot_N * N[2] };
+	double R[3] = { two_L_dot_N_N[0] - lp.lightDir[0], two_L_dot_N_N[1] - lp.lightDir[1],
+			two_L_dot_N_N[2] - lp.lightDir[2] };
 	return dot_product(R, V);
 }
 
-double calculate_phong_shading(LightingParameters lp, double *view_direction, double *normal) {
-	double diffuse_component = dot_product( lp.lightDir, normal);
-	double specular_component = max((double)0,pow(calculate_for_specular_lighting(view_direction,normal),lp.alpha));
-	double shading_amount = lp.Ka + lp.Kd * abs(diffuse_component) + lp.Ks * specular_component;
+double calculate_phong_shading(LightingParameters lp, double *view_direction,
+		double *normal) {
+	double diffuse_component = dot_product(lp.lightDir, normal);
+	double specular_component = max((double) 0,
+			pow(calculate_for_specular_lighting(lp, view_direction, normal),
+					lp.alpha));
+	double shading_amount = lp.Ka + lp.Kd * abs(diffuse_component)
+			+ lp.Ks * specular_component;
 }
 
 class Screen {
@@ -437,10 +398,17 @@ public:
 			int depth_buffer_index = y * width + x;
 			if (buffer_index < width * height * 3
 					&& current_depth >= depth_buffer[depth_buffer_index]) {
-				double shading_amount = calculate_phong_shading(lp,view_direction,current_normal);
-				buffer[buffer_index++] = min(ceil441((shading_amount * color[0]) * 255), (double)255);
-				buffer[buffer_index++] = min(ceil441((shading_amount * color[1]) * 255), (double)255);
-				buffer[buffer_index] = min(ceil441((shading_amount * color[2]) * 255), (double)255);
+				double shading_amount = calculate_phong_shading(lp,
+						view_direction, current_normal);
+				buffer[buffer_index++] = min(
+						ceil441((shading_amount * color[0]) * 255),
+						(double) 255);
+				buffer[buffer_index++] = min(
+						ceil441((shading_amount * color[1]) * 255),
+						(double) 255);
+				buffer[buffer_index] = min(
+						ceil441((shading_amount * color[2]) * 255),
+						(double) 255);
 				depth_buffer[depth_buffer_index] = current_depth;
 			}
 		}
@@ -582,14 +550,8 @@ void scan_line(Triangle *t, Screen *s) {
 		t->calculate_color_for_scanline_extremes(current_y,
 				color_at_left_intercept, color_at_right_intercept);
 
-		/*double offset_triple[3] = { t->offset_vertex[0], t->offset_vertex[1],
-				t->Z[t->offset_index] };
-		double left_triple[3] = { t->left_vertex[0], t->left_vertex[1],
-				t->Z[t->left_index] };
-		double right_triple[3] = { t->right_vertex[0], t->right_vertex[1],
-				t->Z[t->right_index] };*/
-		double left_tuple[2] = {left_intercept, current_y};
-		double right_tuple[2] = {right_intercept, current_y};
+		double left_tuple[2] = { left_intercept, current_y };
+		double right_tuple[2] = { right_intercept, current_y };
 		double normal_on_left[3], normal_on_right[3];
 		interpolate_vector(t->offset_vertex, t->left_vertex,
 				t->normals[t->offset_index], t->normals[t->left_index],
@@ -607,11 +569,10 @@ void scan_line(Triangle *t, Screen *s) {
 					current_x, color_at_left_intercept,
 					color_at_right_intercept, color_for_current_pixel);
 
-			double quest_touple[2] = {current_x, current_y};
+			double quest_touple[2] = { current_x, current_y };
 			double current_normal[3];
 			interpolate_vector(left_tuple, right_tuple, normal_on_left,
-					normal_on_right, quest_touple,
-					current_normal);
+					normal_on_right, quest_touple, current_normal);
 			s->find_pixel_and_color(current_x, current_y,
 					color_for_current_pixel, current_z, current_normal);
 		}
@@ -644,7 +605,6 @@ int main() {
 			scan_line(&t1, &screen);
 			scan_line(&t2, &screen);
 		}
-		printVecs = false;
 	}
 	WriteImage(image, "allTriangles");
 }
