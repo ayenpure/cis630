@@ -14,29 +14,32 @@
 #include <vtkCellArray.h>
 #include <vtkDataSetWriter.h>
 #include <string.h>
+#include <cmath>
+#include <math.h>
+#include <algorithm>
 
 using std::cerr;
 using std::endl;
+using std::min;
+using std::abs;
 
-struct LightingParameters
-{
-    LightingParameters(void)
-    {
-         lightDir[0] = -0.6;
-         lightDir[1] = 0;
-         lightDir[2] = -0.8;
-         Ka = 0.3;
-         Kd = 0.7;
-         Ks = 5.3;
-         alpha = 7.5;
-    };
+struct LightingParameters {
+	LightingParameters(void) {
+		lightDir[0] = -0.6;
+		lightDir[1] = 0;
+		lightDir[2] = -0.8;
+		Ka = 0.3;
+		Kd = 0.7;
+		Ks = 5.3;
+		alpha = 7.5;
+	}
+	;
 
-
-    double lightDir[3]; // The direction of the light source
-    double Ka;           // The coefficient for ambient lighting.
-    double Kd;           // The coefficient for diffuse lighting.
-    double Ks;           // The coefficient for specular lighting.
-    double alpha;        // The exponent term for specular lighting.
+	double lightDir[3]; // The direction of the light source
+	double Ka;           // The coefficient for ambient lighting.
+	double Kd;           // The coefficient for diffuse lighting.
+	double Ks;           // The coefficient for specular lighting.
+	double alpha;        // The exponent term for specular lighting.
 };
 
 LightingParameters lp;
@@ -84,13 +87,27 @@ double interpolate(double point_1, double point_2, double value_1,
  * This function interpolates over the vectors vector_1 and vector_2 to yield
  * the vector calc_vector for the point (current_x,current_y) in space.
  */
-void interpolate_vector(double* point_1, double* point_2,
-	double* vector_1, double* vector_2,
-	double current_x, double current_y, double current_z,
-	double* calc_vector) {
-		calc_vector[0] = interpolate(point_1[0], point_2[0], vector_1[0], vector_2[0], current_x);
-		calc_vector[1] = interpolate(point_1[1], point_2[1], vector_1[1], vector_2[1], current_y);
-		calc_vector[2] = interpolate(point_1[2], point_2[2], vector_1[2], vector_2[2], current_z);
+void interpolate_vector(double point_1, double point_2,
+		double* normal_1,double* normal_2,
+		double quest_point, double* quest_normal) {
+		double diff = point_2 - point_1;
+		double change_prop =
+				(diff != 0) ? (quest_point - point_1) / (point_2 - point_1) : 0;
+		double diff_vector[3] = {	normal_2[0] - normal_1[0],
+		 													normal_2[1] - normal_1[1],
+															normal_2[2] - normal_1[2]};
+		diff_vector[0] = change_prop * diff_vector[0];
+		diff_vector[1] = change_prop * diff_vector[1];
+		diff_vector[2] = change_prop * diff_vector[2];
+		quest_normal[0] = normal_1[0] + diff_vector[0];
+		quest_normal[1] = normal_1[1] + diff_vector[1];
+		quest_normal[2] = normal_1[2] + diff_vector[2];
+		double norm = sqrt((quest_normal[0]*quest_normal[0])
+										 + (quest_normal[1]*quest_normal[1])
+										 + (quest_normal[2]*quest_normal[2]));
+		quest_normal[0] = quest_normal[0] / norm;
+	 	quest_normal[1] = quest_normal[1] / norm;
+	 	quest_normal[2] = quest_normal[2] / norm;
 }
 
 class Triangle {
@@ -253,14 +270,14 @@ public:
 		split_colors[2] = interpolate(top_vertex[1], bottom_vertex[1],
 				colors[top_index][2], colors[bottom_index][2], split_vertex[1]);
 
-		double top_triple[3] = {X[top_index],Y[top_index],Z[top_index]};
-		double bottom_triple[3]	= {X[bottom_index],Y[bottom_index],Z[bottom_index]};
+		/*double top_triple[3] = { X[top_index], Y[top_index], Z[top_index] };
+		double bottom_triple[3] = { X[bottom_index], Y[bottom_index],
+				Z[bottom_index] };*/
 
 		double split_vector[3];
-		interpolate_vector(top_triple, bottom_triple,
-			normals[top_index], normals[bottom_index],
-			split_vertex[0], split_vertex[1], z_split,
-			split_vector);
+		interpolate_vector(top_vertex[1], bottom_vertex[1],
+			 normals[top_index], normals[bottom_index], split_vertex[1],
+			 split_vector);
 
 		//TODO : interpolate vertex nornals
 
@@ -274,11 +291,11 @@ public:
 		t1->Z[1] = Z[middle_index];
 		t1->Z[2] = z_split;
 		/*t1->normals[0] = normals[top_index];
-		t1->normals[1] = normals[middle_index];
-		t1->normals[2] = split_vector;*/
-		memcpy(t1->normals[0], this->normals[top_index], 3*sizeof(double));
-		memcpy(t1->normals[1], this->normals[middle_index], 3*sizeof(double));
-		memcpy(t1->normals[2], split_vector, 3*sizeof(double));
+		 t1->normals[1] = normals[middle_index];
+		 t1->normals[2] = split_vector;*/
+		memcpy(t1->normals[0], this->normals[top_index], 3 * sizeof(double));
+		memcpy(t1->normals[1], this->normals[middle_index], 3 * sizeof(double));
+		memcpy(t1->normals[2], split_vector, 3 * sizeof(double));
 
 		t1->colors[0][0] = colors[top_index][0];
 		t1->colors[0][1] = colors[top_index][1];
@@ -300,11 +317,11 @@ public:
 		t2->Z[1] = Z[middle_index];
 		t2->Z[2] = z_split;
 		/*t2->normals[0] = normals[bottom_index];
-		t2->normals[1] = normals[middle_index];
-		t2->normals[2] = split_vector;*/
-		memcpy(t2->normals[0], this->normals[bottom_index], 3*sizeof(double));
-		memcpy(t2->normals[1], this->normals[middle_index], 3*sizeof(double));
-		memcpy(t2->normals[2], split_vector, 3*sizeof(double));
+		 t2->normals[1] = normals[middle_index];
+		 t2->normals[2] = split_vector;*/
+		memcpy(t2->normals[0], this->normals[bottom_index], 3 * sizeof(double));
+		memcpy(t2->normals[1], this->normals[middle_index], 3 * sizeof(double));
+		memcpy(t2->normals[2], split_vector, 3 * sizeof(double));
 
 		t2->colors[0][0] = colors[bottom_index][0];
 		t2->colors[0][1] = colors[bottom_index][1];
@@ -348,7 +365,8 @@ public:
 };
 
 double dot_product(double* vector_1, double* vector_2) {
-		return (vector_1[0]*vector_2[0]) + (vector_1[1]*vector_2[1]) + (vector_1[2]*vector_2[2]);
+	return (vector_1[0] * vector_2[0]) + (vector_1[1] * vector_2[1])
+			+ (vector_1[2] * vector_2[2]);
 }
 
 class Screen {
@@ -357,8 +375,8 @@ public:
 	double *depth_buffer;
 	int width, height;
 
-	void find_pixel_and_color(int x, int y, double *color,
-			double current_depth, double* current_normal) {
+	void find_pixel_and_color(int x, int y, double *color, double current_depth,
+			double* current_normal) {
 		/*
 		 * Ensure the pixels to be painted are in the frame.
 		 */
@@ -367,11 +385,12 @@ public:
 			int depth_buffer_index = y * width + x;
 			if (buffer_index < width * height * 3
 					&& current_depth >= depth_buffer[depth_buffer_index]) {
-				double diffuse_factor = dot_product(lp.lightDir, current_normal);
-				double shading_amount = /*lp.Ka*/ abs(diffuse_factor)*lp.Kd;
-				buffer[buffer_index++] = ceil441((shading_amount*color[0]) * 255);
-				buffer[buffer_index++] = ceil441((shading_amount*color[1]) * 255);
-				buffer[buffer_index] = ceil441((shading_amount*color[2]) * 255);
+				double diffuse_factor = dot_product( lp.lightDir, current_normal);
+				double shading_amount = abs(diffuse_factor) * lp.Kd;
+				cerr << "Shading: " << shading_amount << endl;
+				buffer[buffer_index++] = min(ceil441((shading_amount * color[0]) * 255), (double)255);
+				buffer[buffer_index++] = min(ceil441((shading_amount * color[1]) * 255), (double)255);
+				buffer[buffer_index] = min(ceil441((shading_amount * color[2]) * 255), (double)255);
 				depth_buffer[depth_buffer_index] = current_depth;
 			}
 		}
@@ -513,19 +532,20 @@ void scan_line(Triangle *t, Screen *s) {
 		t->calculate_color_for_scanline_extremes(current_y,
 				color_at_left_intercept, color_at_right_intercept);
 
-		double offset_triple[3] = {t->offset_vertex[0], t->offset_vertex[1], t->Z[t->offset_index]};
-		double left_triple[3] = {t->left_vertex[0], t->left_vertex[1], t->Z[t->left_index]};
-		double right_triple[3] = {t->right_vertex[0], t->right_vertex[1], t->Z[t->right_index]};
+		/*double offset_triple[3] = { t->offset_vertex[0], t->offset_vertex[1],
+				t->Z[t->offset_index] };
+		double left_triple[3] = { t->left_vertex[0], t->left_vertex[1],
+				t->Z[t->left_index] };
+		double right_triple[3] = { t->right_vertex[0], t->right_vertex[1],
+				t->Z[t->right_index] };*/
 
 		double normal_on_left[3], normal_on_right[3];
-		interpolate_vector(offset_triple, left_triple,
-			t->normals[t->offset_index], t->normals[t->left_index] ,
-			left_intercept, current_y, z_left_intercept,
-			normal_on_left);
-		interpolate_vector(offset_triple, right_triple,
-			t->normals[t->offset_index], t->normals[t->right_index] ,
-			right_intercept, current_y, z_right_intercept,
-			normal_on_right);
+		interpolate_vector(t->offset_vertex[1], t->left_vertex[1],
+				t->normals[t->offset_index], t->normals[t->left_index],
+				current_y, normal_on_left);
+		interpolate_vector(t->offset_vertex[1], t->right_vertex[1],
+				t->normals[t->offset_index], t->normals[t->right_index],
+				current_y, normal_on_right);
 
 		for (int current_x = ceil441(left_intercept);
 				current_x <= floor441(right_intercept); current_x++) {
@@ -537,11 +557,9 @@ void scan_line(Triangle *t, Screen *s) {
 					color_at_right_intercept, color_for_current_pixel);
 
 			double current_normal[3];
-			interpolate_vector(left_triple, right_triple,
-				normal_on_left, normal_on_right,
-				current_x, current_y, current_z,
-				current_normal);
-
+			interpolate_vector(left_intercept, right_intercept, normal_on_left,
+					normal_on_right, current_x,
+					current_normal);
 			s->find_pixel_and_color(current_x, current_y,
 					color_for_current_pixel, current_z, current_normal);
 		}
