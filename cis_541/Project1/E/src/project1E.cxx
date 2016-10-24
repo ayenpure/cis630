@@ -88,14 +88,11 @@ double interpolate(double point_1, double point_2, double value_1,
  * This function interpolates over the vectors normal_1 and normal_2 to yield
  * the vector quest_normal for the point (quest_point[0],quest_point[1]) in space.
  */
-void interpolate_vector(double* point_1, double* point_2, double* normal_1,
-		double* normal_2, double* quest_point, double* quest_normal) {
-	double proportion = sqrt(
-			pow((quest_point[0] - point_1[0]), 2)
-					+ pow((quest_point[1] - point_1[1]), 2))
-			/ sqrt(
-					pow((point_2[0] - point_1[0]), 2)
-							+ pow((point_2[1] - point_1[1]), 2));
+void interpolate_vector(double point_1, double point_2, double* normal_1,
+		double* normal_2, double quest_point, double* quest_normal) {
+	double diff = point_2 - point_1;
+	double proportion =
+			(diff != 0) ? (quest_point - point_1) / (point_2 - point_1) : 0;
 	double diff_vector[3] = { normal_2[0] - normal_1[0], normal_2[1]
 			- normal_1[1], normal_2[2] - normal_1[2] };
 	diff_vector[0] = proportion * diff_vector[0];
@@ -274,8 +271,8 @@ public:
 				colors[top_index][2], colors[bottom_index][2], split_vertex[1]);
 
 		double split_normal[3];
-		interpolate_vector(top_vertex, bottom_vertex, normals[top_index],
-				normals[bottom_index], split_vertex, split_normal);
+		interpolate_vector(top_vertex[1], bottom_vertex[1], normals[top_index],
+				normals[bottom_index], split_vertex[1], split_normal);
 
 		t1->X[0] = top_vertex[0];
 		t1->Y[0] = top_vertex[1];
@@ -389,7 +386,7 @@ public:
 	int width, height;
 
 	void find_pixel_and_color(int x, int y, double *color, double current_depth,
-			double* current_normal) {
+			double* current_normal, Triangle *t) {
 		/*
 		 * Ensure the pixels to be painted are in the frame.
 		 */
@@ -550,15 +547,13 @@ void scan_line(Triangle *t, Screen *s) {
 		t->calculate_color_for_scanline_extremes(current_y,
 				color_at_left_intercept, color_at_right_intercept);
 
-		double left_tuple[2] = { left_intercept, current_y };
-		double right_tuple[2] = { right_intercept, current_y };
 		double normal_on_left[3], normal_on_right[3];
-		interpolate_vector(t->offset_vertex, t->left_vertex,
+		interpolate_vector(t->offset_vertex[1], t->left_vertex[1],
 				t->normals[t->offset_index], t->normals[t->left_index],
-				left_tuple, normal_on_left);
-		interpolate_vector(t->offset_vertex, t->right_vertex,
+				current_y, normal_on_left);
+		interpolate_vector(t->offset_vertex[1], t->right_vertex[1],
 				t->normals[t->offset_index], t->normals[t->right_index],
-				right_tuple, normal_on_right);
+				current_y, normal_on_right);
 
 		for (int current_x = ceil441(left_intercept);
 				current_x <= floor441(right_intercept); current_x++) {
@@ -569,12 +564,11 @@ void scan_line(Triangle *t, Screen *s) {
 					current_x, color_at_left_intercept,
 					color_at_right_intercept, color_for_current_pixel);
 
-			double quest_touple[2] = { current_x, current_y };
 			double current_normal[3];
-			interpolate_vector(left_tuple, right_tuple, normal_on_left,
-					normal_on_right, quest_touple, current_normal);
+			interpolate_vector(left_intercept, right_intercept, normal_on_left,
+					normal_on_right, current_x, current_normal);
 			s->find_pixel_and_color(current_x, current_y,
-					color_for_current_pixel, current_z, current_normal);
+					color_for_current_pixel, current_z, current_normal,t);
 		}
 	}
 }

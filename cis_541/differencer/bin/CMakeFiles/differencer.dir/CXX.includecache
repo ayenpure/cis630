@@ -6,6 +6,20 @@
 
 #IncludeRegexTransform: 
 
+/home/abhishek/Projects/cis_541/differencer/src/differencer.cxx
+iostream
+-
+vtkDataSet.h
+-
+vtkImageData.h
+-
+vtkPNGWriter.h
+-
+vtkPointData.h
+-
+vtkPNGReader.h
+-
+
 /home/abhishek/VTK-6.3.0/Common/Core/vtkABI.h
 
 /home/abhishek/VTK-6.3.0/Common/Core/vtkAbstractArray.h
@@ -299,18 +313,4 @@ vtkVersionMacros.h
 /home/abhishek/VTK-6.3.0_b/IO/Image/vtkIOImageModule.h
 vtkAutoInit.h
 /home/abhishek/VTK-6.3.0_b/IO/Image/vtkAutoInit.h
-
-/home/abhishek/projects/cis_541/differencer/src/differencer.cxx
-iostream
--
-vtkDataSet.h
--
-vtkImageData.h
--
-vtkPNGWriter.h
--
-vtkPointData.h
--
-vtkPNGReader.h
--
 

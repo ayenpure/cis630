@@ -54,10 +54,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/abhishek/projects/cis_541/differencer/src
+CMAKE_SOURCE_DIR = /home/abhishek/Projects/cis_541/differencer/src
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/abhishek/projects/cis_541/differencer/bin
+CMAKE_BINARY_DIR = /home/abhishek/Projects/cis_541/differencer/bin
 
 #=============================================================================
 # Target rules for target CMakeFiles/differencer.dir
@@ -66,7 +66,7 @@ CMAKE_BINARY_DIR = /home/abhishek/projects/cis_541/differencer/bin
 CMakeFiles/differencer.dir/all:
 	$(MAKE) -f CMakeFiles/differencer.dir/build.make CMakeFiles/differencer.dir/depend
 	$(MAKE) -f CMakeFiles/differencer.dir/build.make CMakeFiles/differencer.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/abhishek/projects/cis_541/differencer/bin/CMakeFiles --progress-num=1,2 "Built target differencer"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/abhishek/Projects/cis_541/differencer/bin/CMakeFiles --progress-num=1,2 "Built target differencer"
 .PHONY : CMakeFiles/differencer.dir/all
 
 # Include target in all.
@@ -76,9 +76,9 @@ all: CMakeFiles/differencer.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/differencer.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/abhishek/projects/cis_541/differencer/bin/CMakeFiles 2
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/abhishek/Projects/cis_541/differencer/bin/CMakeFiles 2
 	$(MAKE) -f CMakeFiles/Makefile2 CMakeFiles/differencer.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/abhishek/projects/cis_541/differencer/bin/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/abhishek/Projects/cis_541/differencer/bin/CMakeFiles 0
 .PHONY : CMakeFiles/differencer.dir/rule
 
 # Convenience name for target.
