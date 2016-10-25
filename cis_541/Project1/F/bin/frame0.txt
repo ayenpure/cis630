@@ -1,0 +1,43 @@
+Both images have 1000000 pixels, good.
+Difference at X = 182, Y = 144
+Difference at X = 345, Y = 153
+Difference at X = 355, Y = 157
+Difference at X = 363, Y = 158
+Difference at X = 249, Y = 201
+Difference at X = 334, Y = 216
+Difference at X = 204, Y = 217
+Difference at X = 524, Y = 239
+Difference at X = 307, Y = 248
+Difference at X = 203, Y = 256
+Difference at X = 502, Y = 258
+Difference at X = 485, Y = 260
+Difference at X = 244, Y = 264
+Difference at X = 558, Y = 273
+Difference at X = 282, Y = 281
+Difference at X = 156, Y = 292
+Difference at X = 158, Y = 295
+Difference at X = 278, Y = 302
+Difference at X = 565, Y = 310
+Difference at X = 217, Y = 374
+Difference at X = 482, Y = 407
+Difference at X = 495, Y = 420
+Difference at X = 420, Y = 423
+Difference at X = 420, Y = 425
+Difference at X = 517, Y = 449
+Difference at X = 388, Y = 578
+Difference at X = 675, Y = 618
+Difference at X = 313, Y = 629
+Difference at X = 493, Y = 640
+Difference at X = 400, Y = 641
+Difference at X = 804, Y = 648
+Difference at X = 362, Y = 673
+Difference at X = 356, Y = 679
+Difference at X = 315, Y = 681
+Difference at X = 376, Y = 690
+Difference at X = 356, Y = 715
+Difference at X = 843, Y = 752
+Difference at X = 319, Y = 769
+Difference at X = 573, Y = 859
+Difference at X = 518, Y = 867
+The number of different pixels is 40
+Writing file differenceMap.png

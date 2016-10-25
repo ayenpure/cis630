@@ -408,6 +408,9 @@ public:
 		 */
 		double z_split = interpolate(top_vertex[1], bottom_vertex[1],
 				Z[top_index], Z[bottom_index], split_vertex[1]);
+    double shade_split = interpolate(top_vertex[1], bottom_vertex[1],
+				shading[top_index], shading[bottom_index], split_vertex[1]);
+
 		double split_colors[3];
 		split_colors[0] = interpolate(top_vertex[1], bottom_vertex[1],
 				colors[top_index][0], colors[bottom_index][0], split_vertex[1]);
@@ -426,9 +429,12 @@ public:
 		t1->Y[1] = middle_vertex[1];
 		t1->X[2] = split_vertex[0];
 		t1->Y[2] = split_vertex[1];
-		t1->Z[0] = Z[top_index];
+    t1->Z[0] = Z[top_index];
 		t1->Z[1] = Z[middle_index];
 		t1->Z[2] = z_split;
+    t1->shading[0] = shading[top_index];
+		t1->shading[1] = shading[middle_index];
+		t1->shading[2] = shade_split;
 		/*memcpy(t1->normals[0], this->normals[top_index], 3 * sizeof(double));
 		memcpy(t1->normals[1], this->normals[middle_index], 3 * sizeof(double));
 		memcpy(t1->normals[2], split_normal, 3 * sizeof(double));*/
@@ -452,6 +458,9 @@ public:
 		t2->Z[0] = Z[bottom_index];
 		t2->Z[1] = Z[middle_index];
 		t2->Z[2] = z_split;
+    t2->shading[0] = shading[bottom_index];
+		t2->shading[1] = shading[middle_index];
+		t2->shading[2] = shade_split;
 		/*memcpy(t2->normals[0], this->normals[bottom_index], 3 * sizeof(double));
 		memcpy(t2->normals[1], this->normals[middle_index], 3 * sizeof(double));
 		memcpy(t2->normals[2], split_normal, 3 * sizeof(double));*/
@@ -527,7 +536,7 @@ public:
 	int width, height;
 
 	void find_pixel_and_color(int x, int y, double *color, double current_depth,
-			double* current_normal, Triangle *t) {
+			double shading_amount) {
 		/*
 		 * Ensure the pixels to be painted are in the frame.
 		 */
@@ -535,9 +544,10 @@ public:
 			int buffer_index = (y * 3 * width) + (x * 3);
 			int depth_buffer_index = y * width + x;
 			if (buffer_index < width * height * 3
-					&& current_depth >= depth_buffer[depth_buffer_index]) {
-				double shading_amount = calculate_phong_shading(lp,
-						view_direction, current_normal);
+          && (current_depth > -1 && current_depth < 1)
+          && current_depth >= depth_buffer[depth_buffer_index]) {
+				/*double shading_amount = calculate_phong_shading(lp,
+						view_direction, current_normal);*/
 				buffer[buffer_index++] = min(
 						ceil441((shading_amount * color[0]) * 255),
 						(double) 255);
@@ -704,28 +714,37 @@ void scan_line(Triangle *t, Screen *s) {
 		t->calculate_color_for_scanline_extremes(current_y,
 				color_at_left_intercept, color_at_right_intercept);
 
-		double normal_on_left[3], normal_on_right[3];
+    double shading_left_intercept = interpolate(t->offset_vertex[1],
+				t->left_vertex[1], t->shading[t->offset_index], t->shading[t->left_index],
+				current_y);
+		double shading_right_intercept = interpolate(t->offset_vertex[1],
+				t->right_vertex[1], t->shading[t->offset_index], t->shading[t->right_index],
+				current_y);
+
+		/*double normal_on_left[3], normal_on_right[3];
 		interpolate_vector(t->offset_vertex[1], t->left_vertex[1],
 				t->normals[t->offset_index], t->normals[t->left_index],
 				current_y, normal_on_left);
 		interpolate_vector(t->offset_vertex[1], t->right_vertex[1],
 				t->normals[t->offset_index], t->normals[t->right_index],
-				current_y, normal_on_right);
+				current_y, normal_on_right);*/
 
 		for (int current_x = ceil441(left_intercept);
 				current_x <= floor441(right_intercept); current_x++) {
 			double current_z = interpolate(left_intercept, right_intercept,
 					z_left_intercept, z_right_intercept, current_x);
+      double current_shading = interpolate(left_intercept, right_intercept,
+					shading_left_intercept, shading_right_intercept, current_x);
 			double color_for_current_pixel[3] = { 0, 0, 0 };
 			s->calculate_color_for_pixel(left_intercept, right_intercept,
 					current_x, color_at_left_intercept,
 					color_at_right_intercept, color_for_current_pixel);
 
-			double current_normal[3];
+			/*double current_normal[3];
 			interpolate_vector(left_intercept, right_intercept, normal_on_left,
-					normal_on_right, current_x, current_normal);
+					normal_on_right, current_x, current_normal);*/
 			s->find_pixel_and_color(current_x, current_y,
-					color_for_current_pixel, current_z, current_normal,t);
+					color_for_current_pixel, current_z, current_shading);
 		}
 	}
 }
@@ -790,6 +809,13 @@ Matrix getViewTransformMatrix(Camera camera) {
 
 void transformTriangle(Triangle *t,Matrix composite, Screen *screen, Camera camera) {
   for(int i =0;i < 3;i++) {
+    double view_dir[3] = {
+      t->X[i] - camera.position[0],
+      t->Y[i] - camera.position[1],
+      t->Z[i] - camera.position[2]
+    };
+    normalize_vector(view_dir);
+    t->shading[i] = calculate_phong_shading(lp, view_dir, t->normals[i]);
     double current_quadro[4] = {
       t->X[i],t->Y[i],t->Z[i], 1
     };
@@ -799,16 +825,12 @@ void transformTriangle(Triangle *t,Matrix composite, Screen *screen, Camera came
       for(int j=0;j < 4;j++)
         transformed_vertex[j] = transformed_vertex[j] / transformed_vertex[3];
     }
-    t->X[i] = screen->width*((transformed_vertex[0] + 1)/2);
-    t->Y[i] = screen->height*((transformed_vertex[1] + 1)/2);;
+    t->X[i] = transformed_vertex[0];
+    t->Y[i] = transformed_vertex[1];
     t->Z[i] = transformed_vertex[2];
-    double view_dir[3] = {
-      t->X[i] - camera.position[0],
-      t->Y[i] - camera.position[1],
-      t->Z[i] - camera.position[2]
-    };
-    normalize_vector(view_dir);
-    t->shading[i] = calculate_phong_shading(lp, view_dir, t->normals[i]);
+    /*t->X[i] = screen->width*((transformed_vertex[0] + 1)/2);
+    t->Y[i] = screen->height*((transformed_vertex[1] + 1)/2);;
+    t->Z[i] = transformed_vertex[2];*/
   }
 }
 
@@ -830,7 +852,13 @@ int main() {
 		depth_buffer[i] = -1;
 	std::vector<Triangle> triangles = GetTriangles();
 
-	Camera camera = GetCamera(0,1000);
+  Screen screen;
+	screen.buffer = buffer;
+	screen.depth_buffer = depth_buffer;
+	screen.width = 1000;
+	screen.height = 1000;
+
+  Camera camera = GetCamera(0,1000);
 	Matrix camera_transform = getCameraTransformMatrix(camera);
 	camera_transform.Print(std::cout);
 	Matrix view_transform = getViewTransformMatrix(camera);
@@ -840,23 +868,18 @@ int main() {
   composite = Matrix::ComposeMatrices(camera_transform, view_transform);
 	composite.Print(std::cout);
 
-  /*double device_Xform[4][4] = {
-    1000/2, 0, 0, 0,
-    0, 1000/2, 0, 0,
+  double device_Xform[4][4] = {
+    screen.width/2, 0, 0, 0,
+    0, screen.height/2, 0, 0,
     0, 0, 1, 0,
-    0, 0, 0, 1
+    screen.width/2, screen.height/2, 0, 1
   };
 
   Matrix device_transform;
   memcpy(device_transform.A, device_Xform, 16*sizeof(double));
   composite = Matrix::ComposeMatrices(composite, device_transform);
-	composite.Print(std::cout);*/
+	composite.Print(std::cout);
 
-	Screen screen;
-	screen.buffer = buffer;
-	screen.depth_buffer = depth_buffer;
-	screen.width = 1000;
-	screen.height = 1000;
 	for (int vecIndex = 0; vecIndex < triangles.size(); vecIndex++) {
 		Triangle t = triangles[vecIndex];
     //print_triangle(t);
@@ -871,5 +894,5 @@ int main() {
 			scan_line(&t2, &screen);
 		}
 	}
-	WriteImage(image, "allTriangles");
+	WriteImage(image, "frm0");
 }
