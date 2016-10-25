@@ -262,6 +262,7 @@ public:
 	double Z[3];
 	double colors[3][3];
 	double normals[3][3];
+  double shading[3];
 	/*
 	 * The offset_vertex is the vertex[X,Y] that does not belong to the base
 	 * The left_vertex is the vertex[X,Y] that is to the left side of the base
@@ -428,9 +429,9 @@ public:
 		t1->Z[0] = Z[top_index];
 		t1->Z[1] = Z[middle_index];
 		t1->Z[2] = z_split;
-		memcpy(t1->normals[0], this->normals[top_index], 3 * sizeof(double));
+		/*memcpy(t1->normals[0], this->normals[top_index], 3 * sizeof(double));
 		memcpy(t1->normals[1], this->normals[middle_index], 3 * sizeof(double));
-		memcpy(t1->normals[2], split_normal, 3 * sizeof(double));
+		memcpy(t1->normals[2], split_normal, 3 * sizeof(double));*/
 
 		t1->colors[0][0] = colors[top_index][0];
 		t1->colors[0][1] = colors[top_index][1];
@@ -451,9 +452,9 @@ public:
 		t2->Z[0] = Z[bottom_index];
 		t2->Z[1] = Z[middle_index];
 		t2->Z[2] = z_split;
-		memcpy(t2->normals[0], this->normals[bottom_index], 3 * sizeof(double));
+		/*memcpy(t2->normals[0], this->normals[bottom_index], 3 * sizeof(double));
 		memcpy(t2->normals[1], this->normals[middle_index], 3 * sizeof(double));
-		memcpy(t2->normals[2], split_normal, 3 * sizeof(double));
+		memcpy(t2->normals[2], split_normal, 3 * sizeof(double));*/
 
 		t2->colors[0][0] = colors[bottom_index][0];
 		t2->colors[0][1] = colors[bottom_index][1];
@@ -787,6 +788,37 @@ Matrix getViewTransformMatrix(Camera camera) {
 	return m;
 }
 
+void transformTriangle(Triangle *t,Matrix composite, Screen *screen, Camera camera) {
+  for(int i =0;i < 3;i++) {
+    double current_quadro[4] = {
+      t->X[i],t->Y[i],t->Z[i], 1
+    };
+    double transformed_vertex[4];
+    composite.TransformPoint(current_quadro, transformed_vertex);
+    if(transformed_vertex[3] != 1) {
+      for(int j=0;j < 4;j++)
+        transformed_vertex[j] = transformed_vertex[j] / transformed_vertex[3];
+    }
+    t->X[i] = screen->width*((transformed_vertex[0] + 1)/2);
+    t->Y[i] = screen->height*((transformed_vertex[1] + 1)/2);;
+    t->Z[i] = transformed_vertex[2];
+    double view_dir[3] = {
+      t->X[i] - camera.position[0],
+      t->Y[i] - camera.position[1],
+      t->Z[i] - camera.position[2]
+    };
+    normalize_vector(view_dir);
+    t->shading[i] = calculate_phong_shading(lp, view_dir, t->normals[i]);
+  }
+}
+
+void print_triangle(Triangle t) {
+  cout << "\nPrinting Triangle" << endl;
+  cout << t.X[0] << ", " <<  t.Y[0] << ", " <<  t.Z[0] << endl;
+  cout << t.X[1] << ", " <<  t.Y[1] << ", " <<  t.Z[1] << endl;
+  cout << t.X[2] << ", " <<  t.Y[2] << ", " <<  t.Z[2] << endl;
+}
+
 int main() {
 	vtkImageData *image = NewImage(1000, 1000);
 	unsigned char *buffer = (unsigned char *) image->GetScalarPointer(0, 0, 0);
@@ -802,11 +834,24 @@ int main() {
 	Matrix camera_transform = getCameraTransformMatrix(camera);
 	camera_transform.Print(std::cout);
 	Matrix view_transform = getViewTransformMatrix(camera);
+  view_transform.Print(std::cout);
 
-	Matrix composite = Matrix::ComposeMatrices(camera_transform, view_transform);
+  Matrix composite;
+  composite = Matrix::ComposeMatrices(camera_transform, view_transform);
 	composite.Print(std::cout);
 
-	view_transform.Print(std::cout);
+  /*double device_Xform[4][4] = {
+    1000/2, 0, 0, 0,
+    0, 1000/2, 0, 0,
+    0, 0, 1, 0,
+    0, 0, 0, 1
+  };
+
+  Matrix device_transform;
+  memcpy(device_transform.A, device_Xform, 16*sizeof(double));
+  composite = Matrix::ComposeMatrices(composite, device_transform);
+	composite.Print(std::cout);*/
+
 	Screen screen;
 	screen.buffer = buffer;
 	screen.depth_buffer = depth_buffer;
@@ -814,6 +859,9 @@ int main() {
 	screen.height = 1000;
 	for (int vecIndex = 0; vecIndex < triangles.size(); vecIndex++) {
 		Triangle t = triangles[vecIndex];
+    //print_triangle(t);
+    transformTriangle(&t, composite, &screen, camera);
+    //print_triangle(t);
 		if (t.is_flat_bottom_triangle()) {
 			scan_line(&t, &screen);
 		} else {
