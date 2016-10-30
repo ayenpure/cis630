@@ -69,7 +69,7 @@ void cross_product(double* vector_1, double* vector_2, double *cross_vec) {
 }
 
 void print_vector(double *print_vector) {
-	cout << "{" << print_vector[0] << ", " << print_vector[1] << ", " << print_vector[2] << "}" << endl;
+	cout << "\n{" << print_vector[0] << ", " << print_vector[1] << ", " << print_vector[2] << "}" << endl;
 }
 
 double cot(double angle) {
@@ -102,11 +102,12 @@ public:
 	double *depth_buffer;
 	int width, height;
 
-	void find_pixel_and_color(int x, int y, double *color, double current_depth,
-			double shading_amount) {
+	void find_pixel_and_color(int x, int y, double *color, double current_depth/*,
+			double shading_amount*/) {
 		/*
 		 * Ensure the pixels to be painted are in the frame.
 		 */
+		double shading_amount = 1;
 		if ((x >= 0 && x < width) && (y >= 0 && y < height)) {
 			int buffer_index = (y * 3 * width) + (x * 3);
 			int depth_buffer_index = y * width + x;
@@ -256,11 +257,11 @@ class Camera
     		0 - position[2]
     	};
     	//normalize_vector(frame_vec);
-    	cout << "Camera Position (O) :";print_vector(position);
-    	cout << "V1 (U) :";print_vector(x_vector);
-    	cout << "V2 (V) :";print_vector(y_vector);
-    	cout << "V3 (W) :";print_vector(z_vector);
-    	cout << "T :";print_vector(frame_vec);
+    	print_vector(position);
+    	print_vector(x_vector);
+    	print_vector(y_vector);
+    	print_vector(z_vector);
+    	print_vector(frame_vec);
       double cartesian_x[3] = {1,0,0};
     	double cartesian_y[3] = {0,1,0};
     	double cartesian_z[3] = {0,0,1};
@@ -516,8 +517,8 @@ public:
 		 */
 		double z_split = interpolate(top_vertex[1], bottom_vertex[1],
 				Z[top_index], Z[bottom_index], split_vertex[1]);
-    double shade_split = interpolate(top_vertex[1], bottom_vertex[1],
-				shading[top_index], shading[bottom_index], split_vertex[1]);
+    /*double shade_split = interpolate(top_vertex[1], bottom_vertex[1],
+				shading[top_index], shading[bottom_index], split_vertex[1]);*/
 
 		double split_colors[3];
 		split_colors[0] = interpolate(top_vertex[1], bottom_vertex[1],
@@ -527,9 +528,9 @@ public:
 		split_colors[2] = interpolate(top_vertex[1], bottom_vertex[1],
 				colors[top_index][2], colors[bottom_index][2], split_vertex[1]);
 
-		double split_normal[3];
+		/*double split_normal[3];
 		interpolate_vector(top_vertex[1], bottom_vertex[1], normals[top_index],
-				normals[bottom_index], split_vertex[1], split_normal);
+				normals[bottom_index], split_vertex[1], split_normal);*/
 
 		t1->X[0] = top_vertex[0];
 		t1->Y[0] = top_vertex[1];
@@ -540,9 +541,9 @@ public:
     t1->Z[0] = Z[top_index];
 		t1->Z[1] = Z[middle_index];
 		t1->Z[2] = z_split;
-    t1->shading[0] = shading[top_index];
+    /*t1->shading[0] = shading[top_index];
 		t1->shading[1] = shading[middle_index];
-		t1->shading[2] = shade_split;
+		t1->shading[2] = shade_split;*/
 		/*memcpy(t1->normals[0], this->normals[top_index], 3 * sizeof(double));
 		memcpy(t1->normals[1], this->normals[middle_index], 3 * sizeof(double));
 		memcpy(t1->normals[2], split_normal, 3 * sizeof(double));*/
@@ -566,9 +567,9 @@ public:
 		t2->Z[0] = Z[bottom_index];
 		t2->Z[1] = Z[middle_index];
 		t2->Z[2] = z_split;
-    t2->shading[0] = shading[bottom_index];
+    /*t2->shading[0] = shading[bottom_index];
 		t2->shading[1] = shading[middle_index];
-		t2->shading[2] = shade_split;
+		t2->shading[2] = shade_split;*/
 		/*memcpy(t2->normals[0], this->normals[bottom_index], 3 * sizeof(double));
 		memcpy(t2->normals[1], this->normals[middle_index], 3 * sizeof(double));
 		memcpy(t2->normals[2], split_normal, 3 * sizeof(double));*/
@@ -642,7 +643,7 @@ std::vector<Triangle>
 GetTriangles(void)
 {
     vtkPolyDataReader *rdr = vtkPolyDataReader::New();
-    rdr->SetFileName("proj1e_geometry.vtk");
+    rdr->SetFileName("hardyglobal.0.vtk");
     cerr << "Reading" << endl;
     rdr->Update();
     cerr << "Done reading" << endl;
@@ -659,8 +660,8 @@ GetTriangles(void)
     double *color_ptr = var->GetPointer(0);
     //vtkFloatArray *var = (vtkFloatArray *) pd->GetPointData()->GetArray("hardyglobal");
     //float *color_ptr = var->GetPointer(0);
-    vtkFloatArray *n = (vtkFloatArray *) pd->GetPointData()->GetNormals();
-    float *normals = n->GetPointer(0);
+    /*vtkFloatArray *n = (vtkFloatArray *) pd->GetPointData()->GetNormals();
+    float *normals = n->GetPointer(0);*/
     std::vector<Triangle> tris(numTris);
     vtkIdType npts;
     vtkIdType *ptIds;
@@ -677,23 +678,23 @@ GetTriangles(void)
         tris[idx].X[0] = pt[0];
         tris[idx].Y[0] = pt[1];
         tris[idx].Z[0] = pt[2];
-        tris[idx].normals[0][0] = normals[3*ptIds[0]+0];
+        /*tris[idx].normals[0][0] = normals[3*ptIds[0]+0];
         tris[idx].normals[0][1] = normals[3*ptIds[0]+1];
-        tris[idx].normals[0][2] = normals[3*ptIds[0]+2];
+        tris[idx].normals[0][2] = normals[3*ptIds[0]+2];*/
         pt = pts->GetPoint(ptIds[1]);
         tris[idx].X[1] = pt[0];
         tris[idx].Y[1] = pt[1];
         tris[idx].Z[1] = pt[2];
-        tris[idx].normals[1][0] = normals[3*ptIds[1]+0];
+        /*tris[idx].normals[1][0] = normals[3*ptIds[1]+0];
         tris[idx].normals[1][1] = normals[3*ptIds[1]+1];
-        tris[idx].normals[1][2] = normals[3*ptIds[1]+2];
+        tris[idx].normals[1][2] = normals[3*ptIds[1]+2];*/
         pt = pts->GetPoint(ptIds[2]);
         tris[idx].X[2] = pt[0];
         tris[idx].Y[2] = pt[1];
         tris[idx].Z[2] = pt[2];
-        tris[idx].normals[2][0] = normals[3*ptIds[2]+0];
+        /*tris[idx].normals[2][0] = normals[3*ptIds[2]+0];
         tris[idx].normals[2][1] = normals[3*ptIds[2]+1];
-        tris[idx].normals[2][2] = normals[3*ptIds[2]+2];
+        tris[idx].normals[2][2] = normals[3*ptIds[2]+2];*/
 
         // 1->2 interpolate between light blue, dark blue
         // 2->2.5 interpolate between dark blue, cyan
@@ -761,19 +762,19 @@ void scan_line(Triangle *t, Screen *s) {
 		t->calculate_color_for_scanline_extremes(current_y,
 				color_at_left_intercept, color_at_right_intercept);
 
-    double shading_left_intercept = interpolate(t->offset_vertex[1],
+    /*double shading_left_intercept = interpolate(t->offset_vertex[1],
 				t->left_vertex[1], t->shading[t->offset_index], t->shading[t->left_index],
 				current_y);
 		double shading_right_intercept = interpolate(t->offset_vertex[1],
 				t->right_vertex[1], t->shading[t->offset_index], t->shading[t->right_index],
-				current_y);
+				current_y);*/
 
 		for (int current_x = ceil441(left_intercept);
 				current_x <= floor441(right_intercept); current_x++) {
 			double current_z = interpolate(left_intercept, right_intercept,
 					z_left_intercept, z_right_intercept, current_x);
-      double current_shading = interpolate(left_intercept, right_intercept,
-					shading_left_intercept, shading_right_intercept, current_x);
+      /*double current_shading = interpolate(left_intercept, right_intercept,
+					shading_left_intercept, shading_right_intercept, current_x);*/
 			double color_for_current_pixel[3] = { 0, 0, 0 };
 			s->calculate_color_for_pixel(left_intercept, right_intercept,
 					current_x, color_at_left_intercept,
@@ -783,7 +784,7 @@ void scan_line(Triangle *t, Screen *s) {
 			interpolate_vector(left_intercept, right_intercept, normal_on_left,
 					normal_on_right, current_x, current_normal);*/
 			s->find_pixel_and_color(current_x, current_y,
-					color_for_current_pixel, current_z, current_shading);
+					color_for_current_pixel, current_z/*, current_shading*/);
 		}
 	}
 }
@@ -843,16 +844,16 @@ int main() {
 	screen.width = 1000;
 	screen.height = 1000;
 
-  Camera camera = GetCamera(750,1000);
+  Camera camera = GetCamera(0,1000);
 
   Matrix camera_transform = camera.CameraTransform();
-	cout<<"\nCamera Transform Matrix :\n";camera_transform.Print(std::cout);
+	camera_transform.Print(std::cout);
 	Matrix view_transform = camera.ViewTransform();
-  cout<<"\nView Transform Matrix :\n";view_transform.Print(std::cout);
+  view_transform.Print(std::cout);
   Matrix device_transform = camera.DeviceTransform(screen);
-  cout<<"\nDevice Transform Matrix :\n";device_transform.Print(std::cout);
+  device_transform.Print(std::cout);
   Matrix composite = get_total_transform_matrix(camera_transform,view_transform,device_transform);
-	cout<<"\nComposite Matrix :\n";composite.Print(std::cout);
+  composite.Print(std::cout);
 
 	for (int vecIndex = 0; vecIndex < triangles.size(); vecIndex++) {
 		Triangle t = triangles[vecIndex];
@@ -868,5 +869,5 @@ int main() {
 			scan_line(&t2, &screen);
 		}
 	}
-	WriteImage(image, "frame750");
+	WriteImage(image, "allTriangles");
 }
