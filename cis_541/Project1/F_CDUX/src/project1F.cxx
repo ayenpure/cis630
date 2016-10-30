@@ -16,6 +16,7 @@
 #include <string.h>
 #include <cmath>
 #include <algorithm>
+#include <sstream>
 
 using std::cerr;
 using std::endl;
@@ -639,6 +640,7 @@ double calculate_phong_shading(LightingParameters lp, double *view_direction,
 			+ lp.Ks * specular_component;
 }
 
+<<<<<<< HEAD:cis_541/Project1/F_CDUX/src/project1F.cxx
 std::vector<Triangle>
 GetTriangles(void)
 {
@@ -733,8 +735,177 @@ GetTriangles(void)
             tris[idx].colors[j][1] = (RGB[r][1]+proportion*(RGB[r+1][1]-RGB[r][1]))/255.0;
             tris[idx].colors[j][2] = (RGB[r][2]+proportion*(RGB[r+1][2]-RGB[r][2]))/255.0;
         }
+=======
+class Screen {
+public:
+	unsigned char *buffer;
+	double *depth_buffer;
+	int width, height;
+
+	void find_pixel_and_color(int x, int y, double *color, double current_depth/*,
+			double shading_amount*/) {
+		/*
+		 * Ensure the pixels to be painted are in the frame.
+		 */
+		if ((x >= 0 && x < width) && (y >= 0 && y < height)) {
+			int buffer_index = (y * 3 * width) + (x * 3);
+			int depth_buffer_index = y * width + x;
+			if (buffer_index < width * height * 3
+          && (current_depth > -1 && current_depth < 1)
+          && current_depth >= depth_buffer[depth_buffer_index]) {
+				/*double shading_amount = calculate_phong_shading(lp,
+						view_direction, current_normal);*/
+				buffer[buffer_index++] = min(
+						ceil441((/*shading_amount * */color[0]) * 255),
+						(double) 255);
+				buffer[buffer_index++] = min(
+						ceil441((/*shading_amount * */color[1]) * 255),
+						(double) 255);
+				buffer[buffer_index] = min(
+						ceil441((/*shading_amount * */color[2]) * 255),
+						(double) 255);
+				depth_buffer[depth_buffer_index] = current_depth;
+			}
+		}
+	}
+
+	/*
+	 * This method calculates the color for a certain pixel in a trangle given
+	 * its intercepts for a scanline and the colors at the intercepts.
+	 */
+	void calculate_color_for_pixel(double left_intercept,
+			double right_intercept, double current_x_pos,
+			double *color_at_left_intercept, double *color_at_right_intercept,
+			double *current_color) {
+
+		current_color[0] = interpolate(left_intercept, right_intercept,
+				color_at_left_intercept[0], color_at_right_intercept[0],
+				current_x_pos);
+		current_color[1] = interpolate(left_intercept, right_intercept,
+				color_at_left_intercept[1], color_at_right_intercept[1],
+				current_x_pos);
+		current_color[2] = interpolate(left_intercept, right_intercept,
+				color_at_left_intercept[2], color_at_right_intercept[2],
+				current_x_pos);
+	}
+};
+
+std::vector<Triangle>
+GetTriangles(void)
+{
+    std::vector<Triangle> triangles(0);
+    int index = 0;
+    for(int i=0;i<63;i++) {
+      vtkPolyDataReader *rdr = vtkPolyDataReader::New();
+      /*std::stringstream vtk_file;
+      vtk_file << "hardyglobal." << i << ".vtk";
+      rdr->SetFileName(vtk_file.c_str());*/
+      std::ostringstream stream;
+      stream << "hardyglobal." << i << ".vtk";
+      std::string str =  stream.str();
+      const char* vtk_file = str.c_str();
+      rdr->SetFileName(vtk_file);
+
+      cerr << "Reading" << endl;
+      rdr->Update();
+      cerr << "Done reading" << endl;
+      if (rdr->GetOutput()->GetNumberOfCells() == 0)
+      {
+          cerr << "Unable to open file!!" << endl;
+          exit(EXIT_FAILURE);
+      }
+      vtkPolyData *pd = rdr->GetOutput();
+      /*
+      vtkDataSetWriter *writer = vtkDataSetWriter::New();
+      writer->SetInput(pd);
+      writer->SetFileName("hrc.vtk");
+      writer->Write();
+       */
+      int numTris = pd->GetNumberOfCells();
+      vtkPoints *pts = pd->GetPoints();
+      vtkCellArray *cells = pd->GetPolys();
+      vtkDoubleArray *var = (vtkDoubleArray *) pd->GetPointData()->GetArray("hardyglobal");
+      double *color_ptr = var->GetPointer(0);
+      //vtkFloatArray *var = (vtkFloatArray *) pd->GetPointData()->GetArray("hardyglobal");
+      //float *color_ptr = var->GetPointer(0);
+      /*vtkFloatArray *n = (vtkFloatArray *) pd->GetPointData()->GetNormals();
+      float *normals = n->GetPointer(0);*/
+      triangles.resize(triangles.size() + numTris);
+      vtkIdType npts;
+      vtkIdType *ptIds;
+      int idx;
+      for (idx = index, cells->InitTraversal() ; cells->GetNextCell(npts, ptIds) ; idx++, index++)
+      {
+          if (npts != 3)
+          {
+              cerr << "Non-triangles!! ???" << endl;
+              exit(EXIT_FAILURE);
+          }
+          double *pt = NULL;
+          pt = pts->GetPoint(ptIds[0]);
+          triangles[idx].X[0] = pt[0];
+          triangles[idx].Y[0] = pt[1];
+          triangles[idx].Z[0] = pt[2];
+          /*tris[idx].normals[0][0] = normals[3*ptIds[0]+0];
+          tris[idx].normals[0][1] = normals[3*ptIds[0]+1];
+          tris[idx].normals[0][2] = normals[3*ptIds[0]+2];*/
+          pt = pts->GetPoint(ptIds[1]);
+          triangles[idx].X[1] = pt[0];
+          triangles[idx].Y[1] = pt[1];
+          triangles[idx].Z[1] = pt[2];
+          /*tris[idx].normals[1][0] = normals[3*ptIds[1]+0];
+          tris[idx].normals[1][1] = normals[3*ptIds[1]+1];
+          tris[idx].normals[1][2] = normals[3*ptIds[1]+2];*/
+          pt = pts->GetPoint(ptIds[2]);
+          triangles[idx].X[2] = pt[0];
+          triangles[idx].Y[2] = pt[1];
+          triangles[idx].Z[2] = pt[2];
+          /*tris[idx].normals[2][0] = normals[3*ptIds[2]+0];
+          tris[idx].normals[2][1] = normals[3*ptIds[2]+1];
+          tris[idx].normals[2][2] = normals[3*ptIds[2]+2];*/
+
+          // 1->2 interpolate between light blue, dark blue
+          // 2->2.5 interpolate between dark blue, cyan
+          // 2.5->3 interpolate between cyan, green
+          // 3->3.5 interpolate between green, yellow
+          // 3.5->4 interpolate between yellow, orange
+          // 4->5 interpolate between orange, brick
+          // 5->6 interpolate between brick, salmon
+          double mins[7] = { 1, 2, 2.5, 3, 3.5, 4, 5 };
+          double maxs[7] = { 2, 2.5, 3, 3.5, 4, 5, 6 };
+          unsigned char RGB[8][3] = { { 71, 71, 219 },
+                                      { 0, 0, 91 },
+                                      { 0, 255, 255 },
+                                      { 0, 128, 0 },
+                                      { 255, 255, 0 },
+                                      { 255, 96, 0 },
+                                      { 107, 0, 0 },
+                                      { 224, 76, 76 }
+                                    };
+          for (int j = 0 ; j < 3 ; j++)
+          {
+              float val = color_ptr[ptIds[j]];
+              int r;
+              for (r = 0 ; r < 7 ; r++)
+              {
+                  if (mins[r] <= val && val < maxs[r])
+                      break;
+              }
+              if (r == 7)
+              {
+                  /*cerr << "Could not interpolate color for " << val << endl;
+                  exit(EXIT_FAILURE);*/
+                  r = ((int)val)%7;
+              }
+              double proportion = (val-mins[r]) / (maxs[r]-mins[r]);
+              triangles[idx].colors[j][0] = (RGB[r][0]+proportion*(RGB[r+1][0]-RGB[r][0]))/255.0;
+              triangles[idx].colors[j][1] = (RGB[r][1]+proportion*(RGB[r+1][1]-RGB[r][1]))/255.0;
+              triangles[idx].colors[j][2] = (RGB[r][2]+proportion*(RGB[r+1][2]-RGB[r][2]))/255.0;
+          }
+      }
+>>>>>>> 55cca6a5ab9ec6227a3200879db076a7779d7040:cis_541/Project1/F-CDUX/src/project1Fcdux.cxx
     }
-    return tris;
+    return triangles;
 }
 
 void scan_line(Triangle *t, Screen *s) {
