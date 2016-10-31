@@ -2,6 +2,7 @@
 #include <cmath>
 #include <string.h>
 #include <stdio.h>
+#include "CameraPositions.h"
 
 using std::sin;
 using std::cos;
@@ -54,8 +55,7 @@ void rotate(double* camera_position, double angle, char axis,double* rotated_cam
   //cout << "rotated position {" << rotated_camera[0] << ", " << rotated_camera[1] << ", " << rotated_camera[2] << " }" << endl;
 }
 
-int main() {
-  double camera_positions[114][3];
+void get_camera_positions(double **camera_positions) {
   double calc_camera_positions[8][16][3];
   cout << "PI :" << M_PI << endl;
   double first_rotation[16] = {
@@ -69,12 +69,10 @@ int main() {
   };
   double camera_position[3] = {20,0,0};
   for(int i = 0; i < 16; i++) {
-    double rotated_camera[3];
     rotate(camera_position, first_rotation[i], Y, calc_camera_positions[0][i]);
   };
   for(int i = 1; i < 8; i++) {
     for(int j = 0; j < 16; j++) {
-      double rotated_camera[3];
       rotate(calc_camera_positions[0][j], second_rotation[i-1], X, calc_camera_positions[i][j]);
     }
   };
@@ -92,5 +90,4 @@ int main() {
   for(int i = 0; i < 114; i++) {
     cout << "Camera position {" << camera_positions[i][0] << ", " << camera_positions[i][1] << ", " << camera_positions[i][2] << " }" << endl;
   }
-  return 0;
 }

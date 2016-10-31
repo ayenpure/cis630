@@ -18,7 +18,7 @@
 #include <algorithm>
 #include <vector>
 #include <sstream>
-
+#include "CameraPositions.h"
 
 using std::cerr;
 using std::endl;
@@ -304,15 +304,15 @@ double SineParameterize(int curFrame, int nFrames, int ramp) {
 	return quad_part + curve_part;
 }
 
-Camera GetCamera(int frame, int nframes) {
-	double t = SineParameterize(frame, nframes, nframes / 10);
+Camera GetCamera(double* frame, int nframes) {
+	//double t = SineParameterize(frame, nframes, nframes / 10);
 	Camera c;
 	c.near = 5;
 	c.far = 200;
 	c.angle = M_PI / 6;
-	c.position[0] = 40 * sin(2 * M_PI * t);
-	c.position[1] = 40 * cos(2 * M_PI * t);
-	c.position[2] = 40;
+	c.position[0] = frame[0];
+	c.position[1] = frame[1];
+	c.position[2] = frame[2];
 	c.focus[0] = 0;
 	c.focus[1] = 0;
 	c.focus[2] = 0;
@@ -842,31 +842,37 @@ int main() {
 	screen.width = 1000;
 	screen.height = 1000;
 
-	Camera camera = GetCamera(0, 1000);
+	double camera_positions[114][3];
+	get_camera_positions(camera_positions);
 
-	Matrix camera_transform = camera.CameraTransform();
-	//cout<<"\nCamera Transform Matrix :\n";camera_transform.Print(std::cout);
-	Matrix view_transform = camera.ViewTransform();
-	//cout<<"\nView Transform Matrix :\n";view_transform.Print(std::cout);
-	Matrix device_transform = camera.DeviceTransform(screen);
-	//cout<<"\nDevice Transform Matrix :\n";device_transform.Print(std::cout);
-	Matrix composite = get_total_transform_matrix(camera_transform,
-			view_transform, device_transform);
-	//cout<<"\nComposite Matrix :\n";composite.Print(std::cout);
+	for(int cam_index = 0; cam_index < 64; cam_index++) {
+		Camera camera = GetCamera(camera_positions[cam_index], 1000);
 
-	for (int vecIndex = 0; vecIndex < triangles.size(); vecIndex++) {
-		Triangle t = triangles[vecIndex];
-		//print_triangle(t);
-		transformTriangle(&t, composite, camera);
-		//print_triangle(t);
-		if (t.is_flat_bottom_triangle()) {
-			scan_line(&t, &screen);
-		} else {
-			Triangle t1, t2;
-			t.split_triangle(&t1, &t2);
-			scan_line(&t1, &screen);
-			scan_line(&t2, &screen);
+		Matrix camera_transform = camera.CameraTransform();
+		//cout<<"\nCamera Transform Matrix :\n";camera_transform.Print(std::cout);
+		Matrix view_transform = camera.ViewTransform();
+		//cout<<"\nView Transform Matrix :\n";view_transform.Print(std::cout);
+		Matrix device_transform = camera.DeviceTransform(screen);
+		//cout<<"\nDevice Transform Matrix :\n";device_transform.Print(std::cout);
+		Matrix composite = get_total_transform_matrix(camera_transform,
+				view_transform, device_transform);
+		//cout<<"\nComposite Matrix :\n";composite.Print(std::cout);
+		for (int vecIndex = 0; vecIndex < triangles.size(); vecIndex++) {
+			Triangle t = triangles[vecIndex];
+			//print_triangle(t);
+			transformTriangle(&t, composite, camera);
+			//print_triangle(t);
+			if (t.is_flat_bottom_triangle()) {
+				scan_line(&t, &screen);
+			} else {
+				Triangle t1, t2;
+				t.split_triangle(&t1, &t2);
+				scan_line(&t1, &screen);
+				scan_line(&t2, &screen);
+			}
 		}
+		std::ostringstream oss;
+		oss << "camera" << cam_index;
+		WriteImage(image, oss.str().c_str());
 	}
-	WriteImage(image, "allTriangles");
 }
