@@ -55,7 +55,7 @@ void rotate(double* camera_position, double angle, char axis,double* rotated_cam
   //cout << "rotated position {" << rotated_camera[0] << ", " << rotated_camera[1] << ", " << rotated_camera[2] << " }" << endl;
 }
 
-void get_camera_positions(double **camera_positions) {
+void get_camera_positions(double (*camera_positions)[3]) {
   double calc_camera_positions[8][16][3];
   cout << "PI :" << M_PI << endl;
   double first_rotation[16] = {
@@ -67,7 +67,7 @@ void get_camera_positions(double **camera_positions) {
   double second_rotation[7] = {
     (M_PI/6), (M_PI/4), (M_PI/3), (M_PI/2), (2*M_PI/3), (3*M_PI/4), (5*M_PI/6)
   };
-  double camera_position[3] = {20,0,0};
+  double camera_position[3] = {40,0,0};
   for(int i = 0; i < 16; i++) {
     rotate(camera_position, first_rotation[i], Y, calc_camera_positions[0][i]);
   };

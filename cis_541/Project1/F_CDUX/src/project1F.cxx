@@ -28,6 +28,8 @@ using std::abs;
 using std::pow;
 using std::tan;
 
+int pixels_deposited = 0;
+
 double ceil441(double f) {
 	return ceil(f - 0.00001);
 }
@@ -112,6 +114,7 @@ public:
 		/*
 		 * Ensure the pixels to be painted are in the frame.
 		 */
+		 pixels_deposited++;
 		if ((x >= 0 && x < width) && (y >= 0 && y < height)) {
 			int buffer_index = (y * 3 * width) + (x * 3);
 			int depth_buffer_index = y * width + x;
@@ -636,103 +639,98 @@ double calculate_phong_shading(LightingParameters lp, double *view_direction,
 			+ lp.Ks * specular_component;
 }
 
-std::vector<Triangle> GetTriangles(void) {
-	std::vector<Triangle> tris(0);
-	int tri_cnt = 0;
-	for (int index = 0; index < 63; index++) {
-		vtkPolyDataReader *rdr = vtkPolyDataReader::New();
-		std::ostringstream oss;
-		oss << "hardyglobal." << index << ".vtk";
-		rdr->SetFileName(oss.str().c_str());
-		cerr << "Reading" << endl;
-		rdr->Update();
-		cerr << "Done reading" << endl;
-		if (rdr->GetOutput()->GetNumberOfCells() == 0) {
-			cerr << "Unable to open file!!" << endl;
+std::vector<Triangle> GetTriangles(const char *filename) {
+
+	vtkPolyDataReader *rdr = vtkPolyDataReader::New();
+	rdr->SetFileName(filename);
+	cerr << "Reading" << endl;
+	rdr->Update();
+	cerr << "Done reading" << endl;
+	if (rdr->GetOutput()->GetNumberOfCells() == 0) {
+		cerr << "Unable to open file!!" << endl;
+		exit (EXIT_FAILURE);
+	}
+	vtkPolyData *pd = rdr->GetOutput();
+	int numTris = pd->GetNumberOfCells();
+	std::vector<Triangle> tris(numTris);
+	vtkPoints *pts = pd->GetPoints();
+	vtkCellArray *cells = pd->GetPolys();
+	vtkDoubleArray *var = (vtkDoubleArray *) pd->GetPointData()->GetArray(
+			"hardyglobal");
+	double *color_ptr = var->GetPointer(0);
+	//vtkFloatArray *var = (vtkFloatArray *) pd->GetPointData()->GetArray("hardyglobal");
+	//float *color_ptr = var->GetPointer(0);
+	vtkFloatArray *n = (vtkFloatArray *) pd->GetPointData()->GetNormals();
+	//float *normals = n->GetPointer(0);
+	vtkIdType npts;
+	vtkIdType *ptIds;
+	int idx;
+	for (idx = 0, cells->InitTraversal();
+			cells->GetNextCell(npts, ptIds); idx++) {
+		if (npts != 3) {
+			cerr << "Non-triangles!! ???" << endl;
 			exit (EXIT_FAILURE);
 		}
-		vtkPolyData *pd = rdr->GetOutput();
-		int numTris = pd->GetNumberOfCells();
-		tris.resize(tris.size() + numTris);
-		vtkPoints *pts = pd->GetPoints();
-		vtkCellArray *cells = pd->GetPolys();
-		vtkDoubleArray *var = (vtkDoubleArray *) pd->GetPointData()->GetArray(
-				"hardyglobal");
-		double *color_ptr = var->GetPointer(0);
-		//vtkFloatArray *var = (vtkFloatArray *) pd->GetPointData()->GetArray("hardyglobal");
-		//float *color_ptr = var->GetPointer(0);
-		vtkFloatArray *n = (vtkFloatArray *) pd->GetPointData()->GetNormals();
-		//float *normals = n->GetPointer(0);
-		vtkIdType npts;
-		vtkIdType *ptIds;
-		int idx;
-		for (idx = tri_cnt, cells->InitTraversal();
-				cells->GetNextCell(npts, ptIds); idx++, tri_cnt++) {
-			if (npts != 3) {
-				cerr << "Non-triangles!! ???" << endl;
-				exit (EXIT_FAILURE);
-			}
-			double *pt = NULL;
-			pt = pts->GetPoint(ptIds[0]);
-			tris[idx].X[0] = pt[0];
-			tris[idx].Y[0] = pt[1];
-			tris[idx].Z[0] = pt[2];
-			/*tris[idx].normals[0][0] = normals[3*ptIds[0]+0];
-			 tris[idx].normals[0][1] = normals[3*ptIds[0]+1];
-			 tris[idx].normals[0][2] = normals[3*ptIds[0]+2];*/
-			pt = pts->GetPoint(ptIds[1]);
-			tris[idx].X[1] = pt[0];
-			tris[idx].Y[1] = pt[1];
-			tris[idx].Z[1] = pt[2];
-			/*tris[idx].normals[1][0] = normals[3*ptIds[1]+0];
-			 tris[idx].normals[1][1] = normals[3*ptIds[1]+1];
-			 tris[idx].normals[1][2] = normals[3*ptIds[1]+2];*/
-			pt = pts->GetPoint(ptIds[2]);
-			tris[idx].X[2] = pt[0];
-			tris[idx].Y[2] = pt[1];
-			tris[idx].Z[2] = pt[2];
-			/*tris[idx].normals[2][0] = normals[3*ptIds[2]+0];
-			 tris[idx].normals[2][1] = normals[3*ptIds[2]+1];
-			 tris[idx].normals[2][2] = normals[3*ptIds[2]+2];*/
+		double *pt = NULL;
+		pt = pts->GetPoint(ptIds[0]);
+		tris[idx].X[0] = pt[0];
+		tris[idx].Y[0] = pt[1];
+		tris[idx].Z[0] = pt[2];
+		/*tris[idx].normals[0][0] = normals[3*ptIds[0]+0];
+		 tris[idx].normals[0][1] = normals[3*ptIds[0]+1];
+		 tris[idx].normals[0][2] = normals[3*ptIds[0]+2];*/
+		pt = pts->GetPoint(ptIds[1]);
+		tris[idx].X[1] = pt[0];
+		tris[idx].Y[1] = pt[1];
+		tris[idx].Z[1] = pt[2];
+		/*tris[idx].normals[1][0] = normals[3*ptIds[1]+0];
+		 tris[idx].normals[1][1] = normals[3*ptIds[1]+1];
+		 tris[idx].normals[1][2] = normals[3*ptIds[1]+2];*/
+		pt = pts->GetPoint(ptIds[2]);
+		tris[idx].X[2] = pt[0];
+		tris[idx].Y[2] = pt[1];
+		tris[idx].Z[2] = pt[2];
+		/*tris[idx].normals[2][0] = normals[3*ptIds[2]+0];
+		 tris[idx].normals[2][1] = normals[3*ptIds[2]+1];
+		 tris[idx].normals[2][2] = normals[3*ptIds[2]+2];*/
 
-			// 1->2 interpolate between light blue, dark blue
-			// 2->2.5 interpolate between dark blue, cyan
-			// 2.5->3 interpolate between cyan, green
-			// 3->3.5 interpolate between green, yellow
-			// 3.5->4 interpolate between yellow, orange
-			// 4->5 interpolate between orange, brick
-			// 5->6 interpolate between brick, salmon
-			double mins[7] = { 1, 2, 2.5, 3, 3.5, 4, 5 };
-			double maxs[7] = { 2, 2.5, 3, 3.5, 4, 5, 6 };
-			/*unsigned char RGB[8][3] = { { 71, 71, 219 },
-			 { 0, 0, 91 },
-			 { 0, 255, 255 },
-			 { 0, 128, 0 },
-			 { 255, 255, 0 },
-			 { 255, 96, 0 },
-			 { 107, 0, 0 },
-			 { 224, 76, 76 }
-			 };*/
-			for (int j = 0; j < 3; j++) {
-				float val = color_ptr[ptIds[j]];
-				/*int r;
-				 for (r = 0 ; r < 7 ; r++)
-				 {
-				 if (mins[r] <= val && val < maxs[r])
-				 break;
-				 }
-				 if (r == 7)
-				 {
-				 cerr << "Could not interpolate color for " << val << endl;
-				 exit(EXIT_FAILURE);
-				 }*/
-				//double proportion = (val-mins[r]) / (maxs[r]-mins[r]);
-				tris[idx].colors[j][0] = 0 / 255.0;
-				tris[idx].colors[j][1] = 128 / 255.0;
-				tris[idx].colors[j][2] = 0 / 255.0;
-			}
-			tris[idx].calculate_normals();
+		// 1->2 interpolate between light blue, dark blue
+		// 2->2.5 interpolate between dark blue, cyan
+		// 2.5->3 interpolate between cyan, green
+		// 3->3.5 interpolate between green, yellow
+		// 3.5->4 interpolate between yellow, orange
+		// 4->5 interpolate between orange, brick
+		// 5->6 interpolate between brick, salmon
+		double mins[7] = { 1, 2, 2.5, 3, 3.5, 4, 5 };
+		double maxs[7] = { 2, 2.5, 3, 3.5, 4, 5, 6 };
+		/*unsigned char RGB[8][3] = { { 71, 71, 219 },
+		 { 0, 0, 91 },
+		 { 0, 255, 255 },
+		 { 0, 128, 0 },
+		 { 255, 255, 0 },
+		 { 255, 96, 0 },
+		 { 107, 0, 0 },
+		 { 224, 76, 76 }
+		 };*/
+		for (int j = 0; j < 3; j++) {
+			float val = color_ptr[ptIds[j]];
+			/*int r;
+			 for (r = 0 ; r < 7 ; r++)
+			 {
+			 if (mins[r] <= val && val < maxs[r])
+			 break;
+			 }
+			 if (r == 7)
+			 {
+			 cerr << "Could not interpolate color for " << val << endl;
+			 exit(EXIT_FAILURE);
+			 }*/
+			//double proportion = (val-mins[r]) / (maxs[r]-mins[r]);
+			tris[idx].colors[j][0] = 0 / 255.0;
+			tris[idx].colors[j][1] = 128 / 255.0;
+			tris[idx].colors[j][2] = 0 / 255.0;
 		}
+		tris[idx].calculate_normals();
 	}
 	return tris;
 }
@@ -826,53 +824,66 @@ Matrix get_total_transform_matrix(Matrix camera_transform,
 }
 
 int main() {
-	vtkImageData *image = NewImage(1000, 1000);
-	unsigned char *buffer = (unsigned char *) image->GetScalarPointer(0, 0, 0);
-	int npixels = 1000 * 1000;
-	for (int i = 0; i < npixels * 3; i++)
-		buffer[i] = 0;
-	double depth_buffer[npixels];
-	for (int i = 0; i < npixels; i++)
-		depth_buffer[i] = -1;
-	std::vector<Triangle> triangles = GetTriangles();
-
-	Screen screen;
-	screen.buffer = buffer;
-	screen.depth_buffer = depth_buffer;
-	screen.width = 1000;
-	screen.height = 1000;
-
 	double camera_positions[114][3];
 	get_camera_positions(camera_positions);
-
-	for(int cam_index = 0; cam_index < 64; cam_index++) {
-		Camera camera = GetCamera(camera_positions[cam_index], 1000);
-
-		Matrix camera_transform = camera.CameraTransform();
-		//cout<<"\nCamera Transform Matrix :\n";camera_transform.Print(std::cout);
-		Matrix view_transform = camera.ViewTransform();
-		//cout<<"\nView Transform Matrix :\n";view_transform.Print(std::cout);
-		Matrix device_transform = camera.DeviceTransform(screen);
-		//cout<<"\nDevice Transform Matrix :\n";device_transform.Print(std::cout);
-		Matrix composite = get_total_transform_matrix(camera_transform,
-				view_transform, device_transform);
-		//cout<<"\nComposite Matrix :\n";composite.Print(std::cout);
-		for (int vecIndex = 0; vecIndex < triangles.size(); vecIndex++) {
-			Triangle t = triangles[vecIndex];
-			//print_triangle(t);
-			transformTriangle(&t, composite, camera);
-			//print_triangle(t);
-			if (t.is_flat_bottom_triangle()) {
-				scan_line(&t, &screen);
-			} else {
-				Triangle t1, t2;
-				t.split_triangle(&t1, &t2);
-				scan_line(&t1, &screen);
-				scan_line(&t2, &screen);
-			}
-		}
+	int pixels_deposited_per_node[63];
+	for(int file_index = 0; file_index < 63; file_index++) {
+		pixels_deposited = 0;
 		std::ostringstream oss;
-		oss << "camera" << cam_index;
-		WriteImage(image, oss.str().c_str());
+		oss << "hardyglobal." << file_index << ".vtk";
+		std::vector<Triangle> triangles = GetTriangles(oss.str().c_str());
+		oss.str("");
+		oss.clear();
+		for(int cam_index = 0; cam_index < 114; cam_index++) {
+			vtkImageData *image = NewImage(1000, 1000);
+			unsigned char *buffer = (unsigned char *) image->GetScalarPointer(0, 0, 0);
+			int npixels = 1000 * 1000;
+			for (int i = 0; i < npixels * 3; i++)
+				buffer[i] = 0;
+			double depth_buffer[npixels];
+			for (int i = 0; i < npixels; i++)
+				depth_buffer[i] = -1;
+			Screen screen;
+			screen.buffer = buffer;
+			screen.depth_buffer = depth_buffer;
+			screen.width = 1000;
+			screen.height = 1000;
+			/*double mock_camera[3] = {0,0,40};
+			Camera camera = GetCamera(mock_camera, 1000);*/
+			Camera camera = GetCamera(camera_positions[cam_index], 1000);
+
+			Matrix camera_transform = camera.CameraTransform();
+			//cout<<"\nCamera Transform Matrix :\n";camera_transform.Print(std::cout);
+			Matrix view_transform = camera.ViewTransform();
+			//cout<<"\nView Transform Matrix :\n";view_transform.Print(std::cout);
+			Matrix device_transform = camera.DeviceTransform(screen);
+			//cout<<"\nDevice Transform Matrix :\n";device_transform.Print(std::cout);
+			Matrix composite = get_total_transform_matrix(camera_transform,
+					view_transform, device_transform);
+			//cout<<"\nComposite Matrix :\n";composite.Print(std::cout);
+			for (int vecIndex = 0; vecIndex < triangles.size(); vecIndex++) {
+				Triangle t = triangles[vecIndex];
+				//print_triangle(t);
+				transformTriangle(&t, composite, camera);
+				//print_triangle(t);
+				if (t.is_flat_bottom_triangle()) {
+					scan_line(&t, &screen);
+				} else {
+					Triangle t1, t2;
+					t.split_triangle(&t1, &t2);
+					scan_line(&t1, &screen);
+					scan_line(&t2, &screen);
+				}
+			}
+			pixels_deposited_per_node[file_index] = pixels_deposited;
+			oss << "camera_" << file_index << "_" << cam_index;
+			WriteImage(image, oss.str().c_str());
+			oss.str("");
+			oss.clear();
+		}
+	}
+	cout << "\n\n";
+	for(int i = 0; i < 63; i++) {
+		cout << pixels_deposited_per_node[i] << endl;
 	}
 }

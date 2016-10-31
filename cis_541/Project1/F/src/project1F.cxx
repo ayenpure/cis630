@@ -333,8 +333,8 @@ GetCamera(int frame, int nframes)
     c.near = 5;
     c.far = 200;
     c.angle = M_PI/6;
-    c.position[0] = 40*sin(2*M_PI*t);
-    c.position[1] = 40*cos(2*M_PI*t);
+    c.position[0] = 0;//40*sin(2*M_PI*t);
+    c.position[1] = 0;//40*cos(2*M_PI*t);
     c.position[2] = 40;
     c.focus[0] = 0;
     c.focus[1] = 0;

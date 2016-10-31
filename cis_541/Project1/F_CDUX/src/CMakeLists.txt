@@ -6,7 +6,7 @@ SET(VTK_DIR /path/to/VTK6.0.0)
 find_package(VTK REQUIRED)
 include(${VTK_USE_FILE})
 
-add_executable(project1F project1F)
+add_executable(project1F project1F.cxx CameraPositions.h CameraPositions.cxx)
 
 if(VTK_LIBRARIES)
   target_link_libraries(project1F ${VTK_LIBRARIES})
