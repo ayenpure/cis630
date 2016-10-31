@@ -60,39 +60,39 @@ CMAKE_SOURCE_DIR = /home/abhishek/Projects/cis_541/Project1/F_CDUX/src
 CMAKE_BINARY_DIR = /home/abhishek/Projects/cis_541/Project1/F_CDUX/bin
 
 #=============================================================================
-# Target rules for target CMakeFiles/CameraPositions.dir
+# Target rules for target CMakeFiles/project1F.dir
 
 # All Build rule for target.
-CMakeFiles/CameraPositions.dir/all:
-	$(MAKE) -f CMakeFiles/CameraPositions.dir/build.make CMakeFiles/CameraPositions.dir/depend
-	$(MAKE) -f CMakeFiles/CameraPositions.dir/build.make CMakeFiles/CameraPositions.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/abhishek/Projects/cis_541/Project1/F_CDUX/bin/CMakeFiles --progress-num=1,2 "Built target CameraPositions"
-.PHONY : CMakeFiles/CameraPositions.dir/all
+CMakeFiles/project1F.dir/all:
+	$(MAKE) -f CMakeFiles/project1F.dir/build.make CMakeFiles/project1F.dir/depend
+	$(MAKE) -f CMakeFiles/project1F.dir/build.make CMakeFiles/project1F.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/abhishek/Projects/cis_541/Project1/F_CDUX/bin/CMakeFiles --progress-num=1,2 "Built target project1F"
+.PHONY : CMakeFiles/project1F.dir/all
 
 # Include target in all.
-all: CMakeFiles/CameraPositions.dir/all
+all: CMakeFiles/project1F.dir/all
 
 .PHONY : all
 
 # Build rule for subdir invocation for target.
-CMakeFiles/CameraPositions.dir/rule: cmake_check_build_system
+CMakeFiles/project1F.dir/rule: cmake_check_build_system
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/abhishek/Projects/cis_541/Project1/F_CDUX/bin/CMakeFiles 2
-	$(MAKE) -f CMakeFiles/Makefile2 CMakeFiles/CameraPositions.dir/all
+	$(MAKE) -f CMakeFiles/Makefile2 CMakeFiles/project1F.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/abhishek/Projects/cis_541/Project1/F_CDUX/bin/CMakeFiles 0
-.PHONY : CMakeFiles/CameraPositions.dir/rule
+.PHONY : CMakeFiles/project1F.dir/rule
 
 # Convenience name for target.
-CameraPositions: CMakeFiles/CameraPositions.dir/rule
+project1F: CMakeFiles/project1F.dir/rule
 
-.PHONY : CameraPositions
-
-# clean rule for target.
-CMakeFiles/CameraPositions.dir/clean:
-	$(MAKE) -f CMakeFiles/CameraPositions.dir/build.make CMakeFiles/CameraPositions.dir/clean
-.PHONY : CMakeFiles/CameraPositions.dir/clean
+.PHONY : project1F
 
 # clean rule for target.
-clean: CMakeFiles/CameraPositions.dir/clean
+CMakeFiles/project1F.dir/clean:
+	$(MAKE) -f CMakeFiles/project1F.dir/build.make CMakeFiles/project1F.dir/clean
+.PHONY : CMakeFiles/project1F.dir/clean
+
+# clean rule for target.
+clean: CMakeFiles/project1F.dir/clean
 
 .PHONY : clean
 
