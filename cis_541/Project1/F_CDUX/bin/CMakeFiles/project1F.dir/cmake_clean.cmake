@@ -1,5 +1,6 @@
 file(REMOVE_RECURSE
   "CMakeFiles/project1F.dir/project1F.cxx.o"
+  "CMakeFiles/project1F.dir/CameraPositions.cxx.o"
   "project1F.pdb"
   "project1F"
 )

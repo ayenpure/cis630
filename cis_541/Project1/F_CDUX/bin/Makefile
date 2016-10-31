@@ -123,6 +123,33 @@ project1F/fast:
 	$(MAKE) -f CMakeFiles/project1F.dir/build.make CMakeFiles/project1F.dir/build
 .PHONY : project1F/fast
 
+CameraPositions.o: CameraPositions.cxx.o
+
+.PHONY : CameraPositions.o
+
+# target to build an object file
+CameraPositions.cxx.o:
+	$(MAKE) -f CMakeFiles/project1F.dir/build.make CMakeFiles/project1F.dir/CameraPositions.cxx.o
+.PHONY : CameraPositions.cxx.o
+
+CameraPositions.i: CameraPositions.cxx.i
+
+.PHONY : CameraPositions.i
+
+# target to preprocess a source file
+CameraPositions.cxx.i:
+	$(MAKE) -f CMakeFiles/project1F.dir/build.make CMakeFiles/project1F.dir/CameraPositions.cxx.i
+.PHONY : CameraPositions.cxx.i
+
+CameraPositions.s: CameraPositions.cxx.s
+
+.PHONY : CameraPositions.s
+
+# target to generate assembly for a file
+CameraPositions.cxx.s:
+	$(MAKE) -f CMakeFiles/project1F.dir/build.make CMakeFiles/project1F.dir/CameraPositions.cxx.s
+.PHONY : CameraPositions.cxx.s
+
 project1F.o: project1F.cxx.o
 
 .PHONY : project1F.o
@@ -159,6 +186,9 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... project1F"
+	@echo "... CameraPositions.o"
+	@echo "... CameraPositions.i"
+	@echo "... CameraPositions.s"
 	@echo "... project1F.o"
 	@echo "... project1F.i"
 	@echo "... project1F.s"

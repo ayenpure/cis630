@@ -6,6 +6,20 @@
 
 #IncludeRegexTransform: 
 
+/home/abhishek/Projects/cis_541/Project1/F_CDUX/src/CameraPositions.cxx
+iostream
+-
+cmath
+-
+string.h
+-
+stdio.h
+-
+CameraPositions.h
+/home/abhishek/Projects/cis_541/Project1/F_CDUX/src/CameraPositions.h
+
+/home/abhishek/Projects/cis_541/Project1/F_CDUX/src/CameraPositions.h
+
 /home/abhishek/Projects/cis_541/Project1/F_CDUX/src/project1F.cxx
 iostream
 -
@@ -47,6 +61,8 @@ vector
 -
 sstream
 -
+CameraPositions.h
+/home/abhishek/Projects/cis_541/Project1/F_CDUX/src/CameraPositions.h
 
 /home/abhishek/VTK-6.3.0/Common/Core/vtkABI.h
 
