@@ -307,18 +307,18 @@ double SineParameterize(int curFrame, int nFrames, int ramp) {
 	return quad_part + curve_part;
 }
 
-Camera GetCamera(double* frame, int nframes) {
+Camera GetCamera(double* camera_position, double* focus_point) {
 	//double t = SineParameterize(frame, nframes, nframes / 10);
 	Camera c;
 	c.near = 5;
 	c.far = 200;
 	c.angle = M_PI / 6;
-	c.position[0] = frame[0];
-	c.position[1] = frame[1];
-	c.position[2] = frame[2];
-	c.focus[0] = 0;
-	c.focus[1] = 0;
-	c.focus[2] = 0;
+	c.position[0] = camera_position[0];
+	c.position[1] = camera_position[1];
+	c.position[2] = camera_position[2];
+	c.focus[0] = focus_point[0];
+	c.focus[1] = focus_point[1];
+	c.focus[2] = focus_point[2];
 	c.up[0] = 0;
 	c.up[1] = 1;
 	c.up[2] = 0;
@@ -823,7 +823,7 @@ Matrix get_total_transform_matrix(Matrix camera_transform,
 	return composite;
 }
 
-int main() {
+int main(int argc, char *argv[]) {
 	double camera_positions[114][3];
 	get_camera_positions(camera_positions);
 	int pixels_deposited_per_node[63];
@@ -848,10 +848,31 @@ int main() {
 			screen.depth_buffer = depth_buffer;
 			screen.width = 1000;
 			screen.height = 1000;
+
+			Camera camera;
 			/*double mock_camera[3] = {0,0,40};
 			Camera camera = GetCamera(mock_camera, 1000);*/
-			Camera camera = GetCamera(camera_positions[cam_index], 1000);
-
+			if(0) {
+				double focus[3] = {0,0,0};
+				camera = GetCamera(camera_positions[cam_index], focus);
+			} else {
+				/*double focus[3] = {0,0,0};
+				camera = GetCamera(camera_positions[cam_index], focus);*/
+				int focus_index = 0;
+				double focus[3];
+				if(cam_index < 16)
+					focus_index = (cam_index + 6) % 16;
+				else {
+					int quotient = (cam_index - 16) / 14;
+					int pseudo_index = (cam_index - 16) % 14;
+					int pseudo_focus_index = (pseudo_index + 5) % 14;
+					focus_index = ((quotient*14) + 16) + pseudo_focus_index;
+				}
+				focus[0] = camera_positions[focus_index][0];
+				focus[1] = camera_positions[focus_index][1];
+				focus[2] = camera_positions[focus_index][2];
+				camera = GetCamera(camera_positions[cam_index], focus);
+			}
 			Matrix camera_transform = camera.CameraTransform();
 			//cout<<"\nCamera Transform Matrix :\n";camera_transform.Print(std::cout);
 			Matrix view_transform = camera.ViewTransform();
