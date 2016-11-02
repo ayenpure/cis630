@@ -1,0 +1,3 @@
+/home/abhishek/Projects/cis_541/Project2/A/bin/CMakeFiles/edit_cache.dir
+/home/abhishek/Projects/cis_541/Project2/A/bin/CMakeFiles/rebuild_cache.dir
+/home/abhishek/Projects/cis_541/Project2/A/bin/CMakeFiles/project2A.dir

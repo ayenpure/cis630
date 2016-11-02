@@ -827,14 +827,14 @@ int main(int argc, char *argv[]) {
 	double camera_positions[114][3];
 	get_camera_positions(camera_positions);
 	int pixels_deposited_per_node[63];
-	for(int file_index = 0; file_index < 63; file_index++) {
+	for(int file_index = 8; file_index < 9; file_index++) {
 		pixels_deposited = 0;
 		std::ostringstream oss;
 		oss << "hardyglobal." << file_index << ".vtk";
 		std::vector<Triangle> triangles = GetTriangles(oss.str().c_str());
 		oss.str("");
 		oss.clear();
-		for(int cam_index = 0; cam_index < 114; cam_index++) {
+		for(int cam_index = 65; cam_index < 66; cam_index++) {
 			vtkImageData *image = NewImage(1000, 1000);
 			unsigned char *buffer = (unsigned char *) image->GetScalarPointer(0, 0, 0);
 			int npixels = 1000 * 1000;
@@ -861,28 +861,38 @@ int main(int argc, char *argv[]) {
 				int focus_index = 0;
 				double focus[3];
 				if(cam_index < 16)
-					focus_index = (cam_index + 6) % 16;
-				else {
+					focus_index = (cam_index + 5) % 16;
+				else if (0) {
 					int quotient = (cam_index - 16) / 14;
 					int pseudo_index = (cam_index - 16) % 14;
-					int pseudo_focus_index = (pseudo_index + 5) % 14;
+					int pseudo_focus_index = (pseudo_index + 4) % 14;
 					focus_index = ((quotient*14) + 16) + pseudo_focus_index;
+				} else {
+					int pseudo_index = cam_index + 56;
+					if(pseudo_index >= 114) {
+						focus_index = (pseudo_index % 114) + 16;
+					} else {
+						focus_index = pseudo_index;
+					}
 				}
 				focus[0] = camera_positions[focus_index][0];
 				focus[1] = camera_positions[focus_index][1];
 				focus[2] = camera_positions[focus_index][2];
 				camera = GetCamera(camera_positions[cam_index], focus);
+				cout << file_index << ", " << cam_index << " : " << "{" << camera_positions[cam_index][0] << ", " << camera_positions[cam_index][1] << ", " << camera_positions[cam_index][2] << "} ";
+				cout << "{" << camera_positions[focus_index][0] << ", " << camera_positions[focus_index][1] << ", " << camera_positions[focus_index][2] << "}" << endl;
 			}
 			Matrix camera_transform = camera.CameraTransform();
-			//cout<<"\nCamera Transform Matrix :\n";camera_transform.Print(std::cout);
+			cout<<"\nCamera Transform Matrix :\n";camera_transform.Print(std::cout);
 			Matrix view_transform = camera.ViewTransform();
-			//cout<<"\nView Transform Matrix :\n";view_transform.Print(std::cout);
+			cout<<"\nView Transform Matrix :\n";view_transform.Print(std::cout);
 			Matrix device_transform = camera.DeviceTransform(screen);
-			//cout<<"\nDevice Transform Matrix :\n";device_transform.Print(std::cout);
+			cout<<"\nDevice Transform Matrix :\n";device_transform.Print(std::cout);
 			Matrix composite = get_total_transform_matrix(camera_transform,
 					view_transform, device_transform);
-			//cout<<"\nComposite Matrix :\n";composite.Print(std::cout);
+			cout<<"\nComposite Matrix :\n";composite.Print(std::cout);
 			for (int vecIndex = 0; vecIndex < triangles.size(); vecIndex++) {
+				cout << "Triangle #" << vecIndex << endl;
 				Triangle t = triangles[vecIndex];
 				//print_triangle(t);
 				transformTriangle(&t, composite, camera);
@@ -897,6 +907,7 @@ int main(int argc, char *argv[]) {
 				}
 			}
 			pixels_deposited_per_node[file_index] = pixels_deposited;
+			cout << "****" << pixels_deposited << endl;
 			oss << "camera_" << file_index << "_" << cam_index;
 			WriteImage(image, oss.str().c_str());
 			oss.str("");
