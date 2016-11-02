@@ -222,14 +222,14 @@ class vtk441MapperPart1 : public vtk441Mapper
       unsigned char *color_map = GetColorMap();
       for(int index = 0; index < triangles.size(); index++) {
         int texture_index;
-        texture_index = (int)((triangles[index].fieldValue[0]*255)*3);
-        glColor3ub(color_map[texture_index],color_map[texture_index + 1],color_map[texture_index + 2]);
+        texture_index = (triangles[index].fieldValue[0]*255)*3;
+        glColor3ub(color_map[texture_index],color_map[texture_index+1],color_map[texture_index+2]);
         glVertex3f(triangles[index].X[0], triangles[index].Y[0], triangles[index].Z[0]);
-        texture_index = (int)((triangles[index].fieldValue[1]*255)*3);
-        glColor3ub(color_map[texture_index],color_map[texture_index + 1],color_map[texture_index + 2]);
+        texture_index = (triangles[index].fieldValue[1]*255)*3;
+        glColor3ub(color_map[texture_index],color_map[texture_index+1],color_map[texture_index+2]);
         glVertex3f(triangles[index].X[1], triangles[index].Y[1], triangles[index].Z[1]);
-        texture_index = (int)((triangles[index].fieldValue[2]*255)*3);
-        glColor3ub(color_map[texture_index],color_map[texture_index + 1],color_map[texture_index + 2]);
+        texture_index = (triangles[index].fieldValue[2]*255)*3;
+        glColor3ub(color_map[texture_index],color_map[texture_index+1],color_map[texture_index+2]);
         glVertex3f(triangles[index].X[2], triangles[index].Y[2], triangles[index].Z[2]);
       }
       glEnd();
