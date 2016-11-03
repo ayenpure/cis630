@@ -19,7 +19,7 @@ CMAKE_AR:FILEPATH=/usr/bin/ar
 
 //Choose the type of build, options are: None(CMAKE_CXX_FLAGS or
 // CMAKE_C_FLAGS used) Debug Release RelWithDebInfo MinSizeRel.
-CMAKE_BUILD_TYPE:STRING=Debug
+CMAKE_BUILD_TYPE:STRING=
 
 //Enable/Disable color output during build.
 CMAKE_COLOR_MAKEFILE:BOOL=ON
@@ -166,7 +166,7 @@ CMAKE_STRIP:FILEPATH=/usr/bin/strip
 CMAKE_VERBOSE_MAKEFILE:BOOL=FALSE
 
 //The directory containing a CMake configuration file for VTK.
-VTK_DIR:PATH=/home/abhishek/VTK-6.3.0_b
+VTK_DIR:PATH=/usr/local/lib/cmake/vtk-6.3
 
 //Value Computed by CMake
 project1F_BINARY_DIR:STATIC=/home/abhishek/Projects/cis_541/Project1/F_CDUX/bin
@@ -181,8 +181,6 @@ project1F_SOURCE_DIR:STATIC=/home/abhishek/Projects/cis_541/Project1/F_CDUX/src
 
 //ADVANCED property for variable: CMAKE_AR
 CMAKE_AR-ADVANCED:INTERNAL=1
-//MODIFIED property for variable: CMAKE_BUILD_TYPE
-CMAKE_BUILD_TYPE-MODIFIED:INTERNAL=ON
 //This is the directory where this CMakeCache.txt was created
 CMAKE_CACHEFILE_DIR:INTERNAL=/home/abhishek/Projects/cis_541/Project1/F_CDUX/bin
 //Major version of cmake used to create the current loaded cache
