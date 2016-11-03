@@ -221,7 +221,7 @@ class vtk441MapperPart1 : public vtk441Mapper
       glBegin(GL_TRIANGLES);
       unsigned char *color_map = GetColorMap();
       for(int index = 0; index < triangles.size(); index++) {
-        int texture_index;
+        /*int texture_index;
         texture_index = (triangles[index].fieldValue[0]*255)*3;
         glColor3ub(color_map[texture_index],color_map[texture_index+1],color_map[texture_index+2]);
         glVertex3f(triangles[index].X[0], triangles[index].Y[0], triangles[index].Z[0]);
@@ -230,7 +230,17 @@ class vtk441MapperPart1 : public vtk441Mapper
         glVertex3f(triangles[index].X[1], triangles[index].Y[1], triangles[index].Z[1]);
         texture_index = (triangles[index].fieldValue[2]*255)*3;
         glColor3ub(color_map[texture_index],color_map[texture_index+1],color_map[texture_index+2]);
-        glVertex3f(triangles[index].X[2], triangles[index].Y[2], triangles[index].Z[2]);
+        glVertex3f(triangles[index].X[2], triangles[index].Y[2], triangles[index].Z[2]);*/
+        for(int vertex = 0; vertex < 3; vertex ++) {
+          double field_value = triangles[index].fieldValue[vertex];
+          int color_index = (field_value*255.*3.);
+          glColor3ub(color_map[color_index],
+            color_map[color_index+1],
+            color_map[color_index+2]);
+          glVertex3f(triangles[index].X[vertex],
+                triangles[index].Y[vertex],
+                triangles[index].Z[vertex]);
+        }
       }
       glEnd();
    }
@@ -317,7 +327,7 @@ int main()
   if (doWindow1)
      ren1->AddActor(win1Actor);
   ren1->SetBackground(0.0, 0.0, 0.0);
-  bool doWindow2 = true;
+  bool doWindow2 = false;
   if (doWindow2)
       ren2->AddActor(win2Actor);
   ren2->SetBackground(0.0, 0.0, 0.0);

@@ -87,7 +87,4 @@ void get_camera_positions(double (*camera_positions)[3]) {
       positions_count++;
     }
   }
-  for(int i = 0; i < 114; i++) {
-    cout << "Camera position {" << camera_positions[i][0] << ", " << camera_positions[i][1] << ", " << camera_positions[i][2] << " }" << endl;
-  }
 }

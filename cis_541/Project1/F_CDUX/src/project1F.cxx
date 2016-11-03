@@ -865,11 +865,11 @@ int main(int argc, char *argv[]) {
 				int focus_index = 0;
 				double focus[3];
 				if(cam_index < 16)
-					focus_index = (cam_index + 6) % 16;
+					focus_index = (cam_index + 7) % 16;
 				else if (1) {
 					int quotient = (cam_index - 16) / 14;
 					int pseudo_index = (cam_index - 16) % 14;
-					int pseudo_focus_index = (pseudo_index + 5) % 14;
+					int pseudo_focus_index = (pseudo_index + 6) % 14;
 					focus_index = ((quotient*14) + 16) + pseudo_focus_index;
 				} else {
 					int pseudo_index = cam_index + 56;
