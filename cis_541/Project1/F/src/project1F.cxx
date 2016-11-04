@@ -16,6 +16,7 @@
 #include <string.h>
 #include <cmath>
 #include <algorithm>
+#include <stdlib.h>
 
 using std::cerr;
 using std::endl;
@@ -62,10 +63,13 @@ double dot_product(double* vector_1, double* vector_2) {
 }
 
 void cross_product(double* vector_1, double* vector_2, double *cross_vec) {
- 	double product[3] = { (vector_1[1]*vector_2[2]) - (vector_1[2]*vector_2[1]),
+ 	/*double product[3] = { (vector_1[1]*vector_2[2]) - (vector_1[2]*vector_2[1]),
 												(vector_1[2]*vector_2[0]) - (vector_1[0]*vector_2[2]),
-												(vector_1[0]*vector_2[1]) - (vector_1[1]*vector_2[0])};
-  memcpy(cross_vec, product, 3 * sizeof(double));
+												(vector_1[0]*vector_2[1]) - (vector_1[1]*vector_2[0])};*/
+  //memcpy(cross_vec, product, 3 * sizeof(double));
+	cross_vec[0] = (vector_1[1]*vector_2[2]) - (vector_1[2]*vector_2[1]);
+	cross_vec[1] = (vector_1[2]*vector_2[0]) - (vector_1[0]*vector_2[2]);
+	cross_vec[2] = (vector_1[0]*vector_2[1]) - (vector_1[1]*vector_2[0]);
 }
 
 void print_vector(double *print_vector) {
@@ -117,13 +121,13 @@ public:
 						view_direction, current_normal);*/
 				buffer[buffer_index++] = min(
 						ceil441((shading_amount * color[0]) * 255),
-						(double) 255);
+						255.);
 				buffer[buffer_index++] = min(
 						ceil441((shading_amount * color[1]) * 255),
-						(double) 255);
+						255.);
 				buffer[buffer_index] = min(
 						ceil441((shading_amount * color[2]) * 255),
-						(double) 255);
+						255.);
 				depth_buffer[depth_buffer_index] = current_depth;
 			}
 		}
@@ -241,11 +245,11 @@ class Camera
     double          up[3];
 
     Matrix CameraTransform(void) {
+			double x_vector[3],y_vector[3];
     	double z_vector[3] = {position[0] - focus[0],
     												position[1] - focus[1],
     												position[2] - focus[2]};
     	normalize_vector(z_vector);
-    	double x_vector[3],y_vector[3];
   		cross_product(up, z_vector, x_vector);
   		normalize_vector(x_vector);
   		cross_product(z_vector, x_vector, y_vector);
@@ -256,47 +260,99 @@ class Camera
     		0 - position[2]
     	};
     	//normalize_vector(frame_vec);
-    	cout << "Camera Position (O) :";print_vector(position);
+    	/*cout << "Camera Position (O) :";print_vector(position);
     	cout << "V1 (U) :";print_vector(x_vector);
     	cout << "V2 (V) :";print_vector(y_vector);
     	cout << "V3 (W) :";print_vector(z_vector);
-    	cout << "T :";print_vector(frame_vec);
-      double cartesian_x[3] = {1,0,0};
+    	cout << "T :";print_vector(frame_vec);*/
+      /*double cartesian_x[3] = {1,0,0};
     	double cartesian_y[3] = {0,1,0};
-    	double cartesian_z[3] = {0,0,1};
-    	double camera_transform[4][4] = {
+    	double cartesian_z[3] = {0,0,1};*/
+    	/*double camera_transform[4][4] = {
     		dot_product(x_vector,cartesian_x), dot_product(y_vector, cartesian_x), dot_product(z_vector, cartesian_x), 0,
     		dot_product(x_vector,cartesian_y), dot_product(y_vector, cartesian_y), dot_product(z_vector, cartesian_y), 0,
     		dot_product(x_vector,cartesian_z), dot_product(y_vector, cartesian_z), dot_product(z_vector, cartesian_z), 0,
     		dot_product(x_vector,frame_vec), dot_product(y_vector, frame_vec), dot_product(z_vector, frame_vec), 1
-    	};
+				x_vector[0], y_vector[0], z_vector[0], 0,
+				x_vector[1], y_vector[1], z_vector[1], 0,
+				x_vector[2], y_vector[2], z_vector[2], 0,
+				dot_product(x_vector,frame_vec), dot_product(y_vector, frame_vec), dot_product(z_vector, frame_vec), 1
+    	};*/
     	Matrix m;
-    	memcpy(m.A, camera_transform, 16*sizeof(double));
+			m.A[0][0] = x_vector[0];
+			m.A[0][1] = y_vector[0];
+			m.A[0][2] = z_vector[0];
+			m.A[0][3] = 0;
+			m.A[1][0] = x_vector[1];
+			m.A[1][1] = y_vector[1];
+			m.A[1][2] = z_vector[1];
+			m.A[1][3] = 0;
+			m.A[2][0] = x_vector[2];
+			m.A[2][1] = y_vector[2];
+			m.A[2][2] = z_vector[2];
+			m.A[2][3] = 0;
+			m.A[3][0] = dot_product(x_vector,frame_vec);
+			m.A[3][1] = dot_product(y_vector,frame_vec);
+			m.A[3][2] = dot_product(z_vector,frame_vec);
+			m.A[3][3] = 1;
+    	//memcpy(m.A, camera_transform, 16*sizeof(double));
     	return m;
     }
 
     Matrix ViewTransform(void) {
-    	double view_transform[4][4] = {
+    	/*double view_transform[4][4] = {
     		cot(angle/2), 0, 0 , 0,
     		0, cot(angle/2), 0 , 0,
     		0, 0 , (far + near)/(far - near), -1,
     		0, 0 , (2*far*near)/(far - near), 0
-    	};
-    	Matrix m;
-    	memcpy(m.A, view_transform, 16*sizeof(double));
-    	return m;
+    	};*/
+			Matrix m;
+			m.A[0][0] = cot(angle/2);
+			m.A[0][1] = 0;
+			m.A[0][2] = 0;
+			m.A[0][3] = 0;
+			m.A[1][0] = 0;
+			m.A[1][1] = cot(angle/2);
+			m.A[1][2] = 0;
+			m.A[1][3] = 0;
+			m.A[2][0] = 0;
+			m.A[2][1] = 0;
+			m.A[2][2] = (far + near)/(far - near);
+			m.A[2][3] = -1;
+			m.A[3][0] = 0;
+			m.A[3][1] = 0;
+			m.A[3][2] = (2*far*near)/(far - near);
+			m.A[3][3] = 0;
+			//memcpy(m.A, camera_transform, 16*sizeof(double));
+			return m;
     }
 
     Matrix DeviceTransform(Screen screen) {
-      double device_transform[4][4] = {
+      /*double device_transform[4][4] = {
         screen.width/2, 0, 0, 0,
         0, screen.height/2, 0, 0,
         0, 0, 1, 0,
         screen.width/2, screen.height/2, 0, 1
-      };
-      Matrix m;
-      memcpy(m.A, device_transform, 16*sizeof(double));
-      return m;
+      };*/
+			Matrix m;
+			m.A[0][0] = screen.width/2;
+			m.A[0][1] = 0;
+			m.A[0][2] = 0;
+			m.A[0][3] = 0;
+			m.A[1][0] = 0;
+			m.A[1][1] = screen.width/2;
+			m.A[1][2] = 0;
+			m.A[1][3] = 0;
+			m.A[2][0] = 0;
+			m.A[2][1] = 0;
+			m.A[2][2] = 1;
+			m.A[2][3] = 0;
+			m.A[3][0] = screen.width/2;
+			m.A[3][1] = screen.width/2;
+			m.A[3][2] = 0;
+			m.A[3][3] = 1;
+			//memcpy(m.A, camera_transform, 16*sizeof(double));
+			return m;
     };
 
 };
@@ -333,8 +389,8 @@ GetCamera(int frame, int nframes)
     c.near = 5;
     c.far = 200;
     c.angle = M_PI/6;
-    c.position[0] = 0;//40*sin(2*M_PI*t);
-    c.position[1] = 0;//40*cos(2*M_PI*t);
+    c.position[0] = 40*sin(2*M_PI*t);
+    c.position[1] = 40*cos(2*M_PI*t);
     c.position[2] = 40;
     c.focus[0] = 0;
     c.focus[1] = 0;
@@ -527,9 +583,9 @@ public:
 		split_colors[2] = interpolate(top_vertex[1], bottom_vertex[1],
 				colors[top_index][2], colors[bottom_index][2], split_vertex[1]);
 
-		double split_normal[3];
+		/*double split_normal[3];
 		interpolate_vector(top_vertex[1], bottom_vertex[1], normals[top_index],
-				normals[bottom_index], split_vertex[1], split_normal);
+				normals[bottom_index], split_vertex[1], split_normal);*/
 
 		t1->X[0] = top_vertex[0];
 		t1->Y[0] = top_vertex[1];
@@ -744,6 +800,10 @@ void scan_line(Triangle *t, Screen *s) {
 	double y_max = t->gethighestY();
 	double x_min = t->getlowestX();
 	double x_max = t->gethighestX();
+	if(y_max < 0 || y_min > s->height)
+		return;
+	if(x_max < 0 || x_min > s->width)
+		return;
 	// Determine the orientation for the triangle
 	t->determine_triangle_orientation();
 	// Color the pixels that are inside the triangle
@@ -774,7 +834,7 @@ void scan_line(Triangle *t, Screen *s) {
 					z_left_intercept, z_right_intercept, current_x);
       double current_shading = interpolate(left_intercept, right_intercept,
 					shading_left_intercept, shading_right_intercept, current_x);
-			double color_for_current_pixel[3] = { 0, 0, 0 };
+			double color_for_current_pixel[3];// = { 0, 0, 0 };
 			s->calculate_color_for_pixel(left_intercept, right_intercept,
 					current_x, color_at_left_intercept,
 					color_at_right_intercept, color_for_current_pixel);
@@ -803,7 +863,7 @@ void transformTriangle(Triangle *t,Matrix composite, Camera camera) {
     double transformed_vertex[4];
     composite.TransformPoint(current_quadro, transformed_vertex);
     if(transformed_vertex[3] != 1) {
-      for(int j=0;j < 4;j++)
+      for(int j=0;j < 3;j++)
         transformed_vertex[j] = transformed_vertex[j] / transformed_vertex[3];
     }
     t->X[i] = transformed_vertex[0];
@@ -843,16 +903,16 @@ int main() {
 	screen.width = 1000;
 	screen.height = 1000;
 
-  Camera camera = GetCamera(750,1000);
+  Camera camera = GetCamera(0,1000);
 
   Matrix camera_transform = camera.CameraTransform();
-	cout<<"\nCamera Transform Matrix :\n";camera_transform.Print(std::cout);
+	//cout<<"\nCamera Transform Matrix :\n";camera_transform.Print(std::cout);
 	Matrix view_transform = camera.ViewTransform();
-  cout<<"\nView Transform Matrix :\n";view_transform.Print(std::cout);
+  //cout<<"\nView Transform Matrix :\n";view_transform.Print(std::cout);
   Matrix device_transform = camera.DeviceTransform(screen);
-  cout<<"\nDevice Transform Matrix :\n";device_transform.Print(std::cout);
+  //cout<<"\nDevice Transform Matrix :\n";device_transform.Print(std::cout);
   Matrix composite = get_total_transform_matrix(camera_transform,view_transform,device_transform);
-	cout<<"\nComposite Matrix :\n";composite.Print(std::cout);
+	//cout<<"\nComposite Matrix :\n";composite.Print(std::cout);
 
 	for (int vecIndex = 0; vecIndex < triangles.size(); vecIndex++) {
 		Triangle t = triangles[vecIndex];
@@ -868,5 +928,6 @@ int main() {
 			scan_line(&t2, &screen);
 		}
 	}
-	WriteImage(image, "frame750");
+	WriteImage(image, "frame0");
+	free(buffer);
 }
