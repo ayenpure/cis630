@@ -1,0 +1,1 @@
+/usr/bin/c++      CMakeFiles/bezier.dir/bezier.cpp.o  -o bezier -rdynamic -lGLU -lGL -lglut -lXmu -lXi 

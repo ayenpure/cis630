@@ -892,16 +892,15 @@ int main() {
 	int npixels = 1000 * 1000;
 	for (int i = 0; i < npixels * 3; i++)
 		buffer[i] = 0;
-	double depth_buffer[npixels];
-	for (int i = 0; i < npixels; i++)
-		depth_buffer[i] = -1;
-	std::vector<Triangle> triangles = GetTriangles();
-
-  Screen screen;
+	Screen screen;
 	screen.buffer = buffer;
-	screen.depth_buffer = depth_buffer;
+	screen.depth_buffer = (double*)malloc(npixels*sizeof(double));
 	screen.width = 1000;
 	screen.height = 1000;
+	for (int i = 0; i < npixels; i++)
+		screen.depth_buffer[i] = -1.;
+	std::vector<Triangle> triangles = GetTriangles();
+
 
   Camera camera = GetCamera(0,1000);
 
@@ -929,5 +928,6 @@ int main() {
 		}
 	}
 	WriteImage(image, "frame0");
+	free(screen.depth_buffer);
 	free(buffer);
 }

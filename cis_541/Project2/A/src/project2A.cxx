@@ -115,7 +115,6 @@ GetTriangles(void)
         tris[idx].normals[2][2] = normals[3*ptIds[2]+2];
         tris[idx].fieldValue[2] = (color_ptr[ptIds[2]]-1)/5.;
     }
-
     return tris;
 }
 
@@ -159,6 +158,35 @@ GetColorMap(void)
     return ptr;
 }
 
+void drawBounds() {
+  glBegin(GL_LINES);
+  glColor3ub(255,255,255);
+  glVertex3f(-10,-10,10);
+  glVertex3f(10,-10,10);
+  glVertex3f(10,-10,10);
+  glVertex3f(10,10,10);
+  glVertex3f(10,10,10);
+  glVertex3f(-10,10,10);
+  glVertex3f(-10,10,10);
+  glVertex3f(-10,-10,10);
+  glVertex3f(-10,-10,-10);
+  glVertex3f(10,-10,-10);
+  glVertex3f(10,-10,-10);
+  glVertex3f(10,10,-10);
+  glVertex3f(10,10,-10);
+  glVertex3f(-10,10,-10);
+  glVertex3f(-10,10,-10);
+  glVertex3f(-10,-10,-10);
+  glVertex3f(-10,-10,10);
+  glVertex3f(-10,-10,-10);
+  glVertex3f(10,-10,10);
+  glVertex3f(10,-10,-10);
+  glVertex3f(10,10,10);
+  glVertex3f(10,10,-10);
+  glVertex3f(-10,10,10);
+  glVertex3f(-10,10,-10);
+  glEnd();
+}
 
 class vtk441Mapper : public vtkOpenGLPolyDataMapper
 {
@@ -183,6 +211,8 @@ class vtk441Mapper : public vtkOpenGLPolyDataMapper
      glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, diffuse);
      float specular[4] = { 1, 1, 1, 1.0 };
      glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, specular);
+     glDisable(GL_TEXTURE_1D);
+     glDisable(GL_COLOR_MATERIAL);
    }
 
 
@@ -211,16 +241,14 @@ class vtk441MapperPart1 : public vtk441Mapper
 {
  public:
    static vtk441MapperPart1 *New();
+   static std::vector<Triangle> triangles;// = GetTriangles();
 
    virtual void RenderPiece(vtkRenderer *ren, vtkActor *act)
    {
       RemoveVTKOpenGLStateSideEffects();
       SetupLight();
-      std::vector<Triangle> triangles = GetTriangles();
       glEnable(GL_COLOR_MATERIAL);
       glBegin(GL_TRIANGLES);
-      /*float ambient[3] = {1,1,1};
-      glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT, ambient);*/
       unsigned char *color_map = GetColorMap();
       for(int index = 0; index < triangles.size(); index++) {
         for(int vertex = 0; vertex < 3; vertex ++) {
@@ -229,27 +257,26 @@ class vtk441MapperPart1 : public vtk441Mapper
           glColor3ub(color_map[color_index],
             color_map[color_index+1],
             color_map[color_index+2]);
+          glNormal3f((GLfloat)triangles[index].normals[vertex][0],
+                (GLfloat)triangles[index].normals[vertex][1],
+                (GLfloat)triangles[index].normals[vertex][2]);
           glVertex3f(triangles[index].X[vertex],
                 triangles[index].Y[vertex],
                 triangles[index].Z[vertex]);
         }
       }
-      /*glColor3ub(255,0,0);
-      glVertex3f(0, 0, 0);
-      glColor3ub(255,0,0);
-      glVertex3f(0, 1, 0);
-      glColor3ub(255,0,0);
-      glVertex3f(1, 1, 0);*/
       glEnd();
+      drawBounds();
    }
 };
-
+std::vector<Triangle> vtk441MapperPart1::triangles = GetTriangles();
 vtkStandardNewMacro(vtk441MapperPart1);
 
 class vtk441MapperPart2 : public vtk441Mapper
 {
  public:
    static vtk441MapperPart2 *New();
+   static std::vector<Triangle> triangles;// = GetTriangles();
 
    GLuint displayList;
    bool   initialized;
@@ -260,16 +287,32 @@ class vtk441MapperPart2 : public vtk441Mapper
    }
    virtual void RenderPiece(vtkRenderer *ren, vtkActor *act)
    {
-       RemoveVTKOpenGLStateSideEffects();
-       SetupLight();
-       glBegin(GL_TRIANGLES);
-       glVertex3f(-10, -10, -10);
-       glVertex3f(10, -10, 10);
-       glVertex3f(10, 10, 10);
-       glEnd();
+     RemoveVTKOpenGLStateSideEffects();
+     SetupLight();
+     unsigned char *color_map = GetColorMap();
+     glTexImage1D(GL_TEXTURE_1D, 0, GL_RGB, 256, 0, GL_RGB, GL_UNSIGNED_BYTE, color_map);
+     glTexParameterf(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+     glTexParameterf(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+     glEnable(GL_TEXTURE_1D);
+     glBegin(GL_TRIANGLES);
+     for(int index = 0; index < triangles.size(); index++) {
+       for(int vertex = 0; vertex < 3; vertex ++) {
+         double field_value = triangles[index].fieldValue[vertex];
+         glTexCoord1f(field_value);
+         glNormal3f((GLfloat)triangles[index].normals[vertex][0],
+               (GLfloat)triangles[index].normals[vertex][1],
+               (GLfloat)triangles[index].normals[vertex][2]);
+         glVertex3f(triangles[index].X[vertex],
+               triangles[index].Y[vertex],
+               triangles[index].Z[vertex]);
+       }
+     }
+     glEnd();
+     glDisable(GL_TEXTURE_1D);
+     drawBounds();
    }
 };
-
+std::vector<Triangle> vtk441MapperPart2::triangles = GetTriangles();
 vtkStandardNewMacro(vtk441MapperPart2);
 
 
@@ -325,7 +368,7 @@ int main()
   if (doWindow1)
      ren1->AddActor(win1Actor);
   ren1->SetBackground(0.0, 0.0, 0.0);
-  bool doWindow2 = false;
+  bool doWindow2 = true;
   if (doWindow2)
       ren2->AddActor(win2Actor);
   ren2->SetBackground(0.0, 0.0, 0.0);

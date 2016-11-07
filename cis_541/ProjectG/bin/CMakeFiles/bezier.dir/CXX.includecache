@@ -1,0 +1,20 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/abhishek/Projects/cis_541/ProjectG/src/bezier.cpp
+vector
+-
+iostream
+-
+cstdlib
+-
+GL/glut.h
+-
+GLUT/glut.h
+-
+
