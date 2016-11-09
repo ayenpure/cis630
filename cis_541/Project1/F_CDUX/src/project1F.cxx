@@ -243,6 +243,8 @@ public:
 		//normalize_vector(frame_vec);
 		cout << "Camera Position (O) :";
 		print_vector(position);
+		cout << "Focus (F) :";
+		print_vector(focus);
 		cout << "V1 (U) :";
 		print_vector(x_vector);
 		cout << "V2 (V) :";
@@ -755,6 +757,17 @@ void scan_line(Triangle *t, Screen *s) {
 		return;
 	if(x_max < 0 || x_min > s->width)
 		return;
+
+	if(y_min < 0)
+		y_min = 0;
+	if(y_max > s->height)
+		y_max = s->height;
+
+	if(x_min < 0)
+		x_min = 0;
+	if(x_max > s->width)
+		x_max = s->width;
+
 	// Determine the orientation for the triangle
 	t->determine_triangle_orientation();
 	// Color the pixels that are inside the triangle
@@ -835,12 +848,41 @@ Matrix get_total_transform_matrix(Matrix camera_transform,
 	return composite;
 }
 
+double analyze_camera_configuration(Camera camera) {
+	// We consider the camera position as a reference point on line
+	double point_on_line[3] = {
+		camera.position[0],
+		camera.position[1],
+		camera.position[2]
+	};
+	double directing_line[3] = {
+		camera.focus[0] - camera.position[0],
+		camera.focus[1] - camera.position[1],
+		camera.focus[2] - camera.position[2]
+	};
+	double quest_point[3] = {0,0,0};
+	double quest_line[3] = {
+		point_on_line[0] - quest_point[0],
+		point_on_line[1] - quest_point[1],
+		point_on_line[2] - quest_point[2],
+	};
+	double distance_line[3] = {
+		quest_line[1]*directing_line[2] - quest_line[2]*directing_line[1],
+		0 - (quest_line[0]*directing_line[2] - quest_line[2]*directing_line[0]),
+		quest_line[0]*directing_line[1] - quest_line[1]*directing_line[0]
+	};
+	double two = 2;
+	double num = sqrt(pow(distance_line[0],two) + pow(distance_line[1],two) + pow(distance_line[2],two));
+	double dinom =  sqrt(pow(directing_line[0],two) + pow(directing_line[1],two) + pow(directing_line[2],two));
+	return num/dinom;
+}
+
 int main(int argc, char *argv[]) {
 	double camera_positions[114][3];
 	get_camera_positions(camera_positions);
-	int pixels_deposited_per_node[63];
+	int pixels_deposited_per_node[114];
 
-	for(int cam_index = 0; cam_index < 114; cam_index++) {
+	/*for(int cam_index = 0; cam_index < 114; cam_index++) {
 		std::vector<Triangle> triangles = GetTriangles();
 		vtkImageData *image = NewImage(1000, 1000);
 		unsigned char *buffer = (unsigned char *) image->GetScalarPointer(0, 0, 0);
@@ -857,14 +899,14 @@ int main(int argc, char *argv[]) {
 		screen.height = 1000;
 
 		Camera camera;
-		/*double mock_camera[3] = {0,0,40};
-		Camera camera = GetCamera(mock_camera, 1000);*/
+		//double mock_camera[3] = {0,0,40};
+		//Camera camera = GetCamera(mock_camera, 1000);
 		if(0) {
 			double focus[3] = {0,0,0};
 			camera = GetCamera(camera_positions[cam_index], focus);
 		} else {
-			/*double focus[3] = {0,0,0};
-			camera = GetCamera(camera_positions[cam_index], focus);*/
+			//double focus[3] = {0,0,0};
+			//camera = GetCamera(camera_positions[cam_index], focus);
 			int focus_index = 0;
 			double focus[3];
 			if(cam_index < 16)
@@ -899,7 +941,7 @@ int main(int argc, char *argv[]) {
 				view_transform, device_transform);
 		//cout<<"\nComposite Matrix :\n";composite.Print(std::cout);
 		for (int vecIndex = 0; vecIndex < triangles.size(); vecIndex++) {
-			//cout << "Triangle #" << vecIndex << endl;
+			cout << "Triangle #" << vecIndex << endl;
 			Triangle t = triangles[vecIndex];
 			//print_triangle(t);
 			transformTriangle(&t, composite, camera);
@@ -918,9 +960,14 @@ int main(int argc, char *argv[]) {
 		WriteImage(image, oss.str().c_str());
 		oss.str("");
 		oss.clear();
+		cout << "\n\n";
 	}
-	cout << "\n\n";
-	for(int i = 0; i < 63; i++) {
+	for(int i = 0; i < 114; i++) {
 		cout << pixels_deposited_per_node[i] << endl;
-	}
+	}*/
+	double mock_camera[3] = {40,0,0};
+	double focus[3] = {-28,-28,-28};
+	Camera camera = GetCamera(mock_camera, focus);
+	double distance = analyze_camera_configuration(camera);
+	cout << "\nDistance " << distance << endl;
 }
