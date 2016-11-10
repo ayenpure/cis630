@@ -4,8 +4,7 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_CXX
-  "/home/abhishek/Projects/cis_541/Project1/F_CDUX/src/CameraPositions.cxx" "/home/abhishek/Projects/cis_541/Project1/F_CDUX/bin/CMakeFiles/project1F.dir/CameraPositions.cxx.o"
-  "/home/abhishek/Projects/cis_541/Project1/F_CDUX/src/project1F.cxx" "/home/abhishek/Projects/cis_541/Project1/F_CDUX/bin/CMakeFiles/project1F.dir/project1F.cxx.o"
+  "/home/abhishek/Projects/cis_541/Project2/B/src/project2B.cxx" "/home/abhishek/Projects/cis_541/Project2/B/bin/CMakeFiles/project2B.dir/project2B.cxx.o"
   )
 set(CMAKE_CXX_COMPILER_ID "GNU")
 

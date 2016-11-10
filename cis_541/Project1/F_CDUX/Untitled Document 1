@@ -5,6 +5,8 @@ What questions do we ask for quality?
 - How is the placement of cameras? (must not be concentrated)
 
 Algorithm to determine the quality.
-- The distance between the O and the focal point should be acceptable.
-- Camera Placements must be distributed evenly over the sphere.
+#The distance between the O and the focal point should be acceptable.
+#Camera Placements must be distributed evenly over the sphere.
 
+- Given two points (camera position and focus) calculate the distance between the O and the focal line.
+- Determine the optimum distance based on the viewing angle.
