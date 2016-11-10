@@ -1,3 +1,0 @@
-/home/abhishek/Projects/cis_541/Project1/F_CDUX/bin/CMakeFiles/edit_cache.dir
-/home/abhishek/Projects/cis_541/Project1/F_CDUX/bin/CMakeFiles/rebuild_cache.dir
-/home/abhishek/Projects/cis_541/Project1/F_CDUX/bin/CMakeFiles/project1F.dir

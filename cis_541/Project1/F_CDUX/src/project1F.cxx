@@ -889,7 +889,7 @@ void analyze_camera_configuration(double (*camera_positions)[3]) {
 	for (int cam_index = 0; cam_index < 114; cam_index++) {
 		//double mock_camera[3] = {0,0,40};
 		//Camera camera = GetCamera(mock_camera, 1000);
-		if (0) {
+		if (1) {
 			double focus[3] = { 0, 0, 0 };
 			camera = GetCamera(camera_positions[cam_index], focus);
 		} else {

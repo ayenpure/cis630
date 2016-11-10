@@ -266,6 +266,7 @@ class vtk441MapperPart3 : public vtk441Mapper
    {
        glPushMatrix();
        White();
+       glTranslatef(0, 0, -.2);
        glScalef(eyeballSize, eyeballSize, eyeballSize);
        DrawSphere();
        Black();
@@ -273,6 +274,114 @@ class vtk441MapperPart3 : public vtk441Mapper
        glScalef(pupilSize, pupilSize, pupilSize);
        DrawSphere();
        glPopMatrix();
+   }
+
+   void DrawLeg() {
+       Brown();
+       glPushMatrix();
+       //glTranslatef(2,2,2);
+       glScalef(0.3,0.3,2);
+       DrawCylinder();
+       glPopMatrix();
+
+       Black();
+       glPushMatrix();
+       glTranslatef(0.3,0,2);
+       glScalef(0.6,0.4,0.2);
+       DrawSphere();
+       glPopMatrix();
+   }
+
+   void DrawLegs() {
+     glPushMatrix();
+     glTranslatef(-1.6,1,2.2);
+     DrawLeg();
+     glPopMatrix();
+
+     glPushMatrix();
+     glTranslatef(-1.6,-1,2.2);
+     DrawLeg();
+     glPopMatrix();
+
+     glPushMatrix();
+     glTranslatef(-4.4,1,2.2);
+     DrawLeg();
+     glPopMatrix();
+
+     glPushMatrix();
+     glTranslatef(-4.4,-1,2.2);
+     DrawLeg();
+     glPopMatrix();
+   }
+
+   void DrawEar() {
+     DarkBrown();
+     glPushMatrix();
+     glScalef(0.7,0.3,1);
+     DrawSphere();
+     glPopMatrix();
+   }
+
+   void DrawEars() {
+     glPushMatrix();
+     glTranslatef(0,1,0.7);
+     DrawEar();
+     glPopMatrix();
+
+     glPushMatrix();
+     glTranslatef(0,-1,0.7);
+     DrawEar();
+     glPopMatrix();
+   }
+
+   void DrawMouth() {
+     LightBrown();
+     glPushMatrix();
+     glTranslatef(.8,0,0.5);
+     glScalef(0.4,0.6,0.2);
+     DrawSphere();
+     glPopMatrix();
+     Pink();
+     glPushMatrix();
+     glTranslatef(.8,0,.6);
+     glScalef(0.4,0.3,0.1);
+     DrawSphere();
+     glPopMatrix();
+     Black();
+     glPushMatrix();
+     glTranslatef(1.2,0,.45);
+     glScalef(0.1,0.1,0.1);
+     DrawSphere();
+     glPopMatrix();
+     LightBrown();
+     glPushMatrix();
+     glTranslatef(.7,0,.7);
+     glScalef(0.4,0.4,0.2);
+     DrawSphere();
+     glPopMatrix();
+   }
+
+   void DrawNeckAndTail() {
+     Brown();
+     glPushMatrix();
+     glTranslatef(-.5,0,.5);
+     glRotatef(-45,0,1,0);
+     glScalef(.5,.5,2);
+     DrawCylinder();
+     glPopMatrix();
+     DarkBrown();
+     glPushMatrix();
+       glTranslatef(-6,0,.6);
+       glRotatef(45,0,1,0);
+       glPushMatrix();
+       glScalef(.2,.2,1);
+       DrawCylinder();
+       glPopMatrix();
+       glPushMatrix();
+       glScalef(.2,.2,.2);
+       DrawSphere();
+       glPopMatrix();
+     glPopMatrix();
    }
 
    virtual void RenderPiece(vtkRenderer *ren, vtkActor *act)
@@ -303,14 +412,21 @@ class vtk441MapperPart3 : public vtk441Mapper
        DrawEyeball();
        glPopMatrix();
        Brown();
+
        glPushMatrix();
-       DrawCylinder();
+       glScalef(3,1.5,1.5);
+       glTranslatef(-1,0,1.5);
+       glRotatef(90.,0,1,0);
+       DrawSphere();
        glPopMatrix();
 
-       /*glPushMatrix();
-       glTranslatef( 1, 1, 0);
-       DrawSphere();
-       glPopMatrix();*/
+       DrawLegs();
+
+       DrawEars();
+
+       DrawMouth();
+
+       DrawNeckAndTail();
 
        glPopMatrix(); // body
    }
