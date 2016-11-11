@@ -110,7 +110,7 @@ public:
 	double *depth_buffer;
 	int width, height;
 
-	void find_pixel_and_color(int x, int y, double *color, double current_depth,
+	bool find_pixel_and_color(int x, int y, double *color, double current_depth,
 			double shading_amount) {
 		/*
 		 * Ensure the pixels to be painted are in the frame.
@@ -134,8 +134,10 @@ public:
 						ceil441((shading_amount * color[2]) * 255),
 						(double) 255);
 				depth_buffer[depth_buffer_index] = current_depth;
+				return true;
 			}
 		}
+		return false;
 	}
 
 	/*
@@ -242,7 +244,7 @@ public:
 		double frame_vec[3] = { 0 - position[0], 0 - position[1], 0
 				- position[2] };
 		//normalize_vector(frame_vec);
-		cout << "Camera Position (O) :";
+		/*cout << "Camera Position (O) :";
 		print_vector(position);
 		cout << "Focus (F) :";
 		print_vector(focus);
@@ -253,7 +255,7 @@ public:
 		cout << "V3 (W) :";
 		print_vector(z_vector);
 		cout << "T :";
-		print_vector(frame_vec);
+		print_vector(frame_vec);*/
 		double cartesian_x[3] = { 1, 0, 0 };
 		double cartesian_y[3] = { 0, 1, 0 };
 		double cartesian_z[3] = { 0, 0, 1 };
@@ -747,18 +749,19 @@ std::vector<Triangle> GetTriangles() {
 	return tris;
 }
 
-void scan_line(Triangle *t, Screen *s) {
+double scan_line(Triangle *t, Screen *s) {
 	/*
 	 * Execute scan line algorithm for the current triangle.
 	 */
+	double pixels_colored = 0;
 	double y_min = t->getlowestY();
 	double y_max = t->gethighestY();
 	double x_min = t->getlowestX();
 	double x_max = t->gethighestX();
 	if (y_max < 0 || y_min > s->height)
-		return;
+		return 0.;
 	if (x_max < 0 || x_min > s->width)
-		return;
+		return 0.;
 
 	if (y_min < 0)
 		y_min = 0;
@@ -809,10 +812,12 @@ void scan_line(Triangle *t, Screen *s) {
 			/*double current_normal[3];
 			 interpolate_vector(left_intercept, right_intercept, normal_on_left,
 			 normal_on_right, current_x, current_normal);*/
-			s->find_pixel_and_color(current_x, current_y,
-					color_for_current_pixel, current_z, current_shading);
+			if (s->find_pixel_and_color(current_x, current_y,
+					color_for_current_pixel, current_z, current_shading))
+				pixels_colored++;
 		}
 	}
+	return pixels_colored;
 }
 
 void transformTriangle(Triangle *t, Matrix composite, Camera camera) {
@@ -851,14 +856,16 @@ Matrix get_total_transform_matrix(Matrix camera_transform,
 }
 
 double calculate_distance(double *vector_1, double* vector_2) {
-	double arg = sqrt( pow(vector_2[0], 2.) + pow(vector_2[1], 2.) + pow(vector_2[2], 2.));
+	double arg = sqrt(
+			pow(vector_2[0], 2.) + pow(vector_2[1], 2.) + pow(vector_2[2], 2.));
 	if (arg == 0.)
 		return sqrt(
-				pow(vector_1[0], 2.) + pow(vector_1[1], 2.) + pow(vector_1[2], 2.));
+				pow(vector_1[0], 2.) + pow(vector_1[1], 2.)
+						+ pow(vector_1[2], 2.));
 	else
-	return sqrt(
-			pow(vector_1[0], 2.) + pow(vector_1[1], 2.) + pow(vector_1[2], 2.))
-			/ arg;
+		return sqrt(
+				pow(vector_1[0], 2.) + pow(vector_1[1], 2.)
+						+ pow(vector_1[2], 2.)) / arg;
 }
 
 double get_distance(double *camera_position, double *focus,
@@ -876,17 +883,81 @@ double get_distance(double *camera_position, double *focus,
 	return calculate_distance(distance_line, focal_line);
 }
 
-void analyze_camera_configuration(double (*camera_positions)[3]) {
-	// Assuming a spherical camera configuration, and fixed view angle
-	Camera camera;
-	double quest_point[3] = { 0, 0, 0 };
-	camera = GetCamera(camera_positions[0], quest_point);
-	double sphere_radius = calculate_distance(camera.position, quest_point);
-	cout << "\nSphere radius  : " << sphere_radius;
-	double acceptable_offset = sphere_radius * sin(camera.angle);
-	cout << "\nAcceptable offset : " << acceptable_offset;
-	double for_avg = 0.;
+/*void analyze_camera_configuration(double (*camera_positions)[3]) {
+ // Assuming a spherical camera configuration, and fixed view angle
+ Camera camera;
+ double quest_point[3] = { 0, 0, 0 };
+ camera = GetCamera(camera_positions[0], quest_point);
+ double sphere_radius = calculate_distance(camera.position, quest_point);
+ cout << "\nSphere radius  : " << sphere_radius;
+ double acceptable_offset = sphere_radius * sin(camera.angle);
+ cout << "\nAcceptable offset : " << acceptable_offset;
+ double for_avg = 0.;
+ for (int cam_index = 0; cam_index < 114; cam_index++) {
+ //double mock_camera[3] = {0,0,40};
+ //Camera camera = GetCamera(mock_camera, 1000);
+ if (1) {
+ double focus[3] = { 0, 0, 0 };
+ camera = GetCamera(camera_positions[cam_index], focus);
+ } else {
+ //double focus[3] = {0,0,0};
+ //camera = GetCamera(camera_positions[cam_index], focus);
+ int focus_index = 0;
+ double focus[3];
+ if (cam_index < 16)
+ focus_index = (cam_index + 5) % 16;
+ else if (1) {
+ int quotient = (cam_index - 16) / 14;
+ int pseudo_index = (cam_index - 16) % 14;
+ int pseudo_focus_index = (pseudo_index + 4) % 14;
+ focus_index = ((quotient * 14) + 16) + pseudo_focus_index;
+ } else {
+ int pseudo_index = cam_index + 56;
+ if (pseudo_index >= 114) {
+ focus_index = (pseudo_index % 114) + 16;
+ } else {
+ focus_index = pseudo_index;
+ }
+ }
+ focus[0] = camera_positions[focus_index][0];
+ focus[1] = camera_positions[focus_index][1];
+ focus[2] = camera_positions[focus_index][2];
+ camera = GetCamera(camera_positions[cam_index], focus);
+ }
+ double distance = get_distance(camera.position, camera.focus,
+ quest_point);
+ for_avg = for_avg + distance;
+ cout << "\nDistance for " << cam_index << " : " << distance << endl;
+ }
+ cout << "\nAverage offset " << (for_avg / 114.0) << endl;
+ }*/
+
+int main(int argc, char *argv[]) {
+	double camera_positions[114][3];
+	get_camera_positions(camera_positions);
+	//int pixels_deposited_per_node[114];
+	std::vector<Triangle> triangles = GetTriangles();
+	int no_of_triangles = triangles.size();
+	double triangle_pixels[no_of_triangles];
+	for (int i = 0; i < no_of_triangles; i++)
+		triangle_pixels[i] = 0;
 	for (int cam_index = 0; cam_index < 114; cam_index++) {
+		vtkImageData *image = NewImage(1000, 1000);
+		unsigned char *buffer = (unsigned char *) image->GetScalarPointer(0, 0,
+				0);
+		int npixels = 1000 * 1000;
+		for (int i = 0; i < npixels * 3; i++)
+			buffer[i] = 0;
+		double *depth_buffer = (double*)malloc(npixels*sizeof(double));
+		for (int i = 0; i < npixels; i++)
+			depth_buffer[i] = -1;
+		Screen screen;
+		screen.buffer = buffer;
+		screen.depth_buffer = depth_buffer;
+		screen.width = 1000;
+		screen.height = 1000;
+
+		Camera camera;
 		//double mock_camera[3] = {0,0,40};
 		//Camera camera = GetCamera(mock_camera, 1000);
 		if (1) {
@@ -898,11 +969,11 @@ void analyze_camera_configuration(double (*camera_positions)[3]) {
 			int focus_index = 0;
 			double focus[3];
 			if (cam_index < 16)
-				focus_index = (cam_index + 5) % 16;
+				focus_index = (cam_index + 6) % 16;
 			else if (1) {
 				int quotient = (cam_index - 16) / 14;
 				int pseudo_index = (cam_index - 16) % 14;
-				int pseudo_focus_index = (pseudo_index + 4) % 14;
+				int pseudo_focus_index = (pseudo_index + 5) % 14;
 				focus_index = ((quotient * 14) + 16) + pseudo_focus_index;
 			} else {
 				int pseudo_index = cam_index + 56;
@@ -916,105 +987,45 @@ void analyze_camera_configuration(double (*camera_positions)[3]) {
 			focus[1] = camera_positions[focus_index][1];
 			focus[2] = camera_positions[focus_index][2];
 			camera = GetCamera(camera_positions[cam_index], focus);
+			//cout << file_index << ", " << cam_index << " : " << "{" << camera_positions[cam_index][0] << ", " << camera_positions[cam_index][1] << ", " << camera_positions[cam_index][2] << "} ";
+			//cout << "{" << camera_positions[focus_index][0] << ", " << camera_positions[focus_index][1] << ", " << camera_positions[focus_index][2] << "}" << endl;
 		}
-		double distance = get_distance(camera.position, camera.focus,
-				quest_point);
-		for_avg = for_avg + distance;
-		cout << "\nDistance for " << cam_index << " : " << distance << endl;
+		Matrix camera_transform = camera.CameraTransform();
+		//cout<<"\nCamera Transform Matrix :\n";camera_transform.Print(std::cout);
+		Matrix view_transform = camera.ViewTransform();
+		//cout<<"\nView Transform Matrix :\n";view_transform.Print(std::cout);
+		Matrix device_transform = camera.DeviceTransform(screen);
+		//cout<<"\nDevice Transform Matrix :\n";device_transform.Print(std::cout);
+		Matrix composite = get_total_transform_matrix(camera_transform,
+				view_transform, device_transform);
+		//cout<<"\nComposite Matrix :\n";composite.Print(std::cout);
+		for (int vecIndex = 0; vecIndex < triangles.size(); vecIndex++) {
+			//cout << "Triangle #" << vecIndex << endl;
+			Triangle t = triangles[vecIndex];
+			//print_triangle(t);
+			transformTriangle(&t, composite, camera);
+			//print_triangle(t);
+			if (t.is_flat_bottom_triangle()) {
+				triangle_pixels[vecIndex] = triangle_pixels[vecIndex] + scan_line(&t, &screen);
+			} else {
+				Triangle t1, t2;
+				t.split_triangle(&t1, &t2);
+				triangle_pixels[vecIndex] = triangle_pixels[vecIndex] + scan_line(&t1, &screen);
+				triangle_pixels[vecIndex] = triangle_pixels[vecIndex] + scan_line(&t2, &screen);
+			}
+		}
+		std::ostringstream oss;
+		oss << "camera_" << cam_index;
+		WriteImage(image, oss.str().c_str());
+		oss.str("");
+		oss.clear();
+		cout << "\n\n";
 	}
-	cout << "\nAverage offset " << (for_avg / 114.0) << endl;
-}
-
-int main(int argc, char *argv[]) {
-	double camera_positions[114][3];
-	get_camera_positions(camera_positions);
-	int pixels_deposited_per_node[114];
-
-	/*for(int cam_index = 0; cam_index < 114; cam_index++) {
-	 std::vector<Triangle> triangles = GetTriangles();
-	 vtkImageData *image = NewImage(1000, 1000);
-	 unsigned char *buffer = (unsigned char *) image->GetScalarPointer(0, 0, 0);
-	 int npixels = 1000 * 1000;
-	 for (int i = 0; i < npixels * 3; i++)
-	 buffer[i] = 0;
-	 double depth_buffer[npixels];
-	 for (int i = 0; i < npixels; i++)
-	 depth_buffer[i] = -1;
-	 Screen screen;
-	 screen.buffer = buffer;
-	 screen.depth_buffer = depth_buffer;
-	 screen.width = 1000;
-	 screen.height = 1000;
-
-	 Camera camera;
-	 //double mock_camera[3] = {0,0,40};
-	 //Camera camera = GetCamera(mock_camera, 1000);
-	 if(0) {
-	 double focus[3] = {0,0,0};
-	 camera = GetCamera(camera_positions[cam_index], focus);
-	 } else {
-	 //double focus[3] = {0,0,0};
-	 //camera = GetCamera(camera_positions[cam_index], focus);
-	 int focus_index = 0;
-	 double focus[3];
-	 if(cam_index < 16)
-	 focus_index = (cam_index + 6) % 16;
-	 else if (1) {
-	 int quotient = (cam_index - 16) / 14;
-	 int pseudo_index = (cam_index - 16) % 14;
-	 int pseudo_focus_index = (pseudo_index + 5) % 14;
-	 focus_index = ((quotient*14) + 16) + pseudo_focus_index;
-	 } else {
-	 int pseudo_index = cam_index + 56;
-	 if(pseudo_index >= 114) {
-	 focus_index = (pseudo_index % 114) + 16;
-	 } else {
-	 focus_index = pseudo_index;
-	 }
-	 }
-	 focus[0] = camera_positions[focus_index][0];
-	 focus[1] = camera_positions[focus_index][1];
-	 focus[2] = camera_positions[focus_index][2];
-	 camera = GetCamera(camera_positions[cam_index], focus);
-	 //cout << file_index << ", " << cam_index << " : " << "{" << camera_positions[cam_index][0] << ", " << camera_positions[cam_index][1] << ", " << camera_positions[cam_index][2] << "} ";
-	 //cout << "{" << camera_positions[focus_index][0] << ", " << camera_positions[focus_index][1] << ", " << camera_positions[focus_index][2] << "}" << endl;
-	 }
-	 Matrix camera_transform = camera.CameraTransform();
-	 //cout<<"\nCamera Transform Matrix :\n";camera_transform.Print(std::cout);
-	 Matrix view_transform = camera.ViewTransform();
-	 //cout<<"\nView Transform Matrix :\n";view_transform.Print(std::cout);
-	 Matrix device_transform = camera.DeviceTransform(screen);
-	 //cout<<"\nDevice Transform Matrix :\n";device_transform.Print(std::cout);
-	 Matrix composite = get_total_transform_matrix(camera_transform,
-	 view_transform, device_transform);
-	 //cout<<"\nComposite Matrix :\n";composite.Print(std::cout);
-	 for (int vecIndex = 0; vecIndex < triangles.size(); vecIndex++) {
-	 cout << "Triangle #" << vecIndex << endl;
-	 Triangle t = triangles[vecIndex];
-	 //print_triangle(t);
-	 transformTriangle(&t, composite, camera);
-	 //print_triangle(t);
-	 if (t.is_flat_bottom_triangle()) {
-	 scan_line(&t, &screen);
-	 } else {
-	 Triangle t1, t2;
-	 t.split_triangle(&t1, &t2);
-	 scan_line(&t1, &screen);
-	 scan_line(&t2, &screen);
-	 }
-	 }
-	 std::ostringstream oss;
-	 oss << "camera_" << cam_index;
-	 WriteImage(image, oss.str().c_str());
-	 oss.str("");
-	 oss.clear();
-	 cout << "\n\n";
-	 }
-	 for(int i = 0; i < 114; i++) {
-	 cout << pixels_deposited_per_node[i] << endl;
-	 }*/
+	for (int i = 0; i < no_of_triangles; i++) {
+		cout << triangle_pixels[i] << endl;
+	}
 	//double mock_camera[3] = {40,0,0};
 	//double focus[3] = {-28,-28,-28};
 	//Camera camera = GetCamera(mock_camera, focus);
-	analyze_camera_configuration(camera_positions);
+	//analyze_camera_configuration(camera_positions);
 }
