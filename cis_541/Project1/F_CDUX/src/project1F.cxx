@@ -960,7 +960,7 @@ int main(int argc, char *argv[]) {
 		Camera camera;
 		//double mock_camera[3] = {0,0,40};
 		//Camera camera = GetCamera(mock_camera, 1000);
-		if (1) {
+		if (0) {
 			double focus[3] = { 0, 0, 0 };
 			camera = GetCamera(camera_positions[cam_index], focus);
 		} else {
