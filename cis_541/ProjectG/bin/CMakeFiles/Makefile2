@@ -60,39 +60,39 @@ CMAKE_SOURCE_DIR = /home/abhishek/Projects/cis_541/ProjectG/src
 CMAKE_BINARY_DIR = /home/abhishek/Projects/cis_541/ProjectG/bin
 
 #=============================================================================
-# Target rules for target CMakeFiles/bezier.dir
+# Target rules for target CMakeFiles/CameraPositions.dir
 
 # All Build rule for target.
-CMakeFiles/bezier.dir/all:
-	$(MAKE) -f CMakeFiles/bezier.dir/build.make CMakeFiles/bezier.dir/depend
-	$(MAKE) -f CMakeFiles/bezier.dir/build.make CMakeFiles/bezier.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/abhishek/Projects/cis_541/ProjectG/bin/CMakeFiles --progress-num=1,2 "Built target bezier"
-.PHONY : CMakeFiles/bezier.dir/all
+CMakeFiles/CameraPositions.dir/all:
+	$(MAKE) -f CMakeFiles/CameraPositions.dir/build.make CMakeFiles/CameraPositions.dir/depend
+	$(MAKE) -f CMakeFiles/CameraPositions.dir/build.make CMakeFiles/CameraPositions.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/abhishek/Projects/cis_541/ProjectG/bin/CMakeFiles --progress-num=1,2 "Built target CameraPositions"
+.PHONY : CMakeFiles/CameraPositions.dir/all
 
 # Include target in all.
-all: CMakeFiles/bezier.dir/all
+all: CMakeFiles/CameraPositions.dir/all
 
 .PHONY : all
 
 # Build rule for subdir invocation for target.
-CMakeFiles/bezier.dir/rule: cmake_check_build_system
+CMakeFiles/CameraPositions.dir/rule: cmake_check_build_system
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/abhishek/Projects/cis_541/ProjectG/bin/CMakeFiles 2
-	$(MAKE) -f CMakeFiles/Makefile2 CMakeFiles/bezier.dir/all
+	$(MAKE) -f CMakeFiles/Makefile2 CMakeFiles/CameraPositions.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/abhishek/Projects/cis_541/ProjectG/bin/CMakeFiles 0
-.PHONY : CMakeFiles/bezier.dir/rule
+.PHONY : CMakeFiles/CameraPositions.dir/rule
 
 # Convenience name for target.
-bezier: CMakeFiles/bezier.dir/rule
+CameraPositions: CMakeFiles/CameraPositions.dir/rule
 
-.PHONY : bezier
-
-# clean rule for target.
-CMakeFiles/bezier.dir/clean:
-	$(MAKE) -f CMakeFiles/bezier.dir/build.make CMakeFiles/bezier.dir/clean
-.PHONY : CMakeFiles/bezier.dir/clean
+.PHONY : CameraPositions
 
 # clean rule for target.
-clean: CMakeFiles/bezier.dir/clean
+CMakeFiles/CameraPositions.dir/clean:
+	$(MAKE) -f CMakeFiles/CameraPositions.dir/build.make CMakeFiles/CameraPositions.dir/clean
+.PHONY : CMakeFiles/CameraPositions.dir/clean
+
+# clean rule for target.
+clean: CMakeFiles/CameraPositions.dir/clean
 
 .PHONY : clean
 

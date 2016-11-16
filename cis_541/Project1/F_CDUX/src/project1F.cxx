@@ -120,7 +120,7 @@ public:
 			int buffer_index = (y * 3 * width) + (x * 3);
 			int depth_buffer_index = y * width + x;
 			if (buffer_index < width * height * 3
-					&& (current_depth > -1 && current_depth < 1)
+					/*&& (current_depth > -1 && current_depth < 1)*/
 					&& current_depth >= depth_buffer[depth_buffer_index]) {
 				/*double shading_amount = calculate_phong_shading(lp,
 				 view_direction, current_normal);*/
@@ -235,6 +235,9 @@ public:
 	Matrix CameraTransform(void) {
 		double z_vector[3] = { position[0] - focus[0], position[1] - focus[1],
 				position[2] - focus[2] };
+		if(position[0] == 0 && position[2] == 0 && position[1] != 0) {
+			up[0] = 0; up[1] = 0; up[2] = 1;
+		}
 		normalize_vector(z_vector);
 		double x_vector[3], y_vector[3];
 		cross_product(up, z_vector, x_vector);
@@ -935,7 +938,7 @@ double get_distance(double *camera_position, double *focus,
 int main(int argc, char *argv[]) {
 	double camera_positions[114][3];
 	get_camera_positions(camera_positions);
-	//int pixels_deposited_per_node[114];
+	int active_pixels[114];
 	std::vector<Triangle> triangles = GetTriangles();
 	int no_of_triangles = triangles.size();
 	double triangle_pixels[no_of_triangles];
@@ -963,17 +966,17 @@ int main(int argc, char *argv[]) {
 		if (0) {
 			double focus[3] = { 0, 0, 0 };
 			camera = GetCamera(camera_positions[cam_index], focus);
-		} else {
+		} else if(1){
 			//double focus[3] = {0,0,0};
 			//camera = GetCamera(camera_positions[cam_index], focus);
 			int focus_index = 0;
 			double focus[3];
 			if (cam_index < 16)
-				focus_index = (cam_index + 6) % 16;
+				focus_index = (cam_index + 7) % 16;
 			else if (1) {
 				int quotient = (cam_index - 16) / 14;
 				int pseudo_index = (cam_index - 16) % 14;
-				int pseudo_focus_index = (pseudo_index + 5) % 14;
+				int pseudo_focus_index = (pseudo_index + 6) % 14;
 				focus_index = ((quotient * 14) + 16) + pseudo_focus_index;
 			} else {
 				int pseudo_index = cam_index + 56;
@@ -989,6 +992,9 @@ int main(int argc, char *argv[]) {
 			camera = GetCamera(camera_positions[cam_index], focus);
 			//cout << file_index << ", " << cam_index << " : " << "{" << camera_positions[cam_index][0] << ", " << camera_positions[cam_index][1] << ", " << camera_positions[cam_index][2] << "} ";
 			//cout << "{" << camera_positions[focus_index][0] << ", " << camera_positions[focus_index][1] << ", " << camera_positions[focus_index][2] << "}" << endl;
+		} else {
+			double focus[3] = { 0, 0, 0 };
+			camera = GetCamera(focus,camera_positions[cam_index]);
 		}
 		Matrix camera_transform = camera.CameraTransform();
 		//cout<<"\nCamera Transform Matrix :\n";camera_transform.Print(std::cout);
@@ -1016,10 +1022,17 @@ int main(int argc, char *argv[]) {
 		}
 		std::ostringstream oss;
 		oss << "camera_" << cam_index;
+		active_pixels[cam_index] = 0;
+		for(int pxl =0; pxl < 3*npixels; pxl+=3) {
+			if(!(buffer[pxl] == 0 &&
+				buffer[pxl+1] == 0 &&
+				buffer[pxl+2] == 0 ))
+				active_pixels[cam_index]++;
+		}
 		WriteImage(image, oss.str().c_str());
 		oss.str("");
 		oss.clear();
-		cout << "\n\n";
+		//cout << active_pixels[cam_index] << endl;
 	}
 	for (int i = 0; i < no_of_triangles; i++) {
 		cout << triangle_pixels[i] << endl;

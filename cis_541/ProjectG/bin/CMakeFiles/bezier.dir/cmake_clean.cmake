@@ -1,5 +1,5 @@
 file(REMOVE_RECURSE
-  "CMakeFiles/bezier.dir/bezier.cpp.o"
+  "CMakeFiles/bezier.dir/bezier.cxx.o"
   "bezier.pdb"
   "bezier"
 )

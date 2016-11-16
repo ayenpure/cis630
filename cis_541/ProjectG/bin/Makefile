@@ -56,17 +56,6 @@ CMAKE_BINARY_DIR = /home/abhishek/Projects/cis_541/ProjectG/bin
 #=============================================================================
 # Targets provided globally by CMake.
 
-# Special rule for the target rebuild_cache
-rebuild_cache:
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running CMake to regenerate build system..."
-	/usr/bin/cmake -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
-.PHONY : rebuild_cache
-
-# Special rule for the target rebuild_cache
-rebuild_cache/fast: rebuild_cache
-
-.PHONY : rebuild_cache/fast
-
 # Special rule for the target edit_cache
 edit_cache:
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running CMake cache editor..."
@@ -77,6 +66,17 @@ edit_cache:
 edit_cache/fast: edit_cache
 
 .PHONY : edit_cache/fast
+
+# Special rule for the target rebuild_cache
+rebuild_cache:
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running CMake to regenerate build system..."
+	/usr/bin/cmake -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
+.PHONY : rebuild_cache
+
+# Special rule for the target rebuild_cache
+rebuild_cache/fast: rebuild_cache
+
+.PHONY : rebuild_cache/fast
 
 # The main all target
 all: cmake_check_build_system
@@ -111,44 +111,44 @@ depend:
 .PHONY : depend
 
 #=============================================================================
-# Target rules for targets named bezier
+# Target rules for targets named CameraPositions
 
 # Build rule for target.
-bezier: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 bezier
-.PHONY : bezier
+CameraPositions: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 CameraPositions
+.PHONY : CameraPositions
 
 # fast build rule for target.
-bezier/fast:
-	$(MAKE) -f CMakeFiles/bezier.dir/build.make CMakeFiles/bezier.dir/build
-.PHONY : bezier/fast
+CameraPositions/fast:
+	$(MAKE) -f CMakeFiles/CameraPositions.dir/build.make CMakeFiles/CameraPositions.dir/build
+.PHONY : CameraPositions/fast
 
-bezier.o: bezier.cpp.o
+CameraPositions.o: CameraPositions.cxx.o
 
-.PHONY : bezier.o
+.PHONY : CameraPositions.o
 
 # target to build an object file
-bezier.cpp.o:
-	$(MAKE) -f CMakeFiles/bezier.dir/build.make CMakeFiles/bezier.dir/bezier.cpp.o
-.PHONY : bezier.cpp.o
+CameraPositions.cxx.o:
+	$(MAKE) -f CMakeFiles/CameraPositions.dir/build.make CMakeFiles/CameraPositions.dir/CameraPositions.cxx.o
+.PHONY : CameraPositions.cxx.o
 
-bezier.i: bezier.cpp.i
+CameraPositions.i: CameraPositions.cxx.i
 
-.PHONY : bezier.i
+.PHONY : CameraPositions.i
 
 # target to preprocess a source file
-bezier.cpp.i:
-	$(MAKE) -f CMakeFiles/bezier.dir/build.make CMakeFiles/bezier.dir/bezier.cpp.i
-.PHONY : bezier.cpp.i
+CameraPositions.cxx.i:
+	$(MAKE) -f CMakeFiles/CameraPositions.dir/build.make CMakeFiles/CameraPositions.dir/CameraPositions.cxx.i
+.PHONY : CameraPositions.cxx.i
 
-bezier.s: bezier.cpp.s
+CameraPositions.s: CameraPositions.cxx.s
 
-.PHONY : bezier.s
+.PHONY : CameraPositions.s
 
 # target to generate assembly for a file
-bezier.cpp.s:
-	$(MAKE) -f CMakeFiles/bezier.dir/build.make CMakeFiles/bezier.dir/bezier.cpp.s
-.PHONY : bezier.cpp.s
+CameraPositions.cxx.s:
+	$(MAKE) -f CMakeFiles/CameraPositions.dir/build.make CMakeFiles/CameraPositions.dir/CameraPositions.cxx.s
+.PHONY : CameraPositions.cxx.s
 
 # Help Target
 help:
@@ -156,12 +156,12 @@ help:
 	@echo "... all (the default if no target is provided)"
 	@echo "... clean"
 	@echo "... depend"
-	@echo "... rebuild_cache"
 	@echo "... edit_cache"
-	@echo "... bezier"
-	@echo "... bezier.o"
-	@echo "... bezier.i"
-	@echo "... bezier.s"
+	@echo "... rebuild_cache"
+	@echo "... CameraPositions"
+	@echo "... CameraPositions.o"
+	@echo "... CameraPositions.i"
+	@echo "... CameraPositions.s"
 .PHONY : help
 
 

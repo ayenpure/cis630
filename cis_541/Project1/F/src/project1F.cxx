@@ -17,6 +17,7 @@
 #include <cmath>
 #include <algorithm>
 #include <stdlib.h>
+#include <sstream>
 
 using std::cerr;
 using std::endl;
@@ -887,47 +888,58 @@ Matrix get_total_transform_matrix(Matrix camera_transform, Matrix view_transform
 }
 
 int main() {
-	vtkImageData *image = NewImage(1000, 1000);
-	unsigned char *buffer = (unsigned char *) image->GetScalarPointer(0, 0, 0);
-	int npixels = 1000 * 1000;
-	for (int i = 0; i < npixels * 3; i++)
-		buffer[i] = 0;
-	Screen screen;
-	screen.buffer = buffer;
-	screen.depth_buffer = (double*)malloc(npixels*sizeof(double));
-	screen.width = 1000;
-	screen.height = 1000;
-	for (int i = 0; i < npixels; i++)
-		screen.depth_buffer[i] = -1.;
 	std::vector<Triangle> triangles = GetTriangles();
 
+	for(int index = 0; index < 1000; index++) {
+		vtkImageData *image = NewImage(1000, 1000);
+		unsigned char *buffer = (unsigned char *) image->GetScalarPointer(0, 0, 0);
+		int npixels = 1000 * 1000;
+		for (int i = 0; i < npixels * 3; i++)
+			buffer[i] = 0;
+		Screen screen;
+		screen.buffer = buffer;
+		screen.depth_buffer = (double*)malloc(npixels*sizeof(double));
+		screen.width = 1000;
+		screen.height = 1000;
+		for (int i = 0; i < npixels; i++)
+			screen.depth_buffer[i] = -1.;
 
-  Camera camera = GetCamera(0,1000);
+	  Camera camera = GetCamera(index,1000);
 
-  Matrix camera_transform = camera.CameraTransform();
-	//cout<<"\nCamera Transform Matrix :\n";camera_transform.Print(std::cout);
-	Matrix view_transform = camera.ViewTransform();
-  //cout<<"\nView Transform Matrix :\n";view_transform.Print(std::cout);
-  Matrix device_transform = camera.DeviceTransform(screen);
-  //cout<<"\nDevice Transform Matrix :\n";device_transform.Print(std::cout);
-  Matrix composite = get_total_transform_matrix(camera_transform,view_transform,device_transform);
-	//cout<<"\nComposite Matrix :\n";composite.Print(std::cout);
+	  Matrix camera_transform = camera.CameraTransform();
+		//cout<<"\nCamera Transform Matrix :\n";camera_transform.Print(std::cout);
+		Matrix view_transform = camera.ViewTransform();
+	  //cout<<"\nView Transform Matrix :\n";view_transform.Print(std::cout);
+	  Matrix device_transform = camera.DeviceTransform(screen);
+	  //cout<<"\nDevice Transform Matrix :\n";device_transform.Print(std::cout);
+	  Matrix composite = get_total_transform_matrix(camera_transform,view_transform,device_transform);
+		//cout<<"\nComposite Matrix :\n";composite.Print(std::cout);
 
-	for (int vecIndex = 0; vecIndex < triangles.size(); vecIndex++) {
-		Triangle t = triangles[vecIndex];
-    //print_triangle(t);
-    transformTriangle(&t, composite, camera);
-    //print_triangle(t);
-		if (t.is_flat_bottom_triangle()) {
-			scan_line(&t, &screen);
-		} else {
-			Triangle t1, t2;
-			t.split_triangle(&t1, &t2);
-			scan_line(&t1, &screen);
-			scan_line(&t2, &screen);
+		for (int vecIndex = 0; vecIndex < triangles.size(); vecIndex++) {
+			Triangle t = triangles[vecIndex];
+	    //print_triangle(t);
+	    transformTriangle(&t, composite, camera);
+	    //print_triangle(t);
+			if (t.is_flat_bottom_triangle()) {
+				scan_line(&t, &screen);
+			} else {
+				Triangle t1, t2;
+				t.split_triangle(&t1, &t2);
+				scan_line(&t1, &screen);
+				scan_line(&t2, &screen);
+			}
 		}
+		std::ostringstream oss;
+		if(index / 10 == 0)
+			oss << "frame00" << index;
+		else if (index / 100 == 0)
+			oss << "frame0" << index;
+		else
+			oss << "frame" << index;
+		WriteImage(image, oss.str().c_str());
+		oss.str("");
+		oss.clear();
+		free(screen.depth_buffer);
+		free(buffer);
 	}
-	WriteImage(image, "frame0");
-	free(screen.depth_buffer);
-	free(buffer);
 }

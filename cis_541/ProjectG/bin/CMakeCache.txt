@@ -114,7 +114,7 @@ CMAKE_OBJCOPY:FILEPATH=/usr/bin/objcopy
 CMAKE_OBJDUMP:FILEPATH=/usr/bin/objdump
 
 //Value Computed by CMake
-CMAKE_PROJECT_NAME:STATIC=bezier
+CMAKE_PROJECT_NAME:STATIC=CameraPositions
 
 //Path to a program.
 CMAKE_RANLIB:FILEPATH=/usr/bin/ranlib
@@ -165,6 +165,12 @@ CMAKE_STRIP:FILEPATH=/usr/bin/strip
 // Studio IDE projects all commands are done without /nologo.
 CMAKE_VERBOSE_MAKEFILE:BOOL=FALSE
 
+//Value Computed by CMake
+CameraPositions_BINARY_DIR:STATIC=/home/abhishek/Projects/cis_541/ProjectG/bin
+
+//Value Computed by CMake
+CameraPositions_SOURCE_DIR:STATIC=/home/abhishek/Projects/cis_541/ProjectG/src
+
 //Path to a file.
 GLUT_INCLUDE_DIR:PATH=/usr/include
 
@@ -188,6 +194,9 @@ OPENGL_glu_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libGLU.so
 
 //Path to a file.
 OPENGL_xmesa_INCLUDE_DIR:PATH=OPENGL_xmesa_INCLUDE_DIR-NOTFOUND
+
+//The directory containing a CMake configuration file for VTK.
+VTK_DIR:PATH=/home/abhishek/VTK-6.3.0_b
 
 //Value Computed by CMake
 bezier_BINARY_DIR:STATIC=/home/abhishek/Projects/cis_541/ProjectG/bin

@@ -277,7 +277,7 @@ class vtk441MapperPart3 : public vtk441Mapper
    }
 
    void DrawLeg() {
-       Brown();
+       DarkBrown();
        glPushMatrix();
        //glTranslatef(2,2,2);
        glScalef(0.3,0.3,2);
@@ -343,7 +343,7 @@ class vtk441MapperPart3 : public vtk441Mapper
      glPopMatrix();
      Pink();
      glPushMatrix();
-     glTranslatef(.8,0,.6);
+     glTranslatef(.8,0,.65);
      glScalef(0.4,0.3,0.1);
      DrawSphere();
      glPopMatrix();
@@ -371,7 +371,7 @@ class vtk441MapperPart3 : public vtk441Mapper
      glPopMatrix();
      DarkBrown();
      glPushMatrix();
-       glTranslatef(-6,0,.6);
+       glTranslatef(-6,0,.7);
        glRotatef(45,0,1,0);
        glPushMatrix();
        glScalef(.2,.2,1);
