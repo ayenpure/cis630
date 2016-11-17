@@ -979,12 +979,19 @@ int main(int argc, char *argv[]) {
 				int pseudo_focus_index = (pseudo_index + 6) % 14;
 				focus_index = ((quotient * 14) + 16) + pseudo_focus_index;
 			} else {
-				int pseudo_index = cam_index + 56;
+				/*int pseudo_index = cam_index + 56;
 				if (pseudo_index >= 114) {
 					focus_index = (pseudo_index % 114) + 16;
 				} else {
 					focus_index = pseudo_index;
+				}*/
+				int pseudo_index = cam_index -16 + 70;
+				if (pseudo_index >= 98) {
+					focus_index = (pseudo_index % 98) + 7;
+				} else {
+					focus_index = pseudo_index;
 				}
+				focus_index+=16;
 			}
 			focus[0] = camera_positions[focus_index][0];
 			focus[1] = camera_positions[focus_index][1];
