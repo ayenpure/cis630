@@ -171,12 +171,6 @@ CameraPositions_BINARY_DIR:STATIC=/home/abhishek/Projects/cis_541/ProjectG/bin
 //Value Computed by CMake
 CameraPositions_SOURCE_DIR:STATIC=/home/abhishek/Projects/cis_541/ProjectG/src
 
-//Value Computed by CMake
-OrientedArrow_BINARY_DIR:STATIC=/home/abhishek/Projects/cis_541/ProjectG/bin
-
-//Value Computed by CMake
-OrientedArrow_SOURCE_DIR:STATIC=/home/abhishek/Projects/cis_541/ProjectG/src
-
 //The directory containing a CMake configuration file for VTK.
 VTK_DIR:PATH=/home/abhishek/VTK-6.3.0_b
 

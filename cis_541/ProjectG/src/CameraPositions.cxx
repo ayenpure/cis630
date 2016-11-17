@@ -179,6 +179,8 @@ public:
 
 	virtual void RenderPiece(vtkRenderer *ren, vtkActor *act) {
 		RemoveVTKOpenGLStateSideEffects();
+		//glColorMaterial ( GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE );
+		glEnable ( GL_COLOR_MATERIAL );
 		SetupLight();
 		double camera_positions[114][3];
 		get_camera_positions(camera_positions);
@@ -213,9 +215,9 @@ public:
 				focus[2] = camera_positions[focus_index][2];
 			}
 			glBegin(GL_LINES);
-			glColor3ub(1,0,0);
+			glColor3f(1,1,1);
 			glVertex3f(camera_positions[cam_index][0],camera_positions[cam_index][1],camera_positions[cam_index][2]);
-			glColor3ub(1,1,1);
+			glColor3f(1,0,0);
 			glVertex3f(focus[0],focus[1],focus[2]);
 			glEnd();
 		}
