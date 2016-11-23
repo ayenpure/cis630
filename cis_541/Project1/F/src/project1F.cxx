@@ -890,7 +890,7 @@ Matrix get_total_transform_matrix(Matrix camera_transform, Matrix view_transform
 int main() {
 	std::vector<Triangle> triangles = GetTriangles();
 
-	for(int index = 0; index < 1000; index++) {
+	for(int index = 0; index < 1; index++) {
 		vtkImageData *image = NewImage(1000, 1000);
 		unsigned char *buffer = (unsigned char *) image->GetScalarPointer(0, 0, 0);
 		int npixels = 1000 * 1000;

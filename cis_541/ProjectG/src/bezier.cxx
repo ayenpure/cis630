@@ -110,12 +110,8 @@ public:
 	}
 };
 
-GLfloat ctrlpoints[4][4][3] = { { { -1.5, -1.5, 1.0 }, { -0.5, -1.5, 1.0 }, {
-		0.5, -1.5, 1.0 }, { 1.5, -1.5, 1.0 } }, { { -1.5, -0.5, 1.0 }, { -0.5,
-		-0.5, 1.0 }, { 0.5, -0.5, 1.0 }, { 1.5, -0.5, 1.0 } }, { { -1.5, 0.5,
-		1.0 }, { -0.5, 0.5, 1.0 }, { 0.5, 0.5, 1.0 }, { 1.5, 0.5, 1.0 } }, { {
-		-1.5, 1.5, 1.0 }, { -0.5, 1.5, 1.0 }, { 0.5, 1.5, 1.0 },
-		{ 1.5, 1.5, 1.0 } } };
+GLfloat ctrlpoints[8][3] = {
+        {1,1,0}, {2,6,0}, {3,1,0}, {4,6,0},{5,6,0}, {6,1,0}, {7,6,0}, {8,1,0}};
 
 class vtk441MapperPart1: public vtk441Mapper {
 public:
@@ -124,58 +120,26 @@ public:
 	virtual void RenderPiece(vtkRenderer *ren, vtkActor *act) {
 		RemoveVTKOpenGLStateSideEffects();
 		SetupLight();
-		/*glEnable(GL_COLOR_MATERIAL);
-		 glClearColor(0.0, 0.0, 0.0, 0.0);
-		 glEnable(GL_DEPTH_TEST);
-		 glMap2f(GL_MAP2_VERTEX_3, 0, 1, 3, 4,
-		 0, 1, 12, 4, &ctrlpoints[0][0][0]);
-		 glEnable(GL_MAP2_VERTEX_3);
-		 glEnable(GL_AUTO_NORMAL);
-		 glMapGrid2f(20, 0.0, 1.0, 20, 0.0, 1.0);*/
-		/*int i, j;
-
-		 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		 glColor3f(1.0, 1.0, 1.0);
-		 glPushMatrix ();
-		 glRotatef(85.0, 1.0, 1.0, 1.0);
-		 for (j = 0; j <= 8; j++) {
-		 glBegin(GL_LINE_STRIP);
-		 for (i = 0; i <= 30; i++)
-		 glEvalCoord2f((GLfloat)i/30.0, (GLfloat)j/8.0);
-		 glEnd();
-		 glBegin(GL_LINE_STRIP);
-		 for (i = 0; i <= 30; i++)
-		 glEvalCoord2f((GLfloat)j/8.0, (GLfloat)i/30.0);
-		 glEnd();
-		 }
-		 glPopMatrix ();
-		 glFlush();*/
-		/*glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		 glPushMatrix();
-		 //glRotatef(85.0, 1.0, 1.0, 1.0);
-		 glEvalMesh2(GL_FILL, 0, 20, 0, 20);
-		 glPopMatrix();
-		 glFlush();*/
-		/* Enable evaluator */
-		glEnable (GL_MAP2_VERTEX_3);
-		glColor3f(1.0, 1.0, 1.0);
-		glRotatef(-90.0, 1.0, 0.0, 0.0);
-		glScalef(0.25, 0.25, 0.25);
-		/* Draw wireframe */
-		for (int k = 0; k < 32; k++) {
-			glMap2f(GL_MAP2_VERTEX_3, 0, 1, 3, 4, 0, 1, 12, 4,
-					&data[k][0][0][0]);
-			for (int j = 0; j <= 4; j++) {
-				glBegin (GL_LINE_STRIP);
-				for (int i = 0; i <= 20; i++)
-					glEvalCoord2f((GLfloat) i / 20.0, (GLfloat) j / 4);
-				glEnd();
-				glBegin(GL_LINE_STRIP);
-				for (int i = 0; i <= 20; i++)
-					glEvalCoord2f((GLfloat) j / 4.0, (GLfloat) i / 20);
-				glEnd();
-			}
-		}
+		glClearColor(0.0, 0.0, 0.0, 0.0);
+   	glShadeModel(GL_FLAT);
+   	glMap1f(GL_MAP1_VERTEX_3, 0.0, 1.0, 3, 8, &ctrlpoints[0][0]);
+   	glEnable(GL_MAP1_VERTEX_3);
+		int i;
+   	glClear(GL_COLOR_BUFFER_BIT);
+		glEnable(GL_COLOR_MATERIAL);
+   	glColor3f(1.0, 1.0, 1.0);
+   	glBegin(GL_LINE_STRIP);
+    	for (i = 0; i <= 30; i++)
+       	glEvalCoord1f((GLfloat) i/30.0);
+   	glEnd();
+   	/* The following code displays the control points as dots. */
+   	glPointSize(5.0);
+   	glColor3f(1.0, 1.0, 0.0);
+   	glBegin(GL_POINTS);
+      for (i = 0; i < 8; i++)
+         glVertex3fv(&ctrlpoints[i][0]);
+   	glEnd();
+   	glFlush();
 	}
 };
 
@@ -227,7 +191,7 @@ int main() {
 		rens[i]->GetActiveCamera()->SetFocalPoint(0, 0, 0);
 		rens[i]->GetActiveCamera()->SetPosition(0, 0, 70);
 		rens[i]->GetActiveCamera()->SetViewUp(0, 1, 0);
-		rens[i]->GetActiveCamera()->SetClippingRange(20, 120);
+		rens[i]->GetActiveCamera()->SetClippingRange(-120, 120);
 		rens[i]->GetActiveCamera()->SetDistance(70);
 	}
 
