@@ -648,11 +648,9 @@ double calculate_phong_shading(LightingParameters lp, double *view_direction,
 }
 
 std::vector<Triangle> GetTriangles() {
-
-	int index = 0;
+	int index = 0, no_of_procs = 56;
 	std::vector<Triangle> tris(0);
-
-	for (int file_index = 0; file_index < 63; file_index++) {
+	for (int file_index = 0; file_index < no_of_procs; file_index++) {
 		vtkPolyDataReader *rdr = vtkPolyDataReader::New();
 		std::ostringstream oss;
 		oss << "hardyglobal." << file_index << ".vtk";
@@ -671,11 +669,10 @@ std::vector<Triangle> GetTriangles() {
 		tris.resize(tris.size() + numTris);
 		vtkPoints *pts = pd->GetPoints();
 		vtkCellArray *cells = pd->GetPolys();
-		vtkDoubleArray *var = (vtkDoubleArray *) pd->GetPointData()->GetArray(
-				"hardyglobal");
-		double *color_ptr = var->GetPointer(0);
-		//vtkFloatArray *var = (vtkFloatArray *) pd->GetPointData()->GetArray("hardyglobal");
-		//float *color_ptr = var->GetPointer(0);
+		//vtkDoubleArray *var = (vtkDoubleArray *) pd->GetPointData()->GetArray("hardyglobal");
+		//double *color_ptr = var->GetPointer(0);
+		vtkFloatArray *var = (vtkFloatArray *) pd->GetPointData()->GetArray("hardyglobal");
+		float *color_ptr = var->GetPointer(0);
 		vtkFloatArray *n = (vtkFloatArray *) pd->GetPointData()->GetNormals();
 		//float *normals = n->GetPointer(0);
 		vtkIdType npts;
@@ -717,34 +714,32 @@ std::vector<Triangle> GetTriangles() {
 			// 3.5->4 interpolate between yellow, orange
 			// 4->5 interpolate between orange, brick
 			// 5->6 interpolate between brick, salmon
-			double mins[7] = { 1, 2, 2.5, 3, 3.5, 4, 5 };
-			double maxs[7] = { 2, 2.5, 3, 3.5, 4, 5, 6 };
-			/*unsigned char RGB[8][3] = { { 71, 71, 219 },
-			 { 0, 0, 91 },
-			 { 0, 255, 255 },
-			 { 0, 128, 0 },
-			 { 255, 255, 0 },
-			 { 255, 96, 0 },
-			 { 107, 0, 0 },
-			 { 224, 76, 76 }
-			 };*/
+			double mins[4] = { 1, 2.25, 3.5, 4.75};
+			double maxs[4] = { 2.25, 3.5, 4.75, 6};
+			unsigned char RGB[5][3] = {
+				{0, 0, 255},
+				{0, 204, 255},
+				{0, 153, 0},
+				{255, 204, 0},
+				{255, 0, 0},
+			 };
 			for (int j = 0; j < 3; j++) {
 				float val = color_ptr[ptIds[j]];
-				/*int r;
-				 for (r = 0 ; r < 7 ; r++)
+				int r;
+				 for (r = 0 ; r < 4 ; r++)
 				 {
 				 if (mins[r] <= val && val < maxs[r])
 				 break;
 				 }
-				 if (r == 7)
+				 if (r == 4)
 				 {
 				 cerr << "Could not interpolate color for " << val << endl;
-				 exit(EXIT_FAILURE);
-				 }*/
-				//double proportion = (val-mins[r]) / (maxs[r]-mins[r]);
-				tris[idx].colors[j][0] = 0 / 255.0;
-				tris[idx].colors[j][1] = 128 / 255.0;
-				tris[idx].colors[j][2] = 0 / 255.0;
+				 exit (EXIT_FAILURE);
+				 }
+				double proportion = (val-mins[r]) / (maxs[r]-mins[r]);
+				tris[idx].colors[j][0] = (RGB[r][0]+proportion*(RGB[r+1][0]-RGB[r][0]))/255.0;
+				tris[idx].colors[j][1] = (RGB[r][1]+proportion*(RGB[r+1][1]-RGB[r][1]))/255.0;
+				tris[idx].colors[j][2] = (RGB[r][2]+proportion*(RGB[r+1][2]-RGB[r][2]))/255.0;
 			}
 			tris[idx].calculate_normals();
 		}
@@ -924,11 +919,11 @@ int main(int argc, char *argv[]) {
 			//double focus[3] = {0,0,0};
 			//camera = GetCamera(camera_positions[cam_index], focus);
 			if (cam_index < 16)
-				focus_index = (cam_index + 7) % 16;
-			else if (0) {
+				focus_index = (cam_index + 6) % 16;
+			else if (1) {
 				int quotient = (cam_index - 16) / 14;
 				int pseudo_index = (cam_index - 16) % 14;
-				int pseudo_focus_index = (pseudo_index + 6) % 14;
+				int pseudo_focus_index = (pseudo_index + 5) % 14;
 				focus_index = ((quotient * 14) + 16) + pseudo_focus_index;
 			} else {
 				int pseudo_index = cam_index -16 + 70;
@@ -982,8 +977,8 @@ int main(int argc, char *argv[]) {
 		oss.clear();
 		//cout << active_pixels[cam_index] << endl;
 	}
-	for (int i = 0; i < no_of_triangles; i++) {
-		cout << triangle_pixels[i] << endl;
+	for (int i = 0; i < 114; i++) {
+		cout << active_pixels[i] << endl;
 	}
 	//double mock_camera[3] = {40,0,0};
 	//double focus[3] = {-28,-28,-28};

@@ -133,7 +133,7 @@ public:
 				return true;
 			}
 		}
-		return false;
+		return true;
 	}
 
 	/*
@@ -654,11 +654,10 @@ std::vector<Triangle> GetTriangles(const char *filename) {
 	std::vector<Triangle> tris(numTris);
 	vtkPoints *pts = pd->GetPoints();
 	vtkCellArray *cells = pd->GetPolys();
-	vtkDoubleArray *var = (vtkDoubleArray *) pd->GetPointData()->GetArray(
-			"hardyglobal");
-	double *color_ptr = var->GetPointer(0);
-	//vtkFloatArray *var = (vtkFloatArray *) pd->GetPointData()->GetArray("hardyglobal");
-	//float *color_ptr = var->GetPointer(0);
+	//vtkDoubleArray *var = (vtkDoubleArray *) pd->GetPointData()->GetArray("hardyglobal");
+	//double *color_ptr = var->GetPointer(0);
+	vtkFloatArray *var = (vtkFloatArray *) pd->GetPointData()->GetArray("hardyglobal");
+	float *color_ptr = var->GetPointer(0);
 	vtkFloatArray *n = (vtkFloatArray *) pd->GetPointData()->GetNormals();
 	//float *normals = n->GetPointer(0);
 	vtkIdType npts;
@@ -700,34 +699,32 @@ std::vector<Triangle> GetTriangles(const char *filename) {
 		// 3.5->4 interpolate between yellow, orange
 		// 4->5 interpolate between orange, brick
 		// 5->6 interpolate between brick, salmon
-		double mins[7] = { 1, 2, 2.5, 3, 3.5, 4, 5 };
-		double maxs[7] = { 2, 2.5, 3, 3.5, 4, 5, 6 };
-		/*unsigned char RGB[8][3] = { { 71, 71, 219 },
-		 { 0, 0, 91 },
-		 { 0, 255, 255 },
-		 { 0, 128, 0 },
-		 { 255, 255, 0 },
-		 { 255, 96, 0 },
-		 { 107, 0, 0 },
-		 { 224, 76, 76 }
-		 };*/
+		double mins[4] = { 1, 2.25, 3.5, 4.75};
+		double maxs[4] = { 2.25, 3.5, 4.75, 6};
+		unsigned char RGB[5][3] = {
+			{0, 0, 255},
+			{0, 204, 255},
+			{0, 153, 0},
+			{255, 204, 0},
+			{255, 0, 0},
+		 };
 		for (int j = 0; j < 3; j++) {
 			float val = color_ptr[ptIds[j]];
-			/*int r;
-			 for (r = 0 ; r < 7 ; r++)
+			int r;
+			 for (r = 0 ; r < 4 ; r++)
 			 {
 			 if (mins[r] <= val && val < maxs[r])
 			 break;
 			 }
-			 if (r == 7)
+			 if (r == 4)
 			 {
 			 cerr << "Could not interpolate color for " << val << endl;
-			 exit(EXIT_FAILURE);
-			 }*/
-			//double proportion = (val-mins[r]) / (maxs[r]-mins[r]);
-			tris[idx].colors[j][0] = 0 / 255.0;
-			tris[idx].colors[j][1] = 128 / 255.0;
-			tris[idx].colors[j][2] = 0 / 255.0;
+			 exit (EXIT_FAILURE);
+			 }
+			double proportion = (val-mins[r]) / (maxs[r]-mins[r]);
+			tris[idx].colors[j][0] = (RGB[r][0]+proportion*(RGB[r+1][0]-RGB[r][0]))/255.0;
+			tris[idx].colors[j][1] = (RGB[r][1]+proportion*(RGB[r+1][1]-RGB[r][1]))/255.0;
+			tris[idx].colors[j][2] = (RGB[r][2]+proportion*(RGB[r+1][2]-RGB[r][2]))/255.0;
 		}
 		tris[idx].calculate_normals();
 	}
@@ -841,18 +838,19 @@ Matrix get_total_transform_matrix(Matrix camera_transform,
 }
 
 int main(int argc, char *argv[]) {
+	int no_of_procs = 56;
 	double camera_positions[114][3];
 	int pixels_deposited = 0;
 	get_camera_positions(camera_positions);
-	int pixels_deposited_per_node[63];
-	for(int file_index = 0; file_index < 63; file_index++) {
+	int pixels_deposited_per_node[no_of_procs];
+	for(int file_index = 0; file_index < no_of_procs; file_index++) {
 		pixels_deposited = 0;
+		std::ostringstream oss;
+		oss << "hardyglobal." << file_index << ".vtk";
+		std::vector<Triangle> triangles = GetTriangles(oss.str().c_str());
+		oss.str("");
+		oss.clear();
 		for(int cam_index = 0; cam_index < 114; cam_index++) {
-			std::ostringstream oss;
-			oss << "hardyglobal." << file_index << ".vtk";
-			std::vector<Triangle> triangles = GetTriangles(oss.str().c_str());
-			oss.str("");
-			oss.clear();
 			vtkImageData *image = NewImage(1000, 1000);
 			unsigned char *buffer = (unsigned char *) image->GetScalarPointer(0, 0, 0);
 			int npixels = 1000 * 1000;
@@ -879,11 +877,11 @@ int main(int argc, char *argv[]) {
 				int focus_index = 0;
 				double focus[3];
 				if(cam_index < 16)
-					focus_index = (cam_index + 7) % 16;
+					focus_index = (cam_index + 6) % 16;
 				else if (1) {
 					int quotient = (cam_index - 16) / 14;
 					int pseudo_index = (cam_index - 16) % 14;
-					int pseudo_focus_index = (pseudo_index + 6) % 14;
+					int pseudo_focus_index = (pseudo_index + 5) % 14;
 					focus_index = ((quotient*14) + 16) + pseudo_focus_index;
 				} else {
 					int pseudo_index = cam_index + 56;
@@ -934,7 +932,7 @@ int main(int argc, char *argv[]) {
 		}
 	}
 	cout << "\n\n";
-	for(int i = 0; i < 63; i++) {
+	for(int i = 0; i < no_of_procs; i++) {
 		cout << pixels_deposited_per_node[i] << endl;
 	}
 }
