@@ -13,9 +13,11 @@
 #include <vtkDoubleArray.h>
 #include <vtkCellArray.h>
 #include <vtkDataSetWriter.h>
+#include <cmath>
 
 using std::cerr;
 using std::endl;
+using std::abs;
 
 double ceil441(double f) {
 	return ceil(f - 0.00001);
@@ -158,7 +160,9 @@ public:
 			normals[i][0] = normal[0];
 			normals[i][1] = normal[1];
 			normals[i][2] = normal[2];
+			cout << normal[0] << ", " << normal[1] << ", " << normal[2] << endl;
 		}
+		cout << endl;
 	}
 };
 
@@ -239,8 +243,86 @@ std::vector<Triangle> GetTriangles(const char *filename) {
 	return tris;
 }
 
+bool is_point_inside_triangle(double *point_of_intrsection, Triangle triangle) {
+	/*
+	// compute the intersection point using equation 1
+		Vec3f P = orig + t * dir;
+
+		// Step 2: inside-outside test
+		Vec3f C; // vector perpendicular to triangle's plane
+
+		// edge 0
+		Vec3f edge0 = v1 - v0;
+		Vec3f vp0 = P - v0;
+		C = edge0.crossProduct(vp0);
+		if (N.dotProduct(C) < 0) return false; // P is on the right side
+
+		// edge 1
+		Vec3f edge1 = v2 - v1;
+		Vec3f vp1 = P - v1;
+		C = edge1.crossProduct(vp1);
+		if (N.dotProduct(C) < 0) return false; // P is on the right side
+
+		// edge 2
+		Vec3f edge2 = v0 - v2;
+		Vec3f vp2 = P - v2;
+		C = edge2.crossProduct(vp2);
+		if (N.dotProduct(C) < 0) return false; // P is on the right side;
+
+		return true; // this ray hits the triangle
+	*/
+	double temp[3] = {0,0,0};
+	for(int i = 0; i < 3; i++) {
+		int adj_1 = (i + 1) % 3;
+		double vector_1[3] = {
+			triangle.X[adj_1] -  triangle.X[i],
+			triangle.Y[adj_1] -  triangle.Y[i],
+			triangle.Z[adj_1] -  triangle.Z[i]
+		};
+		double vector_2[3] = {
+			point_of_intrsection[0] - triangle.X[i],
+			point_of_intrsection[1] - triangle.Y[i],
+			point_of_intrsection[2] - triangle.Z[i]
+		};
+		cross_product(vector_1, vector_2, temp);
+		if(dot_product(triangle.normals[0], temp) < 0)
+			return false;
+	}
+	return true;
+}
+
+void get_color_for_pixel(double *ray, std::vector<Triangle> triangles, double * color) {
+	double camera_position[3] = {0,0,-20};
+	for(int i = 0; i < triangles.size(); i++) {
+		if(dot_product(ray, triangles[i].normals[0]) == 0)
+			cout << "Trianlge not visible" << endl;
+		else {
+			double triangle_vertex[3] = {
+				triangles[i].X[0],
+				triangles[i].Y[0],
+				triangles[i].Z[0]
+			};
+			double distance_form_origin = dot_product(triangles[i].normals[0],triangle_vertex);
+			//float t = (dot(N, orig) + D) / dot(N, dir);
+			double distance_form_camera = abs(dot_product(triangles[i].normals[0], camera_position) + distance_form_origin) / dot_product(triangles[i].normals[0], ray);
+			//Vec3f Phit = orig + t * dir
+			double point_of_intrsection[3] = {
+				camera_position[0] + distance_form_camera*ray[0],
+				camera_position[1] + distance_form_camera*ray[1],
+				camera_position[2] + distance_form_camera*ray[2]
+			};
+			if(is_point_inside_triangle(point_of_intrsection, triangles[i])) {
+				cout << "Point is inside the triangle" << endl;
+				color[0] = 0;
+				color[1] = 69;
+				color[2] = 96;
+			}
+		}
+	}
+};
+
 int main() {
-	int height, width = 1000;
+	int height = 500,width = 500;
 	std::vector<Triangle> triangles = GetTriangles("hardyglobal.0.vtk");
 	cout << "Number of triangles " << triangles.size() << endl;
 	vtkImageData *image = NewImage(height, width);
@@ -254,20 +336,25 @@ int main() {
 	screen.height = width;
 
 	double camera_position[3] = {0,0,-20};
-
+	//cout << "Height :" << height << " Width :" << width;
 	for(int x = 0; x < width; x++) {
 		for(int y = 0; y < height; y++) {
 			int translated_x = (20*x)/width - 10;
 			int translated_y = (20*y)/height - 10;
 			double look_at[3] = {translated_x, translated_y, -10};
-			double ray = {
+			double ray[3] = {
 				look_at[0] - camera_position[0],
 				look_at[1] - camera_position[1],
 				look_at[2] - camera_position[2]
-			}
-			does_intersect(rays, triangles);
+			};
+			normalize_vector(ray);
+			double color[3] = {0,0,0};
+			get_color_for_pixel(ray, triangles, color);
+			screen.find_pixel_and_color(x,y, color);
+			if(color[0] != 0 || color[1] != 0 || color[2] != 0)
+				cout << "coloring pixle " << x << ", " << y << endl;
 		}
 	}
-
+	WriteImage(image, "raytracer");
 	free(buffer);
 }
