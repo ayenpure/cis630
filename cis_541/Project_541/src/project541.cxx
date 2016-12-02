@@ -18,6 +18,8 @@
 using std::cerr;
 using std::endl;
 using std::abs;
+int triangleColor[380];
+
 
 double ceil441(double f) {
 	return ceil(f - 0.00001);
@@ -207,6 +209,7 @@ std::vector<Triangle> GetTriangles(const char *filename) {
 	}
 	vtkPolyData *pd = rdr->GetOutput();
 	int numTris = pd->GetNumberOfCells();
+	cout << "Reading " << numTris << " triangles" << endl;
 	std::vector<Triangle> tris(numTris);
 	vtkPoints *pts = pd->GetPoints();
 	vtkCellArray *cells = pd->GetPolys();
@@ -282,18 +285,6 @@ bool is_point_inside_triangle(double *point_of_intrsection, Triangle triangle) {
 			return false;
 	}
 
-	double x_max = triangle.gethighestX(),
-	x_min = triangle.getlowestX(),
-	y_max = triangle.gethighestY(),
-	y_min = triangle.getlowestY(),
-	z_max = triangle.gethighestZ(),
-	z_min = triangle.getlowestZ();
-
-	if((x_max < point_of_intrsection[0] || x_min > point_of_intrsection[0])
-	|| (y_max < point_of_intrsection[1] || y_min > point_of_intrsection[1])
-	|| (z_max < point_of_intrsection[2] || z_min > point_of_intrsection[2]))
-		return false;
-
 	double temp[3] = {0,0,0};
 	for(int i = 0; i < 3; i++) {
 		int adj_1 = (i + 1) % 3;
@@ -320,7 +311,7 @@ void get_color_for_pixel(double *ray, std::vector<Triangle> triangles, double * 
 	//for(int i = 820; i < 821; i++) {
 	for(int i = 0; i < triangles.size(); i++) {
 		if(dot_product(ray, triangles[i].normals[0]) == 0)
-			cout << "Trianlge not visible" << endl;
+			cout << "";
 		else {
 			double triangle_vertex[3] = {
 				triangles[i].X[0],
@@ -341,6 +332,7 @@ void get_color_for_pixel(double *ray, std::vector<Triangle> triangles, double * 
 				color[0] = 0;
 				color[1] = 69;
 				color[2] = 96;
+				triangleColor[i]++;
 			} /*else {
 				cout << "Point is outside the triangle" << endl;
 			}*/
@@ -361,9 +353,10 @@ int main() {
 	screen.buffer = buffer;
 	screen.width = height;
 	screen.height = width;
-
+	for(int i = 0; i < 380; i++) {
+			triangleColor[i] = 0;
+	}
 	double camera_position[3] = {0,0,-20};
-	//cout << "Height :" << height << " Width :" << width;
 	for(int x = 0; x < width; x++) {
 		for(int y = 0; y < height; y++) {
 			double translated_x = (20*(double)x)/(double)width - 10;
@@ -381,6 +374,10 @@ int main() {
 			if(color[0] != 0 || color[1] != 0 || color[2] != 0)
 				cout << "coloring pixel " << x << ", " << y << endl;
 		}
+	}
+	for(int i =0; i < 380; i++) {
+		//if(triangleColor[i] == 0)
+			cout << "Triangle colored at all " << i << " : " << triangleColor[i] << " times" << endl;
 	}
 	WriteImage(image, "raytracer");
 	free(buffer);
