@@ -144,18 +144,46 @@ public:
 		return ((X[0] > X[1]) ? X[0] : ((X[1] > X[2]) ? X[1] : X[2]));
 	}
 
+	double getlowestZ() {
+		return ((Z[0] < Z[1]) ? Z[0] : ((Z[1] < Z[2]) ? Z[1] : Z[2]));
+	}
+
+	double gethighestZ() {
+		return ((Z[0] > Z[1]) ? Z[0] : ((Z[1] > Z[2]) ? Z[1] : Z[2]));
+	}
+
 	void calculate_normals() {
 		for (int i = 0; i < 3; i++) {
 			int adj_1 = (i + 1) % 3;
 			int adj_2 = (i + 2) % 3;
-			double adj_1_vector[3] = { X[adj_1] - X[i], Y[adj_1] - Y[i],
-					Z[adj_1] - Z[i] };
-			normalize_vector(adj_1_vector);
-			double adj_2_vector[3] = { X[adj_2] - X[i], Y[adj_2] - Y[i],
-					Z[adj_2] - Z[i] };
-			normalize_vector(adj_2_vector);
 			double normal[3];
-			cross_product(adj_1_vector, adj_2_vector, normal);
+			if((X[adj_1] == X[adj_2] && X[adj_1] == X[i] && X[adj_2] == X[i])
+			&& (Y[adj_1] == Y[adj_2] && Y[adj_1] == Y[i] && Y[adj_2] == Y[i])
+			&& (Z[adj_1] == Z[adj_2] && Z[adj_1] == Z[i] && Z[adj_2] == Z[i])){
+				normal[0] = X[i];
+				normal[1] = Y[i];
+				normal[2] = Z[i];
+			} else if (X[adj_1] == X[adj_2] && Y[adj_1] == Y[adj_2] && Z[adj_1] == Z[adj_2] ) {
+				normal[0] = (X[adj_1] + X[i]) /2;
+				normal[1] = (Y[adj_1] + Y[i]) /2;
+				normal[2] = (Z[adj_1] + Z[i]) /2;
+			} else if (X[adj_1] == X[i] && Y[adj_1] == Y[i] && Z[adj_1] == Z[i] ) {
+				normal[0] = (X[adj_2] + X[i]) /2;
+				normal[1] = (Y[adj_2] + Y[i]) /2;
+				normal[2] = (Z[adj_2] + Z[i]) /2;
+			} else if (X[i] == X[adj_2] && Y[i] == Y[adj_2] && Z[i] == Z[adj_2] ) {
+				normal[0] = (X[adj_1] + X[adj_2]) /2;
+				normal[1] = (Y[adj_1] + Y[adj_2]) /2;
+				normal[2] = (Z[adj_1] + Z[adj_2]) /2;
+			} else {
+				double adj_1_vector[3] = { X[adj_1] - X[i], Y[adj_1] - Y[i],
+					Z[adj_1] - Z[i] };
+				normalize_vector(adj_1_vector);
+				double adj_2_vector[3] = { X[adj_2] - X[i], Y[adj_2] - Y[i],
+					Z[adj_2] - Z[i] };
+				normalize_vector(adj_2_vector);
+				cross_product(adj_1_vector, adj_2_vector, normal);
+			}
 			normalize_vector(normal);
 			normals[i][0] = normal[0];
 			normals[i][1] = normal[1];
@@ -244,33 +272,28 @@ std::vector<Triangle> GetTriangles(const char *filename) {
 }
 
 bool is_point_inside_triangle(double *point_of_intrsection, Triangle triangle) {
-	/*
-	// compute the intersection point using equation 1
-		Vec3f P = orig + t * dir;
 
-		// Step 2: inside-outside test
-		Vec3f C; // vector perpendicular to triangle's plane
+	if(triangle.X[0] == triangle.X[1] && triangle.X[1] == triangle.X[2] && triangle.X[2] == triangle.X[0]
+	&& triangle.Y[0] == triangle.Y[1] && triangle.Y[1] == triangle.Y[2] && triangle.Y[2] == triangle.Y[0]
+	&& triangle.Z[0] == triangle.Z[1] && triangle.Z[1] == triangle.Z[2] && triangle.Z[2] == triangle.Z[0]) {
+		if(point_of_intrsection[0] != triangle.X[0]
+		|| point_of_intrsection[1] != triangle.Y[0]
+		|| point_of_intrsection[2] != triangle.Z[0])
+			return false;
+	}
 
-		// edge 0
-		Vec3f edge0 = v1 - v0;
-		Vec3f vp0 = P - v0;
-		C = edge0.crossProduct(vp0);
-		if (N.dotProduct(C) < 0) return false; // P is on the right side
+	double x_max = triangle.gethighestX(),
+	x_min = triangle.getlowestX(),
+	y_max = triangle.gethighestY(),
+	y_min = triangle.getlowestY(),
+	z_max = triangle.gethighestZ(),
+	z_min = triangle.getlowestZ();
 
-		// edge 1
-		Vec3f edge1 = v2 - v1;
-		Vec3f vp1 = P - v1;
-		C = edge1.crossProduct(vp1);
-		if (N.dotProduct(C) < 0) return false; // P is on the right side
+	if((x_max < point_of_intrsection[0] || x_min > point_of_intrsection[0])
+	|| (y_max < point_of_intrsection[1] || y_min > point_of_intrsection[1])
+	|| (z_max < point_of_intrsection[2] || z_min > point_of_intrsection[2]))
+		return false;
 
-		// edge 2
-		Vec3f edge2 = v0 - v2;
-		Vec3f vp2 = P - v2;
-		C = edge2.crossProduct(vp2);
-		if (N.dotProduct(C) < 0) return false; // P is on the right side;
-
-		return true; // this ray hits the triangle
-	*/
 	double temp[3] = {0,0,0};
 	for(int i = 0; i < 3; i++) {
 		int adj_1 = (i + 1) % 3;
@@ -285,7 +308,8 @@ bool is_point_inside_triangle(double *point_of_intrsection, Triangle triangle) {
 			point_of_intrsection[2] - triangle.Z[i]
 		};
 		cross_product(vector_1, vector_2, temp);
-		if(dot_product(triangle.normals[0], temp) < 0)
+		double dot = dot_product(triangle.normals[0], temp);
+		if(dot < 0)
 			return false;
 	}
 	return true;
@@ -293,6 +317,7 @@ bool is_point_inside_triangle(double *point_of_intrsection, Triangle triangle) {
 
 void get_color_for_pixel(double *ray, std::vector<Triangle> triangles, double * color) {
 	double camera_position[3] = {0,0,-20};
+	//for(int i = 820; i < 821; i++) {
 	for(int i = 0; i < triangles.size(); i++) {
 		if(dot_product(ray, triangles[i].normals[0]) == 0)
 			cout << "Trianlge not visible" << endl;
@@ -304,19 +329,21 @@ void get_color_for_pixel(double *ray, std::vector<Triangle> triangles, double * 
 			};
 			double distance_form_origin = dot_product(triangles[i].normals[0],triangle_vertex);
 			//float t = (dot(N, orig) + D) / dot(N, dir);
-			double distance_form_camera = abs(dot_product(triangles[i].normals[0], camera_position) + distance_form_origin) / dot_product(triangles[i].normals[0], ray);
-			//Vec3f Phit = orig + t * dir
+			double distance_form_camera = - ((dot_product(triangles[i].normals[0], camera_position) + distance_form_origin) / dot_product(triangles[i].normals[0], ray));
+			//Vec3f Phit = orig + t * dirtrina
 			double point_of_intrsection[3] = {
 				camera_position[0] + distance_form_camera*ray[0],
 				camera_position[1] + distance_form_camera*ray[1],
 				camera_position[2] + distance_form_camera*ray[2]
 			};
 			if(is_point_inside_triangle(point_of_intrsection, triangles[i])) {
-				cout << "Point is inside the triangle" << endl;
+				cout << "Point is inside the triangle : " << i << endl;
 				color[0] = 0;
 				color[1] = 69;
 				color[2] = 96;
-			}
+			} /*else {
+				cout << "Point is outside the triangle" << endl;
+			}*/
 		}
 	}
 };
@@ -339,8 +366,8 @@ int main() {
 	//cout << "Height :" << height << " Width :" << width;
 	for(int x = 0; x < width; x++) {
 		for(int y = 0; y < height; y++) {
-			int translated_x = (20*x)/width - 10;
-			int translated_y = (20*y)/height - 10;
+			double translated_x = (20*(double)x)/(double)width - 10;
+			double translated_y = (20*(double)y)/(double)height - 10;
 			double look_at[3] = {translated_x, translated_y, -10};
 			double ray[3] = {
 				look_at[0] - camera_position[0],
@@ -352,7 +379,7 @@ int main() {
 			get_color_for_pixel(ray, triangles, color);
 			screen.find_pixel_and_color(x,y, color);
 			if(color[0] != 0 || color[1] != 0 || color[2] != 0)
-				cout << "coloring pixle " << x << ", " << y << endl;
+				cout << "coloring pixel " << x << ", " << y << endl;
 		}
 	}
 	WriteImage(image, "raytracer");

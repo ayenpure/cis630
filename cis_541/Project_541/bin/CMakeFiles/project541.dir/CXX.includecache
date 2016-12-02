@@ -37,6 +37,8 @@ vtkCellArray.h
 -
 vtkDataSetWriter.h
 -
+cmath
+-
 
 /home/abhishek/VTK-6.3.0/Common/Core/vtkABI.h
 
