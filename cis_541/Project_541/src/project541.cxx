@@ -17,9 +17,6 @@
 
 using std::cerr;
 using std::endl;
-using std::abs;
-int triangleColor[380];
-
 
 double ceil441(double f) {
 	return ceil(f - 0.00001);
@@ -127,7 +124,7 @@ public:
 	double Y[3];
 	double Z[3];
 	double colors[3][3];
-	double normals[3][3];
+	double normal[3];
 
 
 	double getlowestY() {
@@ -178,18 +175,21 @@ public:
 				normal[1] = (Y[adj_1] + Y[adj_2]) /2;
 				normal[2] = (Z[adj_1] + Z[adj_2]) /2;
 			} else {
-				double adj_1_vector[3] = { X[adj_1] - X[i], Y[adj_1] - Y[i],
+				/*double adj_1_vector[3] = { X[adj_1] - X[i], Y[adj_1] - Y[i],
 					Z[adj_1] - Z[i] };
 				normalize_vector(adj_1_vector);
 				double adj_2_vector[3] = { X[adj_2] - X[i], Y[adj_2] - Y[i],
 					Z[adj_2] - Z[i] };
 				normalize_vector(adj_2_vector);
-				cross_product(adj_1_vector, adj_2_vector, normal);
+				cross_product(adj_1_vector, adj_2_vector, normal);*/
+
+				//TODO : Follow convention to calculate normals.
+
 			}
 			normalize_vector(normal);
-			normals[i][0] = normal[0];
-			normals[i][1] = normal[1];
-			normals[i][2] = normal[2];
+			normal[0] = normal[0];
+			normal[1] = normal[1];
+			normal[2] = normal[2];
 			cout << normal[0] << ", " << normal[1] << ", " << normal[2] << endl;
 		}
 		cout << endl;
@@ -274,15 +274,26 @@ std::vector<Triangle> GetTriangles(const char *filename) {
 	return tris;
 }
 
-bool is_point_inside_triangle(double *point_of_intrsection, Triangle triangle) {
+bool is_point_inside_triangle(double *point_of_intrsection, double *ray, Triangle triangle) {
 
 	if(triangle.X[0] == triangle.X[1] && triangle.X[1] == triangle.X[2] && triangle.X[2] == triangle.X[0]
 	&& triangle.Y[0] == triangle.Y[1] && triangle.Y[1] == triangle.Y[2] && triangle.Y[2] == triangle.Y[0]
 	&& triangle.Z[0] == triangle.Z[1] && triangle.Z[1] == triangle.Z[2] && triangle.Z[2] == triangle.Z[0]) {
-		if(point_of_intrsection[0] != triangle.X[0]
+		/*if(point_of_intrsection[0] != triangle.X[0]
 		|| point_of_intrsection[1] != triangle.Y[0]
 		|| point_of_intrsection[2] != triangle.Z[0])
-			return false;
+			return false;*/
+		double camera_position[3] = {0,0,-20};
+		double point_vec[3] = {
+			triangle.X[0] - camera_position[0],
+			triangle.Y[0] - camera_position[1],
+			triangle.Z[0] - camera_position[2]
+		};
+		normalize_vector(point_vec);
+		if(point_vec[0] == ray[0]
+		&& point_vec[1] == ray[1]
+		&& point_vec[2] == ray[2])
+			return true;
 	}
 
 	double temp[3] = {0,0,0};
@@ -299,7 +310,7 @@ bool is_point_inside_triangle(double *point_of_intrsection, Triangle triangle) {
 			point_of_intrsection[2] - triangle.Z[i]
 		};
 		cross_product(vector_1, vector_2, temp);
-		double dot = dot_product(triangle.normals[0], temp);
+		double dot = dot_product(triangle.normal, temp);
 		if(dot < 0)
 			return false;
 	}
@@ -310,7 +321,7 @@ void get_color_for_pixel(double *ray, std::vector<Triangle> triangles, double * 
 	double camera_position[3] = {0,0,-20};
 	//for(int i = 820; i < 821; i++) {
 	for(int i = 0; i < triangles.size(); i++) {
-		if(dot_product(ray, triangles[i].normals[0]) == 0)
+		if(dot_product(ray, triangles[i].normal) == 0)
 			cout << "";
 		else {
 			double triangle_vertex[3] = {
@@ -318,21 +329,20 @@ void get_color_for_pixel(double *ray, std::vector<Triangle> triangles, double * 
 				triangles[i].Y[0],
 				triangles[i].Z[0]
 			};
-			double distance_form_origin = dot_product(triangles[i].normals[0],triangle_vertex);
+			double distance_form_origin = dot_product(triangles[i].normal,triangle_vertex);
 			//float t = (dot(N, orig) + D) / dot(N, dir);
-			double distance_form_camera = - ((dot_product(triangles[i].normals[0], camera_position) + distance_form_origin) / dot_product(triangles[i].normals[0], ray));
+			double distance_form_camera = - ((dot_product(triangles[i].normal, camera_position) + distance_form_origin) / dot_product(triangles[i].normal, ray));
 			//Vec3f Phit = orig + t * dirtrina
 			double point_of_intrsection[3] = {
 				camera_position[0] + distance_form_camera*ray[0],
 				camera_position[1] + distance_form_camera*ray[1],
 				camera_position[2] + distance_form_camera*ray[2]
 			};
-			if(is_point_inside_triangle(point_of_intrsection, triangles[i])) {
+			if(is_point_inside_triangle(point_of_intrsection, ray, triangles[i])) {
 				cout << "Point is inside the triangle : " << i << endl;
 				color[0] = 0;
 				color[1] = 69;
 				color[2] = 96;
-				triangleColor[i]++;
 			} /*else {
 				cout << "Point is outside the triangle" << endl;
 			}*/
@@ -353,9 +363,6 @@ int main() {
 	screen.buffer = buffer;
 	screen.width = height;
 	screen.height = width;
-	for(int i = 0; i < 380; i++) {
-			triangleColor[i] = 0;
-	}
 	double camera_position[3] = {0,0,-20};
 	for(int x = 0; x < width; x++) {
 		for(int y = 0; y < height; y++) {
@@ -374,10 +381,6 @@ int main() {
 			if(color[0] != 0 || color[1] != 0 || color[2] != 0)
 				cout << "coloring pixel " << x << ", " << y << endl;
 		}
-	}
-	for(int i =0; i < 380; i++) {
-		//if(triangleColor[i] == 0)
-			cout << "Triangle colored at all " << i << " : " << triangleColor[i] << " times" << endl;
 	}
 	WriteImage(image, "raytracer");
 	free(buffer);
