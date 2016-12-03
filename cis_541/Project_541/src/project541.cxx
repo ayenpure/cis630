@@ -123,7 +123,7 @@ public:
 	double X[3];
 	double Y[3];
 	double Z[3];
-	double colors[3][3];
+	double colors[3];
 	double normal[3];
 
 
@@ -152,53 +152,43 @@ public:
 	}
 
 	void calculate_normals() {
-		for (int i = 0; i < 3; i++) {
-			int adj_1 = (i + 1) % 3;
-			int adj_2 = (i + 2) % 3;
-			double normal[3];
-			if((X[adj_1] == X[adj_2] && X[adj_1] == X[i] && X[adj_2] == X[i])
-			&& (Y[adj_1] == Y[adj_2] && Y[adj_1] == Y[i] && Y[adj_2] == Y[i])
-			&& (Z[adj_1] == Z[adj_2] && Z[adj_1] == Z[i] && Z[adj_2] == Z[i])){
-				normal[0] = X[i];
-				normal[1] = Y[i];
-				normal[2] = Z[i];
-			} else if (X[adj_1] == X[adj_2] && Y[adj_1] == Y[adj_2] && Z[adj_1] == Z[adj_2] ) {
-				normal[0] = (X[adj_1] + X[i]) /2;
-				normal[1] = (Y[adj_1] + Y[i]) /2;
-				normal[2] = (Z[adj_1] + Z[i]) /2;
-			} else if (X[adj_1] == X[i] && Y[adj_1] == Y[i] && Z[adj_1] == Z[i] ) {
-				normal[0] = (X[adj_2] + X[i]) /2;
-				normal[1] = (Y[adj_2] + Y[i]) /2;
-				normal[2] = (Z[adj_2] + Z[i]) /2;
-			} else if (X[i] == X[adj_2] && Y[i] == Y[adj_2] && Z[i] == Z[adj_2] ) {
-				normal[0] = (X[adj_1] + X[adj_2]) /2;
-				normal[1] = (Y[adj_1] + Y[adj_2]) /2;
-				normal[2] = (Z[adj_1] + Z[adj_2]) /2;
+			if((X[0] == X[1] && X[1] == X[2] && X[2] == X[0])
+			&& (Y[0] == Y[1] && Y[1] == Y[2] && Y[2] == Y[0])
+			&& (Z[0] == Z[1] && Z[1] == Z[2] && Z[2] == Z[0])){
+				normal[0] = X[0];
+				normal[1] = Y[0];
+				normal[2] = Z[0];
+			} else if (X[0] == X[1] && Y[0] == Y[1] && Z[0] == Z[1] ) {
+				normal[0] = (X[0] + X[1]) /2;
+				normal[1] = (Y[0] + Y[1]) /2;
+				normal[2] = (Z[0] + Z[1]) /2;
+			} else if (X[1] == X[2] && Y[1] == Y[2] && Z[1] == Z[2] ) {
+				normal[0] = (X[1] + X[2]) /2;
+				normal[1] = (Y[1] + Y[2]) /2;
+				normal[2] = (Z[1] + Z[2]) /2;
+			} else if (X[2] == X[0] && Y[2] == Y[0] && Z[2] == Z[0] ) {
+				normal[0] = (X[2] + X[0]) /2;
+				normal[1] = (Y[2] + Y[0]) /2;
+				normal[2] = (Z[2] + Z[0]) /2;
 			} else {
-				/*double adj_1_vector[3] = { X[adj_1] - X[i], Y[adj_1] - Y[i],
+				int i = 0,adj_1 = 1,adj_2 = 2;
+				double adj_1_vector[3] = { X[adj_1] - X[i], Y[adj_1] - Y[i],
 					Z[adj_1] - Z[i] };
 				normalize_vector(adj_1_vector);
 				double adj_2_vector[3] = { X[adj_2] - X[i], Y[adj_2] - Y[i],
 					Z[adj_2] - Z[i] };
 				normalize_vector(adj_2_vector);
-				cross_product(adj_1_vector, adj_2_vector, normal);*/
-
-				//TODO : Follow convention to calculate normals.
-
+				cross_product(adj_1_vector, adj_2_vector, normal);
 			}
 			normalize_vector(normal);
-			normal[0] = normal[0];
-			normal[1] = normal[1];
-			normal[2] = normal[2];
 			cout << normal[0] << ", " << normal[1] << ", " << normal[2] << endl;
-		}
 		cout << endl;
 	}
 };
 
 std::vector<Triangle> GetTriangles(const char *filename) {
 
-	vtkPolyDataReader *rdr = vtkPolyDataReader::New();
+	/*vtkPolyDataReader *rdr = vtkPolyDataReader::New();
 	rdr->SetFileName(filename);
 	//cerr << "Reading" << endl;
 	rdr->Update();
@@ -271,6 +261,29 @@ std::vector<Triangle> GetTriangles(const char *filename) {
 		}
 		tris[idx].calculate_normals();
 	}
+	return tris;*/
+	std::vector<Triangle> tris(3);
+	Triangle t1;
+	t1.X[0] = -5;t1.X[1] = -5;t1.X[2] = 5;
+	t1.Y[0] = -5;t1.Y[1] = 5;t1.Y[2] = -5;
+	t1.Z[0] = 0;t1.Z[1] = 0;t1.Z[2] = 0;
+	t1.colors[0] = 0;t1.colors[1] = 127;t1.colors[2] = 255;
+	t1.calculate_normals();
+	tris[0] = t1;
+	Triangle t2;
+	t2.X[0] = -5;t2.X[1] = -5;t2.X[2] = 5;
+	t2.Y[0] = -5;t2.Y[1] = 5;t2.Y[2] = -5;
+	t2.Z[0] = 5;t2.Z[1] = 5;t2.Z[2] = 5;
+	t2.colors[0] = 255;t2.colors[1] = 127;t2.colors[2] = 0;
+	t2.calculate_normals();
+	tris[1] = t2;
+	Triangle t3;
+	t3.X[0] = -5;t3.X[1] = -5;t3.X[2] = 5;
+	t3.Y[0] = -5;t3.Y[1] = 5;t3.Y[2] = -5;
+	t3.Z[0] = -5;t3.Z[1] = -5;t3.Z[2] = -5;
+	t3.colors[0] = 127;t3.colors[1] = 127;t3.colors[2] = 127;
+	t3.calculate_normals();
+	tris[2] = t3;
 	return tris;
 }
 
@@ -283,7 +296,7 @@ bool is_point_inside_triangle(double *point_of_intrsection, double *ray, Triangl
 		|| point_of_intrsection[1] != triangle.Y[0]
 		|| point_of_intrsection[2] != triangle.Z[0])
 			return false;*/
-		double camera_position[3] = {0,0,-20};
+		double camera_position[3] = {5,5,-20};
 		double point_vec[3] = {
 			triangle.X[0] - camera_position[0],
 			triangle.Y[0] - camera_position[1],
@@ -318,7 +331,7 @@ bool is_point_inside_triangle(double *point_of_intrsection, double *ray, Triangl
 }
 
 void get_color_for_pixel(double *ray, std::vector<Triangle> triangles, double * color) {
-	double camera_position[3] = {0,0,-20};
+	double camera_position[3] = {5,5,-20};
 	//for(int i = 820; i < 821; i++) {
 	for(int i = 0; i < triangles.size(); i++) {
 		if(dot_product(ray, triangles[i].normal) == 0)
@@ -340,9 +353,9 @@ void get_color_for_pixel(double *ray, std::vector<Triangle> triangles, double * 
 			};
 			if(is_point_inside_triangle(point_of_intrsection, ray, triangles[i])) {
 				cout << "Point is inside the triangle : " << i << endl;
-				color[0] = 0;
-				color[1] = 69;
-				color[2] = 96;
+				color[0] = triangles[i].colors[0];
+				color[1] = triangles[i].colors[1];
+				color[2] = triangles[i].colors[2];
 			} /*else {
 				cout << "Point is outside the triangle" << endl;
 			}*/
@@ -363,7 +376,7 @@ int main() {
 	screen.buffer = buffer;
 	screen.width = height;
 	screen.height = width;
-	double camera_position[3] = {0,0,-20};
+	double camera_position[3] = {5,5,-20};
 	for(int x = 0; x < width; x++) {
 		for(int y = 0; y < height; y++) {
 			double translated_x = (20*(double)x)/(double)width - 10;
