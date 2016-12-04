@@ -15,10 +15,13 @@
 #include <vtkDataSetWriter.h>
 #include <cmath>
 
+#define MAX_DEPTH 2
+
 using std::cerr;
 using std::endl;
 
 double camera_position[3] = {5,5,-20};
+double light_position[3] = {0,20,-20};
 
 double ceil441(double f) {
 	return ceil(f - 0.00001);
@@ -271,9 +274,9 @@ std::vector<Triangle> GetTriangles(const char *filename) {
 	t1.X[0] = -5;t1.X[1] = -5;t1.X[2] = 5;
 	t1.Y[0] = -5;t1.Y[1] = 5;t1.Y[2] = -5;
 	t1.Z[0] = 0;t1.Z[1] = 0;t1.Z[2] = 0;
-	t1.colors[0][0] = 0;t1.colors[0][1] = 0;t1.colors[0][2] = 255;
+	t1.colors[0][0] = 255;t1.colors[0][1] = 0;t1.colors[0][2] = 0;
 	t1.colors[1][0] = 0;t1.colors[1][1] = 255;t1.colors[1][2] = 0;
-	t1.colors[2][0] = 255;t1.colors[2][1] = 0;t1.colors[2][2] = 0;
+	t1.colors[2][0] = 0;t1.colors[2][1] = 0;t1.colors[2][2] = 255;
 	t1.calculate_normals();
 	tris[0] = t1;
 	Triangle t2;
@@ -381,7 +384,43 @@ double calculate_shading(double (*colors)[3], double *barycentric, int component
 						+ barycentric[2]*colors[2][component];
 }
 
-void get_color_for_pixel(double *ray, std::vector<Triangle> triangles, double * color) {
+void get_color_for_pixel_2(double *ray, double * ray_origin, std::vector<Triangle> triangles, double * color, int depth,int skip_index) {
+	double distance = std::numeric_limits<double>::max();
+	for(int i = 0; i < triangles.size(); i++) {
+		if(i == skip_index)
+			continue;
+		//Check if triangle is a single pixel triangle
+		//if not get point of intersection of the triangle with the triangle plane
+		if(dot_product(ray, triangles[i].normal) != 0) {
+			double triangle_vertex[3] = {
+				triangles[i].X[0],
+				triangles[i].Y[0],
+				triangles[i].Z[0]
+			};
+			double o_distance = dot_product(triangles[i].normal,triangle_vertex);
+			//float t = (dot(N, orig) + D) / dot(N, dir);
+			double c_distance = - ((dot_product(triangles[i].normal, ray_origin) + o_distance) / dot_product(triangles[i].normal, ray));
+			//Vec3f Phit = orig + t * dirtrina
+			double intersect_point[3] = {
+				ray_origin[0] + c_distance*ray[0],
+				ray_origin[1] + c_distance*ray[1],
+				ray_origin[2] + c_distance*ray[2]
+			};
+			double barycentric[3] = {0,0,0};
+			if(is_point_inside_triangle(intersect_point, triangles[i], barycentric)) {
+				if(c_distance < distance){
+					distance = c_distance;
+					color[0] = calculate_shading(triangles[i].colors, barycentric, 0);
+					color[1] = calculate_shading(triangles[i].colors, barycentric, 1);
+					color[2] = calculate_shading(triangles[i].colors, barycentric, 2);
+				}
+			}
+		}
+	}
+};
+
+
+void get_color_for_pixel(double *ray, double * ray_origin, std::vector<Triangle> triangles, double * color, int depth,int skip_index) {
 	double distance = std::numeric_limits<double>::max();
 	for(int i = 0; i < triangles.size(); i++) {
 		//Check if triangle is a single pixel triangle
@@ -394,20 +433,35 @@ void get_color_for_pixel(double *ray, std::vector<Triangle> triangles, double * 
 			};
 			double o_distance = dot_product(triangles[i].normal,triangle_vertex);
 			//float t = (dot(N, orig) + D) / dot(N, dir);
-			double c_distance = - ((dot_product(triangles[i].normal, camera_position) + o_distance) / dot_product(triangles[i].normal, ray));
+			double c_distance = - ((dot_product(triangles[i].normal, ray_origin) + o_distance) / dot_product(triangles[i].normal, ray));
 			//Vec3f Phit = orig + t * dirtrina
 			double intersect_point[3] = {
-				camera_position[0] + c_distance*ray[0],
-				camera_position[1] + c_distance*ray[1],
-				camera_position[2] + c_distance*ray[2]
+				ray_origin[0] + c_distance*ray[0],
+				ray_origin[1] + c_distance*ray[1],
+				ray_origin[2] + c_distance*ray[2]
 			};
 			double barycentric[3] = {0,0,0};
 			if(is_point_inside_triangle(intersect_point, triangles[i], barycentric)) {
 				if(c_distance < distance){
 					distance = c_distance;
-					color[0] = calculate_shading(triangles[i].colors, barycentric, 0);
-					color[1] = calculate_shading(triangles[i].colors, barycentric, 1);
-					color[2] = calculate_shading(triangles[i].colors, barycentric, 2);
+					double shadow_ray[3] = {
+						light_position[0] - intersect_point[0],
+						light_position[1] - intersect_point[1],
+						light_position[2] - intersect_point[2],
+					};
+					double dummy_color[3] = {0,0,0};
+					normalize_vector(shadow_ray);
+					get_color_for_pixel_2(shadow_ray, intersect_point, triangles, dummy_color,++depth, i);
+					if(dummy_color[0] != 0 || dummy_color[1] != 0  || dummy_color[2] != 0 ) {
+						cout << "Shadow Ray Color for depth " << depth << " : " << dummy_color[0] << ", " << dummy_color[0] << ", " << dummy_color[0] << endl;
+						color[0] = calculate_shading(triangles[i].colors, barycentric, 0) / 2;
+						color[1] = calculate_shading(triangles[i].colors, barycentric, 1) / 2;
+						color[2] = calculate_shading(triangles[i].colors, barycentric, 2) / 2;
+					} else {
+						color[0] = calculate_shading(triangles[i].colors, barycentric, 0);
+						color[1] = calculate_shading(triangles[i].colors, barycentric, 1);
+						color[2] = calculate_shading(triangles[i].colors, barycentric, 2);
+					}
 				}
 			}
 		}
@@ -439,10 +493,9 @@ int main() {
 			};
 			normalize_vector(ray);
 			double color[3] = {0,0,0};
-			get_color_for_pixel(ray, triangles, color);
+			get_color_for_pixel(ray, camera_position, triangles, color,0,-1);
+			cout << "Coloring pixel " << x << ", " << y << endl;
 			screen.find_pixel_and_color(x,y, color);
-			if(color[0] != 0 || color[1] != 0 || color[2] != 0)
-				cout << "coloring pixel " << x << ", " << y << endl;
 		}
 	}
 	WriteImage(image, "raytracer");
