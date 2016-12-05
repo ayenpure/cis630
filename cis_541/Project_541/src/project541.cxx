@@ -20,8 +20,8 @@
 using std::cerr;
 using std::endl;
 
-double camera_position[3] = {5,5,-20};
-double light_position[3] = {0,20,-20};
+double camera_position[3] = {-10,-5,-20};
+double light_position[3] = {-10,20,-20};
 
 double ceil441(double f) {
 	return ceil(f - 0.00001);
@@ -300,16 +300,16 @@ std::vector<Triangle> GetTriangles(const char *filename) {
 	Triangle t4;
 	t4.X[0] = -20;t4.X[1] = -20;t4.X[2] = 20;
 	t4.Y[0] = 10;t4.Y[1] = 10;t4.Y[2] = 10;
-	t4.Z[0] = -20;t4.Z[1] = 20;t4.Z[2] = 20;
+	t4.Z[0] = 20;t4.Z[1] = -20;t4.Z[2] = 20;
 	t4.colors[0][0] = 255;t4.colors[0][1] = 255;t4.colors[0][2] = 255;
 	t4.colors[1][0] = 255;t4.colors[1][1] = 255;t4.colors[1][2] = 255;
 	t4.colors[2][0] = 255;t4.colors[2][1] = 255;t4.colors[2][2] = 255;
 	t4.calculate_normals();
 	tris[3] = t4;
 	Triangle t5;
-	t5.X[0] = -20;t5.X[1] = 20;t5.X[2] = 20;
+	t5.X[0] = 20;t5.X[1] = -20;t5.X[2] = 20;
 	t5.Y[0] = 10;t5.Y[1] = 10;t5.Y[2] = 10;
-	t5.Z[0] = -20;t5.Z[1] = -20;t5.Z[2] = 20;
+	t5.Z[0] = 20;t5.Z[1] = -20;t5.Z[2] = -20;
 	t5.colors[0][0] = 255;t5.colors[0][1] = 255;t5.colors[0][2] = 255;
 	t5.colors[1][0] = 255;t5.colors[1][1] = 255;t5.colors[1][2] = 255;
 	t5.colors[2][0] = 255;t5.colors[2][1] = 255;t5.colors[2][2] = 255;
@@ -401,6 +401,9 @@ void get_color_for_pixel_2(double *ray, double * ray_origin, std::vector<Triangl
 			//float t = (dot(N, orig) + D) / dot(N, dir);
 			double c_distance = - ((dot_product(triangles[i].normal, ray_origin) + o_distance) / dot_product(triangles[i].normal, ray));
 			//Vec3f Phit = orig + t * dirtrina
+			cout << "***********************c_distance***********************" << endl;
+			if(c_distance < 0)
+				continue;
 			double intersect_point[3] = {
 				ray_origin[0] + c_distance*ray[0],
 				ray_origin[1] + c_distance*ray[1],
@@ -435,6 +438,8 @@ void get_color_for_pixel(double *ray, double * ray_origin, std::vector<Triangle>
 			//float t = (dot(N, orig) + D) / dot(N, dir);
 			double c_distance = - ((dot_product(triangles[i].normal, ray_origin) + o_distance) / dot_product(triangles[i].normal, ray));
 			//Vec3f Phit = orig + t * dirtrina
+			if(c_distance < 0)
+				continue;
 			double intersect_point[3] = {
 				ray_origin[0] + c_distance*ray[0],
 				ray_origin[1] + c_distance*ray[1],
