@@ -15,14 +15,14 @@
 #include <vtkDataSetWriter.h>
 #include <cmath>
 
-#define MAX_DEPTH 1
+#define MAX_DEPTH 2
 
 using std::cerr;
 using std::endl;
 using std::min;
 
 double camera_position[3] = {5,5,-20};
-double light_position[3] = {-10,20,-20};
+//double light_position[3] = {-10,15,-20};
 
 double ceil441(double f) {
 	return ceil(f - 0.00001);
@@ -31,6 +31,27 @@ double ceil441(double f) {
 double floor441(double f) {
 	return floor(f + 0.00001);
 }
+
+struct LightingParameters
+{
+    LightingParameters(void)
+    {
+         light_position[0] = -10;
+         light_position[1] = 15;
+         light_position[2] = -20;
+         Ka = 0.3;
+         Kd = 0.7;
+         Ks = 5.3;
+         alpha = 7.5;
+    };
+    double light_position[3];  // The direction of the light source
+    double Ka;           // The coefficient for ambient lighting.
+    double Kd;           // The coefficient for diffuse lighting.
+    double Ks;           // The coefficient for specular lighting.
+    double alpha;        // The exponent term for specular lighting.
+};
+
+LightingParameters lp;
 
 void vector_copy(double *destination, double *source) {
 	destination[0] = source[0];
@@ -62,6 +83,30 @@ void cross_product(double* vector_1, double* vector_2, double *cross_vec) {
 			- (vector_1[0] * vector_2[2]), (vector_1[0] * vector_2[1])
 			- (vector_1[1] * vector_2[0]) };
 	vector_copy(cross_vec, product);
+}
+
+double calculate_for_specular_lighting(LightingParameters lp, double *V,
+		double* N) {
+	/* R = 2*(L . N)*N - L
+	 * return ==> V . R
+	 */
+	double two_L_dot_N = 2 * dot_product(lp.light_position, N);
+	double two_L_dot_N_N[3] = { two_L_dot_N * N[0], two_L_dot_N * N[1],
+			two_L_dot_N * N[2] };
+	double R[3] = { two_L_dot_N_N[0] - lp.light_position[0], two_L_dot_N_N[1] - lp.light_position[1],
+			two_L_dot_N_N[2] - lp.light_position[2] };
+	return dot_product(R, V);
+}
+
+double calculate_phong_shading(LightingParameters lp, double *view_direction,
+		double *normal) {
+	double diffuse_component = dot_product(lp.light_position, normal);
+  double specular_component = pow(calculate_for_specular_lighting(lp, view_direction, normal),lp.alpha);
+  if(specular_component < 0 || specular_component != specular_component) {
+      specular_component = 0;
+  }
+	double shading_amount = lp.Ka + lp.Kd * abs(diffuse_component)
+			+ lp.Ks * specular_component;
 }
 
 class Screen {
@@ -248,7 +293,7 @@ std::vector<Triangle> GetTriangles(const char *filename) {
 		tris[idx].calculate_normals();
 	}
 	return tris;*/
-	std::vector<Triangle> tris(3);
+	std::vector<Triangle> tris(5);
 	Triangle t1;
 	t1.reflection = 0;
 	t1.X[0] = -5;t1.X[1] = -5;t1.X[2] = 5;
@@ -259,7 +304,8 @@ std::vector<Triangle> GetTriangles(const char *filename) {
 	t1.colors[2][0] = 0;t1.colors[2][1] = 0;t1.colors[2][2] = 255;
 	t1.calculate_normals();
 	tris[0] = t1;
-	/*Triangle t2;
+	Triangle t2;
+	t2.reflection = 0;
 	t2.X[0] = -2.5;t2.X[1] = -2.5;t2.X[2] = 2.5;
 	t2.Y[0] = -2.5;t2.Y[1] = 2.5;t2.Y[2] = -2.5;
 	t2.Z[0] = 10;t2.Z[1] = 10;t2.Z[2] = 10;
@@ -269,6 +315,7 @@ std::vector<Triangle> GetTriangles(const char *filename) {
 	t2.calculate_normals();
 	tris[1] = t2;
 	Triangle t3;
+	t3.reflection = 0;
 	t3.X[0] = -5;t3.X[1] = -5;t3.X[2] = 5;
 	t3.Y[0] = -5;t3.Y[1] = 5;t3.Y[2] = -5;
 	t3.Z[0] = -5;t3.Z[1] = -5;t3.Z[2] = -5;
@@ -276,7 +323,7 @@ std::vector<Triangle> GetTriangles(const char *filename) {
 	t3.colors[1][0] = 255;t3.colors[1][1] = 127;t3.colors[1][2] = 0;
 	t3.colors[2][0] = 255;t3.colors[2][1] = 127;t3.colors[2][2] = 0;
 	t3.calculate_normals();
-	tris[2] = t3;*/
+	tris[2] = t3;
 	Triangle t4;
 	t4.reflection = 0.5;
 	t4.X[0] = -20;t4.X[1] = -20;t4.X[2] = 20;
@@ -286,7 +333,7 @@ std::vector<Triangle> GetTriangles(const char *filename) {
 	t4.colors[1][0] = 127;t4.colors[1][1] = 127;t4.colors[1][2] = 127;
 	t4.colors[2][0] = 127;t4.colors[2][1] = 127;t4.colors[2][2] = 127;
 	t4.calculate_normals();
-	tris[1] = t4;
+	tris[3] = t4;
 	Triangle t5;
 	t5.reflection = 0.5;
 	t5.X[0] = 20;t5.X[1] = -20;t5.X[2] = 20;
@@ -296,7 +343,7 @@ std::vector<Triangle> GetTriangles(const char *filename) {
 	t5.colors[1][0] = 127;t5.colors[1][1] = 127;t5.colors[1][2] = 127;
 	t5.colors[2][0] = 127;t5.colors[2][1] = 127;t5.colors[2][2] = 127;
 	t5.calculate_normals();
-	tris[2] = t5;
+	tris[4] = t5;
 	return tris;
 }
 
@@ -395,6 +442,7 @@ void get_color_for_pixel(double *ray, double * ray_origin, std::vector<Triangle>
 		};
 		normalize_vector(reflection_ray);
 		get_color_for_pixel(reflection_ray, intersect_point, triangles, color, ++depth, object_index);
+		--depth;
 		color[0] = min(255.,calculate_shading(triangles[object_index].colors,barycentric,0) + triangles[object_index].reflection*color[0]);
 		color[1] = min(255.,calculate_shading(triangles[object_index].colors,barycentric,1) + triangles[object_index].reflection*color[1]);
 		color[2] = min(255.,calculate_shading(triangles[object_index].colors,barycentric,2) + triangles[object_index].reflection*color[2]);
@@ -404,6 +452,28 @@ void get_color_for_pixel(double *ray, double * ray_origin, std::vector<Triangle>
 		color[0] = calculate_shading(triangles[object_index].colors,barycentric,0);
 		color[1] = calculate_shading(triangles[object_index].colors,barycentric,1);
 		color[2] = calculate_shading(triangles[object_index].colors,barycentric,2);
+	}
+	if(depth == 0) {
+		double dummy_color[3] = {0,0,0};
+		double shadow_ray[3] =  {
+			lp.light_position[0] - intersect_point[0],
+			lp.light_position[1] - intersect_point[1],
+			lp.light_position[2] - intersect_point[2]
+		};
+		normalize_vector(shadow_ray);
+		get_color_for_pixel(shadow_ray, intersect_point, triangles, dummy_color, MAX_DEPTH, object_index);
+		if(dummy_color[0] != 0 || dummy_color[1] != 0 || dummy_color[2] != 0) {
+			color[0] /=2;
+			color[1] /=2;
+			color[2] /=2;
+		}
+		double shading_amount = calculate_phong_shading(lp,camera_position,triangles[object_index].normal);
+		/*color[0] = min(255., shading_amount*color[0]);
+		color[1] = min(255., shading_amount*color[1]);
+		color[2] = min(255., shading_amount*color[2]);*/
+		/*color[0] = shading_amount*color[0];
+		color[1] = shading_amount*color[1];
+		color[2] = shading_amount*color[2];*/
 	}
 };
 
@@ -422,8 +492,8 @@ int main() {
 	screen.height = width;
 	for(int x = 0; x < width; x++) {
 		for(int y = 0; y < height; y++) {
-			double translated_x = (20*(double)x)/(double)width - 10;
-			double translated_y = (20*(double)y)/(double)height - 10;
+			double translated_x = (20*(double)(x+.5))/(double)width - 10;
+			double translated_y = (20*(double)(y+.5))/(double)height - 10;
 			double look_at[3] = {translated_x, translated_y, -10};
 			double ray[3] = {
 				look_at[0] - camera_position[0],
