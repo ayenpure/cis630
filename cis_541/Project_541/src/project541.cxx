@@ -293,57 +293,139 @@ std::vector<Triangle> GetTriangles(const char *filename) {
 		tris[idx].calculate_normals();
 	}
 	return tris;*/
-	std::vector<Triangle> tris(5);
+	std::vector<Triangle> tris(4);
 	Triangle t1;
-	t1.reflection = 0;
-	t1.X[0] = -5;t1.X[1] = -5;t1.X[2] = 5;
-	t1.Y[0] = -10;t1.Y[1] = 0;t1.Y[2] = -10;
-	t1.Z[0] = 0;t1.Z[1] = 0;t1.Z[2] = 0;
-	t1.colors[0][0] = 255;t1.colors[0][1] = 0;t1.colors[0][2] = 0;
-	t1.colors[1][0] = 0;t1.colors[1][1] = 255;t1.colors[1][2] = 0;
-	t1.colors[2][0] = 0;t1.colors[2][1] = 0;t1.colors[2][2] = 255;
+	t1.reflection = 0.5;
+	t1.X[0] = -20;t1.X[1] = -20;t1.X[2] = 20;
+	t1.Y[0] = 10;t1.Y[1] = 10;t1.Y[2] = 10;
+	t1.Z[0] = 20;t1.Z[1] = -20;t1.Z[2] = 20;
+	t1.colors[0][0] = 127;t1.colors[0][1] = 127;t1.colors[0][2] = 127;
+	t1.colors[1][0] = 127;t1.colors[1][1] = 127;t1.colors[1][2] = 127;
+	t1.colors[2][0] = 127;t1.colors[2][1] = 127;t1.colors[2][2] = 127;
 	t1.calculate_normals();
 	tris[0] = t1;
+
 	Triangle t2;
-	t2.reflection = 0;
-	t2.X[0] = -2.5;t2.X[1] = -2.5;t2.X[2] = 2.5;
-	t2.Y[0] = -2.5;t2.Y[1] = 2.5;t2.Y[2] = -2.5;
-	t2.Z[0] = 10;t2.Z[1] = 10;t2.Z[2] = 10;
-	t2.colors[0][0] = 0;t2.colors[0][1] = 127;t2.colors[0][2] = 255;
-	t2.colors[1][0] = 0;t2.colors[1][1] = 127;t2.colors[1][2] = 255;
-	t2.colors[2][0] = 0;t2.colors[2][1] = 127;t2.colors[2][2] = 255;
+	t2.reflection = 0.5;
+	t2.X[0] = 20;t2.X[1] = -20;t2.X[2] = 20;
+	t2.Y[0] = 10;t2.Y[1] = 10;t2.Y[2] = 10;
+	t2.Z[0] = 20;t2.Z[1] = -20;t2.Z[2] = -20;
+	t2.colors[0][0] = 127;t2.colors[0][1] = 127;t2.colors[0][2] = 127;
+	t2.colors[1][0] = 127;t2.colors[1][1] = 127;t2.colors[1][2] = 127;
+	t2.colors[2][0] = 127;t2.colors[2][1] = 127;t2.colors[2][2] = 127;
 	t2.calculate_normals();
 	tris[1] = t2;
+
 	Triangle t3;
 	t3.reflection = 0;
 	t3.X[0] = -5;t3.X[1] = -5;t3.X[2] = 5;
-	t3.Y[0] = -5;t3.Y[1] = 5;t3.Y[2] = -5;
-	t3.Z[0] = -5;t3.Z[1] = -5;t3.Z[2] = -5;
-	t3.colors[0][0] = 255;t3.colors[0][1] = 127;t3.colors[0][2] = 0;
-	t3.colors[1][0] = 255;t3.colors[1][1] = 127;t3.colors[1][2] = 0;
-	t3.colors[2][0] = 255;t3.colors[2][1] = 127;t3.colors[2][2] = 0;
+	t3.Y[0] = 0;t3.Y[1] = -10;t3.Y[2] = -10;
+	t3.Z[0] = 0;t3.Z[1] = 0;t3.Z[2] = 0;
+	t3.colors[0][0] = 0;t3.colors[0][1] = 0;t3.colors[0][2] = 255;
+	t3.colors[1][0] = 255;t3.colors[1][1] = 0;t3.colors[1][2] = 0;
+	t3.colors[2][0] = 0;t3.colors[2][1] = 255;t3.colors[2][2] = 0;
 	t3.calculate_normals();
 	tris[2] = t3;
+
 	Triangle t4;
-	t4.reflection = 0.5;
-	t4.X[0] = -20;t4.X[1] = -20;t4.X[2] = 20;
-	t4.Y[0] = 10;t4.Y[1] = 10;t4.Y[2] = 10;
-	t4.Z[0] = 20;t4.Z[1] = -20;t4.Z[2] = 20;
-	t4.colors[0][0] = 127;t4.colors[0][1] = 127;t4.colors[0][2] = 127;
-	t4.colors[1][0] = 127;t4.colors[1][1] = 127;t4.colors[1][2] = 127;
-	t4.colors[2][0] = 127;t4.colors[2][1] = 127;t4.colors[2][2] = 127;
+	t4.reflection = 0;
+	t4.X[0] = -5;t4.X[1] = 5;t4.X[2] = 5;
+	t4.Y[0] = 0;t4.Y[1] = -10;t4.Y[2] = 0;
+	t4.Z[0] = 0;t4.Z[1] = 0;t4.Z[2] = 0;
+	t4.colors[0][0] = 0;t4.colors[0][1] = 0;t4.colors[0][2] = 255;
+	t4.colors[1][0] = 0;t4.colors[1][1] = 255;t4.colors[1][2] = 0;
+	t4.colors[2][0] = 255;t4.colors[2][1] = 0;t4.colors[2][2] = 0;
 	t4.calculate_normals();
 	tris[3] = t4;
-	Triangle t5;
-	t5.reflection = 0.5;
-	t5.X[0] = 20;t5.X[1] = -20;t5.X[2] = 20;
-	t5.Y[0] = 10;t5.Y[1] = 10;t5.Y[2] = 10;
-	t5.Z[0] = 20;t5.Z[1] = -20;t5.Z[2] = -20;
-	t5.colors[0][0] = 127;t5.colors[0][1] = 127;t5.colors[0][2] = 127;
-	t5.colors[1][0] = 127;t5.colors[1][1] = 127;t5.colors[1][2] = 127;
-	t5.colors[2][0] = 127;t5.colors[2][1] = 127;t5.colors[2][2] = 127;
+
+	/*Triangle t5;
+	t5.reflection = 0;
+	t5.X[0] = 5;t5.X[1] = 5;t5.X[2] = 5;
+	t5.Y[0] = 0;t5.Y[1] = -10;t5.Y[2] = -10;
+	t5.Z[0] = 0;t5.Z[1] = 0;t5.Z[2] = 5;
+	t5.colors[0][0] = 255;t5.colors[0][1] = 0;t5.colors[0][2] = 0;
+	t5.colors[1][0] = 0;t5.colors[1][1] = 255;t5.colors[1][2] = 0;
+	t5.colors[2][0] = 0;t5.colors[2][1] = 0;t5.colors[2][2] = 255;
 	t5.calculate_normals();
 	tris[4] = t5;
+
+	Triangle t6;
+	t6.reflection = 0;
+	t6.X[0] = 5;t6.X[1] = 5;t6.X[2] = 5;
+	t6.Y[0] = 0;t6.Y[1] = -10;t6.Y[2] = 0;
+	t6.Z[0] = 0;t6.Z[1] = 5;t6.Z[2] = 5;
+	t6.colors[0][0] = 255;t6.colors[0][1] = 0;t6.colors[0][2] = 0;
+	t6.colors[1][0] = 0;t6.colors[1][1] = 0;t6.colors[1][2] = 255;
+	t6.colors[2][0] = 0;t6.colors[2][1] = 255;t6.colors[2][2] = 0;
+	t6.calculate_normals();
+	tris[5] = t6;
+
+	Triangle t7;
+	t7.reflection = 0;
+	t7.X[0] = 5;t7.X[1] = 5;t7.X[2] = -5;
+	t7.Y[0] = 0;t7.Y[1] = -10;t7.Y[2] = 10;
+	t7.Z[0] = 5;t7.Z[1] = 5;t7.Z[2] = 5;
+	t7.colors[0][0] = 0;t7.colors[0][1] = 255;t7.colors[0][2] = 0;
+	t7.colors[1][0] = 0;t7.colors[1][1] = 0;t7.colors[1][2] = 255;
+	t7.colors[2][0] = 0;t7.colors[2][1] = 255;t7.colors[2][2] = 0;
+	t7.calculate_normals();
+	tris[6] = t7;
+
+	Triangle t8;
+	t8.reflection = 0;
+	t8.X[0] = 5;t8.X[1] = -5;t8.X[2] = -5;
+	t8.Y[0] = 0;t8.Y[1] = -10;t8.Y[2] = 0;
+	t8.Z[0] = 5;t8.Z[1] = 5;t8.Z[2] = 5;
+	t8.colors[0][0] = 0;t8.colors[0][1] = 255;t8.colors[0][2] = 0;
+	t8.colors[1][0] = 0;t8.colors[1][1] = 255;t8.colors[1][2] = 0;
+	t8.colors[2][0] = 255;t8.colors[2][1] = 0;t8.colors[2][2] = 0;
+	t8.calculate_normals();
+	tris[7] = t8;
+
+	Triangle t9;
+	t9.reflection = 0;
+	t9.X[0] = -5;t9.X[1] = -5;t9.X[2] = -5;
+	t9.Y[0] = 0;t9.Y[1] = -10;t9.Y[2] = -10;
+	t9.Z[0] = 5;t9.Z[1] = 5;t9.Z[2] = 0;
+	t9.colors[0][0] = 255;t9.colors[0][1] = 0;t9.colors[0][2] = 0;
+	t9.colors[1][0] = 0;t9.colors[1][1] = 255;t9.colors[1][2] = 0;
+	t9.colors[2][0] = 255;t9.colors[2][1] = 0;t9.colors[2][2] = 0;
+	t9.calculate_normals();
+	tris[8] = t9;
+
+	Triangle t10;
+	t10.reflection = 0;
+	t10.X[0] = -5;t10.X[1] = -5;t10.X[2] = -5;
+	t10.Y[0] = 0;t10.Y[1] = -10;t10.Y[2] = 0;
+	t10.Z[0] = 5;t10.Z[1] = 0;t10.Z[2] = 0;
+	t10.colors[0][0] = 255;t10.colors[0][1] = 0;t10.colors[0][2] = 0;
+	t10.colors[1][0] = 255;t10.colors[1][1] = 0;t10.colors[1][2] = 0;
+	t10.colors[2][0] = 0;t10.colors[2][1] = 0;t10.colors[2][2] = 255;
+	t10.calculate_normals();
+	tris[9] = t10;
+
+	Triangle t11;
+	t11.reflection = 0;
+	t11.X[0] = -5;t11.X[1] = -5;t11.X[2] = 5;
+	t11.Y[0] = 0;t11.Y[1] = 0;t11.Y[2] = 0;
+	t11.Z[0] = 5;t11.Z[1] = 0;t11.Z[2] = 0;
+	t11.colors[0][0] = 255;t11.colors[0][1] = 0;t11.colors[0][2] = 0;
+	t11.colors[1][0] = 0;t11.colors[1][1] = 0;t11.colors[1][2] = 255;
+	t11.colors[2][0] = 0;t11.colors[2][1] = 255;t11.colors[2][2] = 0;
+	t11.calculate_normals();
+	tris[10] = t11;
+
+	Triangle t12;
+	t12.reflection = 0;
+	t12.X[0] = 5;t12.X[1] = -5;t12.X[2] = -5;
+	t12.Y[0] = 0;t12.Y[1] = 0;t12.Y[2] = 0;
+	t12.Z[0] = 5;t12.Z[1] = 5;t12.Z[2] = 0;
+	t12.colors[0][0] = 0;t12.colors[0][1] = 255;t12.colors[0][2] = 0;
+	t12.colors[1][0] = 0;t12.colors[1][1] = 0;t12.colors[1][2] = 255;
+	t12.colors[2][0] = 255;t12.colors[2][1] = 0;t12.colors[2][2] = 0;
+	t12.calculate_normals();
+	tris[11] = t12;*/
+
 	return tris;
 }
 
@@ -389,9 +471,9 @@ double calculate_shading(double (*colors)[3], double *barycentric, int component
 		&& colors[2][component] == colors[0][component])
 			return colors[0][component];
 		else
-			return barycentric[0]*colors[0][component]
-						+ barycentric[1]*colors[1][component]
-						+ barycentric[2]*colors[2][component];
+			return barycentric[1]*colors[0][component]
+						+ barycentric[2]*colors[1][component]
+						+ barycentric[0]*colors[2][component];
 }
 
 void get_color_for_pixel(double *ray, double * ray_origin, std::vector<Triangle> triangles, double * color, int depth,int skip_index) {
