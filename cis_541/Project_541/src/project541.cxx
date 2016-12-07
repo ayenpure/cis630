@@ -20,9 +20,7 @@
 using std::cerr;
 using std::endl;
 using std::min;
-
-double camera_position[3] = {-10,5,20};
-//double light_position[3] = {-10,15,-20};
+using std::tan;
 
 double ceil441(double f) {
 	return ceil(f - 0.00001);
@@ -32,26 +30,9 @@ double floor441(double f) {
 	return floor(f + 0.00001);
 }
 
-struct LightingParameters
-{
-    LightingParameters(void)
-    {
-         light_position[0] = -10;
-         light_position[1] = 15;
-         light_position[2] = 20;
-         Ka = 0.3;
-         Kd = 0.7;
-         Ks = 5.3;
-         alpha = 7.5;
-    };
-    double light_position[3];  // The direction of the light source
-    double Ka;           // The coefficient for ambient lighting.
-    double Kd;           // The coefficient for diffuse lighting.
-    double Ks;           // The coefficient for specular lighting.
-    double alpha;        // The exponent term for specular lighting.
-};
-
-LightingParameters lp;
+double cot(double angle) {
+	return (1/tan(angle));
+}
 
 void vector_copy(double *destination, double *source) {
 	destination[0] = source[0];
@@ -84,6 +65,323 @@ void cross_product(double* vector_1, double* vector_2, double *cross_vec) {
 			- (vector_1[1] * vector_2[0]) };
 	vector_copy(cross_vec, product);
 }
+
+class Matrix
+{
+  public:
+    double          A[4][4];
+
+    void            TransformPoint(const double *ptIn, double *ptOut);
+    static Matrix   ComposeMatrices(const Matrix &, const Matrix &);
+    void            Print(ostream &o);
+		Matrix   				inverse();
+};
+
+void
+Matrix::Print(ostream &o)
+{
+    for (int i = 0 ; i < 4 ; i++)
+    {
+        char str[256];
+        sprintf(str, "(%.7f %.7f %.7f %.7f)\n", A[i][0], A[i][1], A[i][2], A[i][3]);
+        o << str;
+    }
+}
+
+Matrix
+Matrix::ComposeMatrices(const Matrix &M1, const Matrix &M2)
+{
+    Matrix rv;
+    for (int i = 0 ; i < 4 ; i++)
+        for (int j = 0 ; j < 4 ; j++)
+        {
+            rv.A[i][j] = 0;
+            for (int k = 0 ; k < 4 ; k++)
+                rv.A[i][j] += M1.A[i][k]*M2.A[k][j];
+        }
+
+    return rv;
+}
+
+void
+Matrix::TransformPoint(const double *ptIn, double *ptOut)
+{
+    ptOut[0] = ptIn[0]*A[0][0]
+             + ptIn[1]*A[1][0]
+             + ptIn[2]*A[2][0]
+             + ptIn[3]*A[3][0];
+    ptOut[1] = ptIn[0]*A[0][1]
+             + ptIn[1]*A[1][1]
+             + ptIn[2]*A[2][1]
+             + ptIn[3]*A[3][1];
+    ptOut[2] = ptIn[0]*A[0][2]
+             + ptIn[1]*A[1][2]
+             + ptIn[2]*A[2][2]
+             + ptIn[3]*A[3][2];
+    ptOut[3] = ptIn[0]*A[0][3]
+             + ptIn[1]*A[1][3]
+             + ptIn[2]*A[2][3]
+             + ptIn[3]*A[3][3];
+}
+
+Matrix
+Matrix::inverse() {
+	Matrix inverseM;
+	double m[16],invOut[16];
+  int k = 0;
+  for(int i = 0; i < 4; i++) {
+    for(int j = 0; j < 4; j++) {
+      m[k++] = A[i][j];
+    }
+  }
+
+  double inv[16], det;
+
+  inv[0] = m[5]  * m[10] * m[15] -
+           m[5]  * m[11] * m[14] -
+           m[9]  * m[6]  * m[15] +
+           m[9]  * m[7]  * m[14] +
+           m[13] * m[6]  * m[11] -
+           m[13] * m[7]  * m[10];
+
+  inv[4] = -m[4]  * m[10] * m[15] +
+            m[4]  * m[11] * m[14] +
+            m[8]  * m[6]  * m[15] -
+            m[8]  * m[7]  * m[14] -
+            m[12] * m[6]  * m[11] +
+            m[12] * m[7]  * m[10];
+
+  inv[8] = m[4]  * m[9] * m[15] -
+           m[4]  * m[11] * m[13] -
+           m[8]  * m[5] * m[15] +
+           m[8]  * m[7] * m[13] +
+           m[12] * m[5] * m[11] -
+           m[12] * m[7] * m[9];
+
+  inv[12] = -m[4]  * m[9] * m[14] +
+             m[4]  * m[10] * m[13] +
+             m[8]  * m[5] * m[14] -
+             m[8]  * m[6] * m[13] -
+             m[12] * m[5] * m[10] +
+             m[12] * m[6] * m[9];
+
+  inv[1] = -m[1]  * m[10] * m[15] +
+            m[1]  * m[11] * m[14] +
+            m[9]  * m[2] * m[15] -
+            m[9]  * m[3] * m[14] -
+            m[13] * m[2] * m[11] +
+            m[13] * m[3] * m[10];
+
+  inv[5] = m[0]  * m[10] * m[15] -
+           m[0]  * m[11] * m[14] -
+           m[8]  * m[2] * m[15] +
+           m[8]  * m[3] * m[14] +
+           m[12] * m[2] * m[11] -
+           m[12] * m[3] * m[10];
+
+  inv[9] = -m[0]  * m[9] * m[15] +
+            m[0]  * m[11] * m[13] +
+            m[8]  * m[1] * m[15] -
+            m[8]  * m[3] * m[13] -
+            m[12] * m[1] * m[11] +
+            m[12] * m[3] * m[9];
+
+  inv[13] = m[0]  * m[9] * m[14] -
+            m[0]  * m[10] * m[13] -
+            m[8]  * m[1] * m[14] +
+            m[8]  * m[2] * m[13] +
+            m[12] * m[1] * m[10] -
+            m[12] * m[2] * m[9];
+
+  inv[2] = m[1]  * m[6] * m[15] -
+           m[1]  * m[7] * m[14] -
+           m[5]  * m[2] * m[15] +
+           m[5]  * m[3] * m[14] +
+           m[13] * m[2] * m[7] -
+           m[13] * m[3] * m[6];
+
+  inv[6] = -m[0]  * m[6] * m[15] +
+            m[0]  * m[7] * m[14] +
+            m[4]  * m[2] * m[15] -
+            m[4]  * m[3] * m[14] -
+            m[12] * m[2] * m[7] +
+            m[12] * m[3] * m[6];
+
+  inv[10] = m[0]  * m[5] * m[15] -
+            m[0]  * m[7] * m[13] -
+            m[4]  * m[1] * m[15] +
+            m[4]  * m[3] * m[13] +
+            m[12] * m[1] * m[7] -
+            m[12] * m[3] * m[5];
+
+  inv[14] = -m[0]  * m[5] * m[14] +
+             m[0]  * m[6] * m[13] +
+             m[4]  * m[1] * m[14] -
+             m[4]  * m[2] * m[13] -
+             m[12] * m[1] * m[6] +
+             m[12] * m[2] * m[5];
+
+  inv[3] = -m[1] * m[6] * m[11] +
+            m[1] * m[7] * m[10] +
+            m[5] * m[2] * m[11] -
+            m[5] * m[3] * m[10] -
+            m[9] * m[2] * m[7] +
+            m[9] * m[3] * m[6];
+
+  inv[7] = m[0] * m[6] * m[11] -
+           m[0] * m[7] * m[10] -
+           m[4] * m[2] * m[11] +
+           m[4] * m[3] * m[10] +
+           m[8] * m[2] * m[7] -
+           m[8] * m[3] * m[6];
+
+  inv[11] = -m[0] * m[5] * m[11] +
+             m[0] * m[7] * m[9] +
+             m[4] * m[1] * m[11] -
+             m[4] * m[3] * m[9] -
+             m[8] * m[1] * m[7] +
+             m[8] * m[3] * m[5];
+
+  inv[15] = m[0] * m[5] * m[10] -
+            m[0] * m[6] * m[9] -
+            m[4] * m[1] * m[10] +
+            m[4] * m[2] * m[9] +
+            m[8] * m[1] * m[6] -
+            m[8] * m[2] * m[5];
+
+  det = m[0] * inv[0] + m[1] * inv[4] + m[2] * inv[8] + m[3] * inv[12];
+
+  if (det == 0)
+      exit(EXIT_FAILURE);
+
+  det = 1.0 / det;
+
+  for (int i = 0; i < 16; i++)
+      invOut[i] = inv[i] * det;
+
+  k = 0;
+  for(int i = 0; i < 4; i++) {
+    for(int j = 0; j < 4; j++) {
+      inverseM.A[i][j] = invOut[k++];
+    }
+  }
+  return inverseM;
+}
+
+class Camera
+{
+  public:
+    double          near, far;
+    double          angle;
+    double          position[3];
+    double          focus[3];
+    double          up[3];
+
+    Matrix CameraTransform(void) {
+			double x_vector[3],y_vector[3];
+    	double z_vector[3] = {position[0] - focus[0],
+    												position[1] - focus[1],
+    												position[2] - focus[2]};
+    	normalize_vector(z_vector);
+  		cross_product(up, z_vector, x_vector);
+  		normalize_vector(x_vector);
+  		cross_product(z_vector, x_vector, y_vector);
+  		normalize_vector(y_vector);
+    	double frame_vec[3] = {
+    		0 - position[0],
+    		0 - position[1],
+    		0 - position[2]
+    	};
+
+    	Matrix m;
+			m.A[0][0] = x_vector[0];
+			m.A[0][1] = y_vector[0];
+			m.A[0][2] = z_vector[0];
+			m.A[0][3] = 0;
+			m.A[1][0] = x_vector[1];
+			m.A[1][1] = y_vector[1];
+			m.A[1][2] = z_vector[1];
+			m.A[1][3] = 0;
+			m.A[2][0] = x_vector[2];
+			m.A[2][1] = y_vector[2];
+			m.A[2][2] = z_vector[2];
+			m.A[2][3] = 0;
+			m.A[3][0] = dot_product(x_vector,frame_vec);
+			m.A[3][1] = dot_product(y_vector,frame_vec);
+			m.A[3][2] = dot_product(z_vector,frame_vec);
+			m.A[3][3] = 1;
+    	//memcpy(m.A, camera_transform, 16*sizeof(double));
+    	return m;
+    }
+
+		Matrix ViewTransform(void) {
+    	/*double view_transform[4][4] = {
+    		cot(angle/2), 0, 0 , 0,
+    		0, cot(angle/2), 0 , 0,
+    		0, 0 , (far + near)/(far - near), -1,
+    		0, 0 , (2*far*near)/(far - near), 0
+    	};*/
+			Matrix m;
+			m.A[0][0] = cot(angle/2);
+			m.A[0][1] = 0;
+			m.A[0][2] = 0;
+			m.A[0][3] = 0;
+			m.A[1][0] = 0;
+			m.A[1][1] = cot(angle/2);
+			m.A[1][2] = 0;
+			m.A[1][3] = 0;
+			m.A[2][0] = 0;
+			m.A[2][1] = 0;
+			m.A[2][2] = (far + near)/(far - near);
+			m.A[2][3] = -1;
+			m.A[3][0] = 0;
+			m.A[3][1] = 0;
+			m.A[3][2] = (2*far*near)/(far - near);
+			m.A[3][3] = 0;
+			//memcpy(m.A, camera_transform, 16*sizeof(double));
+			return m;
+    }
+};
+
+Camera
+GetCamera()
+{
+    Camera c;
+    c.near = -80;
+    c.far = 80;
+    c.angle = 2*M_PI/3;
+    c.position[0] = 0;
+    c.position[1] = 0;
+    c.position[2] = 150;
+    c.focus[0] = 0;
+    c.focus[1] = 0;
+    c.focus[2] = 0;
+    c.up[0] = 0;
+    c.up[1] = 1;
+    c.up[2] = 0;
+    return c;
+}
+
+struct LightingParameters
+{
+    LightingParameters(void)
+    {
+         light_position[0] = -10;
+         light_position[1] = 15;
+         light_position[2] = 20;
+         Ka = 0.3;
+         Kd = 0.7;
+         Ks = 5.3;
+         alpha = 7.5;
+    };
+    double light_position[3];  // The direction of the light source
+    double Ka;           // The coefficient for ambient lighting.
+    double Kd;           // The coefficient for diffuse lighting.
+    double Ks;           // The coefficient for specular lighting.
+    double alpha;        // The exponent term for specular lighting.
+};
+
+LightingParameters lp;
 
 double calculate_for_specular_lighting(LightingParameters lp, double *V,
 		double* N) {
@@ -219,7 +517,7 @@ public:
 
 std::vector<Triangle> GetTriangles(const char *filename) {
 
-	/*vtkPolyDataReader *rdr = vtkPolyDataReader::New();
+	vtkPolyDataReader *rdr = vtkPolyDataReader::New();
 	rdr->SetFileName(filename);
 	//cerr << "Reading" << endl;
 	rdr->Update();
@@ -235,7 +533,7 @@ std::vector<Triangle> GetTriangles(const char *filename) {
 	vtkPoints *pts = pd->GetPoints();
 	vtkCellArray *cells = pd->GetPolys();
 	vtkFloatArray *var = (vtkFloatArray *) pd->GetPointData()->GetArray("hardyglobal");
-	float *color_ptr = var->GetPointer(0);
+	//float *color_ptr = var->GetPointer(0);
 	vtkFloatArray *n = (vtkFloatArray *) pd->GetPointData()->GetNormals();
 	vtkIdType npts;
 	vtkIdType *ptIds;
@@ -263,7 +561,7 @@ std::vector<Triangle> GetTriangles(const char *filename) {
 		tris[idx].Y[2] = pt[1];
 		tris[idx].Z[2] = pt[2];
 
-		double mins[4] = { 1, 2.25, 3.5, 4.75};
+		/*double mins[4] = { 1, 2.25, 3.5, 4.75};
 		double maxs[4] = { 2.25, 3.5, 4.75, 6};
 		unsigned char RGB[5][3] = {
 			{0, 0, 255},
@@ -271,9 +569,9 @@ std::vector<Triangle> GetTriangles(const char *filename) {
 			{0, 153, 0},
 			{255, 204, 0},
 			{255, 0, 0},
-		 };
+		};*/
 		for (int j = 0; j < 3; j++) {
-			float val = color_ptr[ptIds[j]];
+			/*float val = color_ptr[ptIds[j]];
 			int r;
 			 for (r = 0 ; r < 4 ; r++)
 			 {
@@ -288,12 +586,15 @@ std::vector<Triangle> GetTriangles(const char *filename) {
 			double proportion = (val-mins[r]) / (maxs[r]-mins[r]);
 			tris[idx].colors[j][0] = (RGB[r][0]+proportion*(RGB[r+1][0]-RGB[r][0]))/255.0;
 			tris[idx].colors[j][1] = (RGB[r][1]+proportion*(RGB[r+1][1]-RGB[r][1]))/255.0;
-			tris[idx].colors[j][2] = (RGB[r][2]+proportion*(RGB[r+1][2]-RGB[r][2]))/255.0;
+			tris[idx].colors[j][2] = (RGB[r][2]+proportion*(RGB[r+1][2]-RGB[r][2]))/255.0;*/
+			tris[idx].colors[j][0] = ((double)(((idx+1)*(j+1))%10)/((j+1)*10))*255;
+			tris[idx].colors[j][1] = ((double)(((idx+1)*(j+2))%10)/((j+2)*10))*255;
+			tris[idx].colors[j][2] = ((double)(((idx+1)*(j+3))%10)/((j+3)*10))*255;
 		}
 		tris[idx].calculate_normals();
 	}
-	return tris;*/
-	std::vector<Triangle> tris(5);
+	//return tris;
+	/*std::vector<Triangle> tris(5);
 	Triangle t1;
 	t1.reflection = 0.5;
 	t1.X[0] = -20;t1.X[1] = -20;t1.X[2] = 20;
@@ -349,7 +650,7 @@ std::vector<Triangle> GetTriangles(const char *filename) {
 	t5.calculate_normals();
 	tris[4] = t5;
 
-	/*Triangle t6;
+	Triangle t6;
 	t6.reflection = 0;
 	t6.X[0] = 20;t6.X[1] = -20;t6.X[2] = 20;
 	t6.Y[0] = 10;t6.Y[1] = 10;t6.Y[2] = 10;
@@ -358,9 +659,9 @@ std::vector<Triangle> GetTriangles(const char *filename) {
 	t6.colors[1][0] = 127;t6.colors[1][1] = 127;t6.colors[1][2] = 127;
 	t6.colors[2][0] = 127;t6.colors[2][1] = 127;t6.colors[2][2] = 127;
 	t6.calculate_normals();
-	tris[5] = t6;*/
+	tris[5] = t6;
 
-	/*Triangle t3;
+	Triangle t3;
 	t3.reflection = 0;
 	t3.X[0] = -5;t3.X[1] = -5;t3.X[2] = 5;
 	t3.Y[0] = 0;t3.Y[1] = -10;t3.Y[2] = -10;
@@ -640,7 +941,7 @@ void get_color_for_pixel(double *ray, double * ray_origin, std::vector<Triangle>
 			color[1] /=2;
 			color[2] /=2;
 		}
-		double shading_amount = calculate_phong_shading(lp,camera_position,triangles[object_index].normal);
+		//double shading_amount = calculate_phong_shading(lp,camera_position,triangles[object_index].normal);
 		/*color[0] = min(255., shading_amount*color[0]);
 		color[1] = min(255., shading_amount*color[1]);
 		color[2] = min(255., shading_amount*color[2]);*/
@@ -650,8 +951,39 @@ void get_color_for_pixel(double *ray, double * ray_origin, std::vector<Triangle>
 	}
 };
 
+void get_ray_and_origin(double x, double y, double *ray, double *ray_origin,Screen screen, Matrix world_transform) {
+	double aspect_ratio = 1;
+	double translated_x = 2*(x+.5)/screen.width - 1;
+	double translated_y = 2*(y+.5)/screen.height - 1;
+	if(screen.width > screen.height) {
+			aspect_ratio = screen.width / screen.height;
+			translated_x = translated_x * aspect_ratio;
+	} else if (screen.width < screen.height) {
+		aspect_ratio = screen.height / screen.width;
+		translated_y = translated_y * aspect_ratio;
+	}
+	double h_focus[4] = {translated_x, translated_y, -1, 1};
+	double h_origin[4] = {0,0,0,1};
+	double t_h_focus[4], t_h_origin[4];
+	world_transform.TransformPoint(h_focus, t_h_focus);
+	world_transform.TransformPoint(h_origin, t_h_origin);
+	if(t_h_focus[3] != 1) {
+		for(int i=0;i < 3;i++)
+			t_h_focus[i] = t_h_focus[i] / t_h_focus[3];
+	}
+	if(t_h_origin[3] != 1) {
+		for(int i=0;i < 3;i++)
+			t_h_origin[i] = t_h_origin[i] / t_h_origin[3];
+	}
+	vector_copy(ray_origin, t_h_origin);
+	ray[0] = t_h_focus[0] - t_h_origin[0];
+	ray[1] = t_h_focus[1] - t_h_origin[1];
+	ray[2] = t_h_focus[2] - t_h_origin[2];
+	normalize_vector(ray);
+}
+
 int main() {
-	int height = 1000,width = 1000;
+	int height = 2000,width = 2000;
 	std::vector<Triangle> triangles = GetTriangles("hardyglobal.0.vtk");
 	cout << "Number of triangles " << triangles.size() << endl;
 	vtkImageData *image = NewImage(height, width);
@@ -661,22 +993,23 @@ int main() {
 		buffer[i] = 0;
 	Screen screen;
 	screen.buffer = buffer;
-	screen.width = height;
-	screen.height = width;
+	screen.width = width;
+	screen.height = height;
+
+	Camera camera = GetCamera();
+	Matrix camera_transform = camera.CameraTransform();
+	/*Matrix view_transform = camera.ViewTransform();
+	Matrix forInverse = Matrix::ComposeMatrices(camera_transform, view_transform);
+	Matrix world_transform = forInverse.inverse();*/
+	Matrix world_transform = camera_transform.inverse();
+
 	for(double x = 0; x < width; x++) {
 		for(double y = 0; y < height; y++) {
-			double translated_x = ((20*(x+.5))/width) - 10;
-			double translated_y = ((20*(y+.5))/height) - 10;
-			double look_at[3] = {translated_x, translated_y, 10};
-			double ray[3] = {
-				look_at[0] - camera_position[0],
-				look_at[1] - camera_position[1],
-				look_at[2] - camera_position[2]
-			};
-			normalize_vector(ray);
+			double ray[3], ray_origin[3];
+			get_ray_and_origin(x, y, ray, ray_origin, screen, world_transform);
 			double color[3] = {0,0,0};
-			get_color_for_pixel(ray, camera_position, triangles, color,0,-1);
-			//cout << "Coloring pixel " << x << ", " << y << endl;
+			get_color_for_pixel(ray, ray_origin, triangles, color,0,-1);
+			cout << "Coloring pixel " << x << ", " << y << endl;
 			screen.find_pixel_and_color(x,y, color);
 		}
 	}
