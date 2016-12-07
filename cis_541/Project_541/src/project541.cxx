@@ -21,7 +21,7 @@ using std::cerr;
 using std::endl;
 using std::min;
 
-double camera_position[3] = {5,5,-20};
+double camera_position[3] = {-10,5,20};
 //double light_position[3] = {-10,15,-20};
 
 double ceil441(double f) {
@@ -38,7 +38,7 @@ struct LightingParameters
     {
          light_position[0] = -10;
          light_position[1] = 15;
-         light_position[2] = -20;
+         light_position[2] = 20;
          Ka = 0.3;
          Kd = 0.7;
          Ks = 5.3;
@@ -293,7 +293,7 @@ std::vector<Triangle> GetTriangles(const char *filename) {
 		tris[idx].calculate_normals();
 	}
 	return tris;*/
-	std::vector<Triangle> tris(4);
+	std::vector<Triangle> tris(5);
 	Triangle t1;
 	t1.reflection = 0.5;
 	t1.X[0] = -20;t1.X[1] = -20;t1.X[2] = 20;
@@ -318,6 +318,50 @@ std::vector<Triangle> GetTriangles(const char *filename) {
 
 	Triangle t3;
 	t3.reflection = 0;
+	t3.X[0] = -5;t3.X[1] = -5; t3.X[2] = 0;
+	t3.Y[0] = -10;t3.Y[1] = -10; t3.Y[2] = 0;
+	t3.Z[0] = 5;t3.Z[1] = -5; t3.Z[2] = 0;
+	t3.colors[0][0] = 255;t3.colors[0][1] = 0;t3.colors[0][2] = 0;
+	t3.colors[1][0] = 0;t3.colors[1][1] = 255;t3.colors[1][2] = 0;
+	t3.colors[2][0] = 0;t3.colors[2][1] = 0;t3.colors[2][2] = 255;
+	t3.calculate_normals();
+	tris[2] = t3;
+
+	Triangle t4;
+	t4.reflection = 0;
+	t4.X[0] = 5;t4.X[1] = -5;t4.X[2] = 0;
+	t4.Y[0] = -10;t4.Y[1] = -10;t4.Y[2] = 0;
+	t4.Z[0] = 5;t4.Z[1] = 5;t4.Z[2] = 0;
+	t4.colors[0][0] = 255;t4.colors[0][1] = 0;t4.colors[0][2] = 0;
+	t4.colors[1][0] = 0;t4.colors[1][1] = 255;t4.colors[1][2] = 0;
+	t4.colors[2][0] = 0;t4.colors[2][1] = 0;t4.colors[2][2] = 255;
+	t4.calculate_normals();
+	tris[3] = t4;
+
+	Triangle t5;
+	t5.reflection = 0;
+	t5.X[0] = 5;t5.X[1] =  5;t5.X[2] = 0;
+	t5.Y[0] = -10;t5.Y[1] = -10;t5.Y[2] = 0;
+	t5.Z[0] = 5;t5.Z[1] = -5;t5.Z[2] = 0;
+	t5.colors[0][0] = 255;t5.colors[0][1] = 255;t5.colors[0][2] = 0;
+	t5.colors[1][0] = 0;t5.colors[1][1] = 255;t5.colors[1][2] = 255;
+	t5.colors[2][0] = 255;t5.colors[2][1] = 0;t5.colors[2][2] = 255;
+	t5.calculate_normals();
+	tris[4] = t5;
+
+	/*Triangle t6;
+	t6.reflection = 0;
+	t6.X[0] = 20;t6.X[1] = -20;t6.X[2] = 20;
+	t6.Y[0] = 10;t6.Y[1] = 10;t6.Y[2] = 10;
+	t6.Z[0] = 20;t6.Z[1] = -20;t6.Z[2] = -20;
+	t6.colors[0][0] = 127;t6.colors[0][1] = 127;t6.colors[0][2] = 127;
+	t6.colors[1][0] = 127;t6.colors[1][1] = 127;t6.colors[1][2] = 127;
+	t6.colors[2][0] = 127;t6.colors[2][1] = 127;t6.colors[2][2] = 127;
+	t6.calculate_normals();
+	tris[5] = t6;*/
+
+	/*Triangle t3;
+	t3.reflection = 0;
 	t3.X[0] = -5;t3.X[1] = -5;t3.X[2] = 5;
 	t3.Y[0] = 0;t3.Y[1] = -10;t3.Y[2] = -10;
 	t3.Z[0] = 0;t3.Z[1] = 0;t3.Z[2] = 0;
@@ -338,11 +382,11 @@ std::vector<Triangle> GetTriangles(const char *filename) {
 	t4.calculate_normals();
 	tris[3] = t4;
 
-	/*Triangle t5;
+	Triangle t5;
 	t5.reflection = 0;
-	t5.X[0] = 5;t5.X[1] = 5;t5.X[2] = 5;
+	t5.X[0] = -5;t5.X[1] = -5;t5.X[2] = -5;
 	t5.Y[0] = 0;t5.Y[1] = -10;t5.Y[2] = -10;
-	t5.Z[0] = 0;t5.Z[1] = 0;t5.Z[2] = 5;
+	t5.Z[0] = 0;t5.Z[1] = 5;t5.Z[2] = 0;
 	t5.colors[0][0] = 255;t5.colors[0][1] = 0;t5.colors[0][2] = 0;
 	t5.colors[1][0] = 0;t5.colors[1][1] = 255;t5.colors[1][2] = 0;
 	t5.colors[2][0] = 0;t5.colors[2][1] = 0;t5.colors[2][2] = 255;
@@ -351,8 +395,18 @@ std::vector<Triangle> GetTriangles(const char *filename) {
 
 	Triangle t6;
 	t6.reflection = 0;
-	t6.X[0] = 5;t6.X[1] = 5;t6.X[2] = 5;
+	t6.X[0] = -5;t6.X[1] = -5;t6.X[2] = -5;
 	t6.Y[0] = 0;t6.Y[1] = -10;t6.Y[2] = 0;
+	t6.Z[0] = 5;t6.Z[1] = 5;t6.Z[2] = 0;
+	t6.colors[0][0] = 0;t6.colors[0][1] = 255;t6.colors[0][2] = 0;
+	t6.colors[1][0] = 0;t6.colors[1][1] = 255;t6.colors[1][2] = 0;
+	t6.colors[2][0] = 255;t6.colors[2][1] = 0;t6.colors[2][2] = 0;
+	t6.calculate_normals();
+	tris[5] = t6;
+	/*Triangle t6;
+	t6.reflection = 0;
+	t6.X[0] = 5;t6.X[1] = 5;t6.X[2] = 5;
+	t6.Y[0] = 10;t6.Y[1] = 10;t6.Y[2] = 0;
 	t6.Z[0] = 0;t6.Z[1] = 5;t6.Z[2] = 5;
 	t6.colors[0][0] = 255;t6.colors[0][1] = 0;t6.colors[0][2] = 0;
 	t6.colors[1][0] = 0;t6.colors[1][1] = 0;t6.colors[1][2] = 255;
@@ -360,7 +414,7 @@ std::vector<Triangle> GetTriangles(const char *filename) {
 	t6.calculate_normals();
 	tris[5] = t6;
 
-	Triangle t7;
+	/*Triangle t7;
 	t7.reflection = 0;
 	t7.X[0] = 5;t7.X[1] = 5;t7.X[2] = -5;
 	t7.Y[0] = 0;t7.Y[1] = -10;t7.Y[2] = 10;
@@ -402,29 +456,29 @@ std::vector<Triangle> GetTriangles(const char *filename) {
 	t10.colors[1][0] = 255;t10.colors[1][1] = 0;t10.colors[1][2] = 0;
 	t10.colors[2][0] = 0;t10.colors[2][1] = 0;t10.colors[2][2] = 255;
 	t10.calculate_normals();
-	tris[9] = t10;
+	tris[9] = t10;*/
 
-	Triangle t11;
+	/*Triangle t11;
 	t11.reflection = 0;
 	t11.X[0] = -5;t11.X[1] = -5;t11.X[2] = 5;
 	t11.Y[0] = 0;t11.Y[1] = 0;t11.Y[2] = 0;
-	t11.Z[0] = 5;t11.Z[1] = 0;t11.Z[2] = 0;
+	t11.Z[0] = 5;t11.Z[1] = 0;t11.Z[2] = 5;
 	t11.colors[0][0] = 255;t11.colors[0][1] = 0;t11.colors[0][2] = 0;
 	t11.colors[1][0] = 0;t11.colors[1][1] = 0;t11.colors[1][2] = 255;
 	t11.colors[2][0] = 0;t11.colors[2][1] = 255;t11.colors[2][2] = 0;
 	t11.calculate_normals();
-	tris[10] = t11;
+	tris[6] = t11;
 
 	Triangle t12;
 	t12.reflection = 0;
-	t12.X[0] = 5;t12.X[1] = -5;t12.X[2] = -5;
+	t12.X[0] = 5;t12.X[1] = -5;t12.X[2] = 5;
 	t12.Y[0] = 0;t12.Y[1] = 0;t12.Y[2] = 0;
-	t12.Z[0] = 5;t12.Z[1] = 5;t12.Z[2] = 0;
+	t12.Z[0] = 5;t12.Z[1] = 0;t12.Z[2] = 0;
 	t12.colors[0][0] = 0;t12.colors[0][1] = 255;t12.colors[0][2] = 0;
 	t12.colors[1][0] = 0;t12.colors[1][1] = 0;t12.colors[1][2] = 255;
 	t12.colors[2][0] = 255;t12.colors[2][1] = 0;t12.colors[2][2] = 0;
 	t12.calculate_normals();
-	tris[11] = t12;*/
+	tris[7] = t12;*/
 
 	return tris;
 }
@@ -432,6 +486,43 @@ std::vector<Triangle> GetTriangles(const char *filename) {
 double calculate_area(double *edge_1, double *edge_2, double *area_vec) {
 	cross_product(edge_1,edge_2,area_vec);
 	double area = vector_magnitude(area_vec) / 2;
+}
+
+void recalculate_barycentric(double *intersect_point, Triangle triangle, double *barycentric) {
+	double dummy_intersect[3];
+	vector_copy(dummy_intersect, intersect_point);
+	if(triangle.X[0] == triangle.X[1] && triangle.X[1] == triangle.X[2] && triangle.X[1] == triangle.X[2])
+		dummy_intersect[0] = triangle.X[0];
+	if(triangle.Y[0] == triangle.Y[1] && triangle.Y[1] == triangle.Y[2] && triangle.Y[1] == triangle.Y[2])
+		dummy_intersect[1] = triangle.Y[0];
+	if(triangle.Z[0] == triangle.Z[1] && triangle.Z[1] == triangle.Z[2] && triangle.Z[1] == triangle.Z[2])
+		dummy_intersect[2] = triangle.Z[0];
+	double edge_1[3] = {
+		triangle.X[1] - triangle.X[0],
+		triangle.Y[1] - triangle.Y[0],
+		triangle.Z[1] - triangle.Z[0]
+	};
+	double edge_2[3] = {
+		triangle.X[2] - triangle.X[0],
+		triangle.Y[2] - triangle.Y[0],
+		triangle.Z[2] - triangle.Z[0]
+	};
+	double area_vec[3];
+	double t_area = calculate_area(edge_1, edge_2, area_vec);
+	//calculate barycentric coordinates
+	for(int i = 0; i < 3; i++) {
+		int adj = (i + 1) % 3;
+		edge_1[0] = triangle.X[adj] - triangle.X[i];
+		edge_1[1] = triangle.Y[adj] - triangle.Y[i];
+		edge_1[2] = triangle.Z[adj] - triangle.Z[i];
+
+		edge_2[0] = dummy_intersect[0] - triangle.X[i];
+		edge_2[1] = dummy_intersect[1] - triangle.Y[i];
+		edge_2[2] = dummy_intersect[2] - triangle.Z[i];
+		double area = calculate_area(edge_1, edge_2, area_vec);
+		barycentric[i] = area / t_area;
+	}
+	barycentric[0] = 1 - (barycentric[1] + barycentric[2]);
 }
 
 bool is_point_inside_triangle(double *intersect_point, Triangle triangle, double *barycentric) {
@@ -460,8 +551,8 @@ bool is_point_inside_triangle(double *intersect_point, Triangle triangle, double
 		double area = calculate_area(edge_1, edge_2, area_vec);
 		if(dot_product(triangle.normal, area_vec) < 0)
 			return false;
-		barycentric[i] = area / t_area;
 	}
+	recalculate_barycentric(intersect_point, triangle, barycentric);
 	return true;
 }
 
@@ -572,11 +663,11 @@ int main() {
 	screen.buffer = buffer;
 	screen.width = height;
 	screen.height = width;
-	for(int x = 0; x < width; x++) {
-		for(int y = 0; y < height; y++) {
-			double translated_x = (20*(double)(x+.5))/(double)width - 10;
-			double translated_y = (20*(double)(y+.5))/(double)height - 10;
-			double look_at[3] = {translated_x, translated_y, -10};
+	for(double x = 0; x < width; x++) {
+		for(double y = 0; y < height; y++) {
+			double translated_x = ((20*(x+.5))/width) - 10;
+			double translated_y = ((20*(y+.5))/height) - 10;
+			double look_at[3] = {translated_x, translated_y, 10};
 			double ray[3] = {
 				look_at[0] - camera_position[0],
 				look_at[1] - camera_position[1],
@@ -585,7 +676,7 @@ int main() {
 			normalize_vector(ray);
 			double color[3] = {0,0,0};
 			get_color_for_pixel(ray, camera_position, triangles, color,0,-1);
-			cout << "Coloring pixel " << x << ", " << y << endl;
+			//cout << "Coloring pixel " << x << ", " << y << endl;
 			screen.find_pixel_and_color(x,y, color);
 		}
 	}
