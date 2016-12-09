@@ -19,7 +19,7 @@
 #include "Triangle.h"
 #include "MatrixOperations.h"
 
-#define MAX_DEPTH 2
+#define MAX_DEPTH 1
 
 using std::cerr;
 using std::endl;
@@ -121,7 +121,7 @@ GetCamera(/*double x, double y, double z*/)
     c.far = 80;
     c.angle = 2*M_PI/3;
     c.position[0] = 0;
-    c.position[1] = 20;
+    c.position[1] = 10;
     c.position[2] = 30;
     c.focus[0] = 0;
     c.focus[1] = 0;
@@ -453,11 +453,11 @@ int main() {
 	Matrix forInverse = Matrix::ComposeMatrices(camera_transform, view_transform);
 	Matrix world_transform = forInverse.inverse();*/
 
-	double x_diff = (start_x - end_x) / steps;
+	/*double x_diff = (start_x - end_x) / steps;
 	double y_diff = (start_y - end_y) / steps;
 	double z_diff = (start_z - end_z) / steps;
 	double curr_x = start_x, curr_y = start_y, curr_z = start_z;
-	for(int step = 0; step <= 500; step++) {
+	for(int step = 0; step <= 500; step++) {*/
 		vtkImageData *image = NewImage(height, width);
 		unsigned char *buffer = (unsigned char *) image->GetScalarPointer(0, 0, 0);
 		int npixels = height * width;
@@ -469,8 +469,9 @@ int main() {
 		screen.width = width;
 		screen.height = height;
 
-		cout << "Step : " << step << ", x :" << curr_x << ", y :" << curr_y << ", z :" << curr_z << endl;
-		Camera camera = GetCamera(curr_x, curr_y, curr_z);
+		//cout << "Step : " << step << ", x :" << curr_x << ", y :" << curr_y << ", z :" << curr_z << endl;
+		//Camera camera = GetCamera(curr_x, curr_y, curr_z);
+		Camera camera = GetCamera();
 		Matrix camera_transform = camera.CameraTransform();
 		Matrix world_transform = camera_transform.inverse();
 		for(double x = 0; x < width; x++) {
@@ -482,19 +483,19 @@ int main() {
 				screen.find_pixel_and_color(x,y, color);
 			}
 		}
-		std::ostringstream oss;
+		//std::ostringstream oss;
 		/*if((step) / 10 == 0)
 			oss << "raytracer00" << step + 500;
 		else if (step / 100 == 0)
 			oss << "raytracer0" << step + 500;
 		else*/
-		oss << "raytracer" << step + 500;
-		WriteImage(image, oss.str().c_str());
-		oss.str("");
-		oss.clear();
+		//oss << "raytracer" << step + 500;
+		WriteImage(image, /*oss.str().c_str()*/"raytracer.png");
+		//oss.str("");
+		//oss.clear();
 		free(buffer);
-		curr_x = curr_x - x_diff;
-		curr_y = curr_y - y_diff;
-		curr_z = curr_z - z_diff;
-	}
+		//curr_x = curr_x - x_diff;
+		//curr_y = curr_y - y_diff;
+		//curr_z = curr_z - z_diff;
+	//}
 }
