@@ -1,5 +1,6 @@
 file(REMOVE_RECURSE
   "CMakeFiles/project541.dir/project541.cxx.o"
+  "CMakeFiles/project541.dir/VectorOperations.cxx.o"
   "project541.pdb"
   "project541"
 )

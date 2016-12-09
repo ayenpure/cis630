@@ -640,7 +640,7 @@ double calculate_phong_shading(LightingParameters lp, double *view_direction,
 
 std::vector<Triangle> GetTriangles(const char *filename) {
 
-	vtkPolyDataReader *rdr = vtkPolyDataReader::New();
+	/*vtkPolyDataReader *rdr = vtkPolyDataReader::New();
 	rdr->SetFileName(filename);
 	//cerr << "Reading" << endl;
 	rdr->Update();
@@ -674,23 +674,14 @@ std::vector<Triangle> GetTriangles(const char *filename) {
 		tris[idx].X[0] = pt[0];
 		tris[idx].Y[0] = pt[1];
 		tris[idx].Z[0] = pt[2];
-		/*tris[idx].normals[0][0] = normals[3*ptIds[0]+0];
-		 tris[idx].normals[0][1] = normals[3*ptIds[0]+1];
-		 tris[idx].normals[0][2] = normals[3*ptIds[0]+2];*/
 		pt = pts->GetPoint(ptIds[1]);
 		tris[idx].X[1] = pt[0];
 		tris[idx].Y[1] = pt[1];
 		tris[idx].Z[1] = pt[2];
-		/*tris[idx].normals[1][0] = normals[3*ptIds[1]+0];
-		 tris[idx].normals[1][1] = normals[3*ptIds[1]+1];
-		 tris[idx].normals[1][2] = normals[3*ptIds[1]+2];*/
 		pt = pts->GetPoint(ptIds[2]);
 		tris[idx].X[2] = pt[0];
 		tris[idx].Y[2] = pt[1];
 		tris[idx].Z[2] = pt[2];
-		/*tris[idx].normals[2][0] = normals[3*ptIds[2]+0];
-		 tris[idx].normals[2][1] = normals[3*ptIds[2]+1];
-		 tris[idx].normals[2][2] = normals[3*ptIds[2]+2];*/
 
 		// 1->2 interpolate between light blue, dark blue
 		// 2->2.5 interpolate between dark blue, cyan

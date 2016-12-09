@@ -123,6 +123,33 @@ project541/fast:
 	$(MAKE) -f CMakeFiles/project541.dir/build.make CMakeFiles/project541.dir/build
 .PHONY : project541/fast
 
+VectorOperations.o: VectorOperations.cxx.o
+
+.PHONY : VectorOperations.o
+
+# target to build an object file
+VectorOperations.cxx.o:
+	$(MAKE) -f CMakeFiles/project541.dir/build.make CMakeFiles/project541.dir/VectorOperations.cxx.o
+.PHONY : VectorOperations.cxx.o
+
+VectorOperations.i: VectorOperations.cxx.i
+
+.PHONY : VectorOperations.i
+
+# target to preprocess a source file
+VectorOperations.cxx.i:
+	$(MAKE) -f CMakeFiles/project541.dir/build.make CMakeFiles/project541.dir/VectorOperations.cxx.i
+.PHONY : VectorOperations.cxx.i
+
+VectorOperations.s: VectorOperations.cxx.s
+
+.PHONY : VectorOperations.s
+
+# target to generate assembly for a file
+VectorOperations.cxx.s:
+	$(MAKE) -f CMakeFiles/project541.dir/build.make CMakeFiles/project541.dir/VectorOperations.cxx.s
+.PHONY : VectorOperations.cxx.s
+
 project541.o: project541.cxx.o
 
 .PHONY : project541.o
@@ -159,6 +186,9 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... project541"
+	@echo "... VectorOperations.o"
+	@echo "... VectorOperations.i"
+	@echo "... VectorOperations.s"
 	@echo "... project541.o"
 	@echo "... project541.i"
 	@echo "... project541.s"

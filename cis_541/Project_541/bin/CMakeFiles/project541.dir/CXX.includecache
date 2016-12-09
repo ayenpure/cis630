@@ -6,6 +6,24 @@
 
 #IncludeRegexTransform: 
 
+/home/abhishek/Projects/cis_541/Project_541/src/MatrixOperations.h
+iostream
+-
+
+/home/abhishek/Projects/cis_541/Project_541/src/Triangle.h
+iostream
+-
+VectorOperations.h
+/home/abhishek/Projects/cis_541/Project_541/src/VectorOperations.h
+
+/home/abhishek/Projects/cis_541/Project_541/src/VectorOperations.cxx
+cmath
+-
+VectorOperations.h
+/home/abhishek/Projects/cis_541/Project_541/src/VectorOperations.h
+
+/home/abhishek/Projects/cis_541/Project_541/src/VectorOperations.h
+
 /home/abhishek/Projects/cis_541/Project_541/src/project541.cxx
 iostream
 -
@@ -39,6 +57,14 @@ vtkDataSetWriter.h
 -
 cmath
 -
+sstream
+-
+VectorOperations.h
+/home/abhishek/Projects/cis_541/Project_541/src/VectorOperations.h
+Triangle.h
+/home/abhishek/Projects/cis_541/Project_541/src/Triangle.h
+MatrixOperations.h
+/home/abhishek/Projects/cis_541/Project_541/src/MatrixOperations.h
 
 /home/abhishek/VTK-6.3.0/Common/Core/vtkABI.h
 
