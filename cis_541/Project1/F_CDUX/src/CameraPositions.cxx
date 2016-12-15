@@ -56,35 +56,62 @@ void rotate(double* camera_position, double angle, char axis,double* rotated_cam
 }
 
 void get_camera_positions(double (*camera_positions)[3]) {
-  double calc_camera_positions[8][16][3];
-  cout << "PI :" << M_PI << endl;
-  double first_rotation[16] = {
-    0, (M_PI/6), (M_PI/4), (M_PI/3),
-    (M_PI/2), (2*M_PI/3), (3*M_PI/4), (5*M_PI/6),
-    (M_PI), (7*M_PI/6), (5*M_PI/4), (4*M_PI/3),
-    (3*M_PI/2), (5*M_PI/3),(7*M_PI/4) ,(11*M_PI/6)
-  };
-  double second_rotation[7] = {
-    (M_PI/6), (M_PI/4), (M_PI/3), (M_PI/2), (2*M_PI/3), (3*M_PI/4), (5*M_PI/6)
-  };
-  double camera_position[3] = {40,0,0};
-  for(int i = 0; i < 16; i++) {
-    rotate(camera_position, first_rotation[i], Y, calc_camera_positions[0][i]);
-  };
-  for(int i = 1; i < 8; i++) {
-    for(int j = 0; j < 16; j++) {
-      rotate(calc_camera_positions[0][j], second_rotation[i-1], X, calc_camera_positions[i][j]);
+  if(0) {
+    // Legacy Camera Config
+    double calc_camera_positions[8][16][3];
+    cout << "PI :" << M_PI << endl;
+    double first_rotation[16] = {
+      0, (M_PI/6), (M_PI/4), (M_PI/3),
+      (M_PI/2), (2*M_PI/3), (3*M_PI/4), (5*M_PI/6),
+      (M_PI), (7*M_PI/6), (5*M_PI/4), (4*M_PI/3),
+      (3*M_PI/2), (5*M_PI/3),(7*M_PI/4) ,(11*M_PI/6)
+    };
+    double second_rotation[7] = {
+      (M_PI/6), (M_PI/4), (M_PI/3), (M_PI/2), (2*M_PI/3), (3*M_PI/4), (5*M_PI/6)
+    };
+    double camera_position[3] = {40,0,0};
+    for(int i = 0; i < 16; i++) {
+      rotate(camera_position, first_rotation[i], Y, calc_camera_positions[0][i]);
+    };
+    for(int i = 1; i < 8; i++) {
+      for(int j = 0; j < 16; j++) {
+        rotate(calc_camera_positions[0][j], second_rotation[i-1], X, calc_camera_positions[i][j]);
+      }
+    };
+    int positions_count = 0;
+    for(int i = 0; i < 8 ; i++) {
+      for (int j = 0; j <16; j++) {
+        if(i > 0 && (j==0 || j==8))
+          continue;
+        camera_positions[positions_count][0] = calc_camera_positions[i][j][0];
+        camera_positions[positions_count][1] = calc_camera_positions[i][j][1];
+        camera_positions[positions_count][2] = calc_camera_positions[i][j][2];
+        positions_count++;
+      }
     }
-  };
-  int positions_count = 0;
-  for(int i = 0; i < 8 ; i++) {
-    for (int j = 0; j <16; j++) {
-      if(i > 0 && (j==0 || j==8))
-        continue;
-      camera_positions[positions_count][0] = calc_camera_positions[i][j][0];
-      camera_positions[positions_count][1] = calc_camera_positions[i][j][1];
-      camera_positions[positions_count][2] = calc_camera_positions[i][j][2];
-      positions_count++;
-    }
+  } else {
+    //Helix
+    double y = -15;
+    int cam_index = 0;
+    double camera_position[3] = {40, y,0};
+    double rotated_camera[3];
+    camera_positions[cam_index][0] = camera_position[0];
+    camera_positions[cam_index][1] = camera_position[1];
+    camera_positions[cam_index][2] = camera_position[2];
+    //cout << camera_position[0] << ", " << camera_position[1] << ", " << camera_position[2] << endl;
+    cam_index++;
+    do {
+      rotate(camera_position, M_PI / 4, Y, rotated_camera);
+      camera_position[0] = rotated_camera[0];
+      y += .75;
+      camera_position[1] = y;
+      camera_position[2] = rotated_camera[2];
+      //cout << camera_position[0] << ", " << camera_position[1] << ", " << camera_position[2] << endl;
+      camera_positions[cam_index][0] = camera_position[0];
+      camera_positions[cam_index][1] = camera_position[1];
+      camera_positions[cam_index][2] = camera_position[2];
+      cam_index++;
+    } while ( y < 15);
+    //cout << "Cameras :" << cam_index << endl;
   }
 }

@@ -111,17 +111,43 @@ depend:
 .PHONY : depend
 
 #=============================================================================
-# Target rules for targets named project1F
+# Target rules for targets named qualitywork
 
 # Build rule for target.
-project1F: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 project1F
-.PHONY : project1F
+qualitywork: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 qualitywork
+.PHONY : qualitywork
 
 # fast build rule for target.
-project1F/fast:
-	$(MAKE) -f CMakeFiles/project1F.dir/build.make CMakeFiles/project1F.dir/build
-.PHONY : project1F/fast
+qualitywork/fast:
+	$(MAKE) -f CMakeFiles/qualitywork.dir/build.make CMakeFiles/qualitywork.dir/build
+.PHONY : qualitywork/fast
+
+#=============================================================================
+# Target rules for targets named qualitycamera
+
+# Build rule for target.
+qualitycamera: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 qualitycamera
+.PHONY : qualitycamera
+
+# fast build rule for target.
+qualitycamera/fast:
+	$(MAKE) -f CMakeFiles/qualitycamera.dir/build.make CMakeFiles/qualitycamera.dir/build
+.PHONY : qualitycamera/fast
+
+#=============================================================================
+# Target rules for targets named qualitytriangles
+
+# Build rule for target.
+qualitytriangles: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 qualitytriangles
+.PHONY : qualitytriangles
+
+# fast build rule for target.
+qualitytriangles/fast:
+	$(MAKE) -f CMakeFiles/qualitytriangles.dir/build.make CMakeFiles/qualitytriangles.dir/build
+.PHONY : qualitytriangles/fast
 
 CameraPositions.o: CameraPositions.cxx.o
 
@@ -129,7 +155,9 @@ CameraPositions.o: CameraPositions.cxx.o
 
 # target to build an object file
 CameraPositions.cxx.o:
-	$(MAKE) -f CMakeFiles/project1F.dir/build.make CMakeFiles/project1F.dir/CameraPositions.cxx.o
+	$(MAKE) -f CMakeFiles/qualitywork.dir/build.make CMakeFiles/qualitywork.dir/CameraPositions.cxx.o
+	$(MAKE) -f CMakeFiles/qualitycamera.dir/build.make CMakeFiles/qualitycamera.dir/CameraPositions.cxx.o
+	$(MAKE) -f CMakeFiles/qualitytriangles.dir/build.make CMakeFiles/qualitytriangles.dir/CameraPositions.cxx.o
 .PHONY : CameraPositions.cxx.o
 
 CameraPositions.i: CameraPositions.cxx.i
@@ -138,7 +166,9 @@ CameraPositions.i: CameraPositions.cxx.i
 
 # target to preprocess a source file
 CameraPositions.cxx.i:
-	$(MAKE) -f CMakeFiles/project1F.dir/build.make CMakeFiles/project1F.dir/CameraPositions.cxx.i
+	$(MAKE) -f CMakeFiles/qualitywork.dir/build.make CMakeFiles/qualitywork.dir/CameraPositions.cxx.i
+	$(MAKE) -f CMakeFiles/qualitycamera.dir/build.make CMakeFiles/qualitycamera.dir/CameraPositions.cxx.i
+	$(MAKE) -f CMakeFiles/qualitytriangles.dir/build.make CMakeFiles/qualitytriangles.dir/CameraPositions.cxx.i
 .PHONY : CameraPositions.cxx.i
 
 CameraPositions.s: CameraPositions.cxx.s
@@ -147,35 +177,91 @@ CameraPositions.s: CameraPositions.cxx.s
 
 # target to generate assembly for a file
 CameraPositions.cxx.s:
-	$(MAKE) -f CMakeFiles/project1F.dir/build.make CMakeFiles/project1F.dir/CameraPositions.cxx.s
+	$(MAKE) -f CMakeFiles/qualitywork.dir/build.make CMakeFiles/qualitywork.dir/CameraPositions.cxx.s
+	$(MAKE) -f CMakeFiles/qualitycamera.dir/build.make CMakeFiles/qualitycamera.dir/CameraPositions.cxx.s
+	$(MAKE) -f CMakeFiles/qualitytriangles.dir/build.make CMakeFiles/qualitytriangles.dir/CameraPositions.cxx.s
 .PHONY : CameraPositions.cxx.s
 
-project1F.o: project1F.cxx.o
+quality_camera.o: quality_camera.cxx.o
 
-.PHONY : project1F.o
+.PHONY : quality_camera.o
 
 # target to build an object file
-project1F.cxx.o:
-	$(MAKE) -f CMakeFiles/project1F.dir/build.make CMakeFiles/project1F.dir/project1F.cxx.o
-.PHONY : project1F.cxx.o
+quality_camera.cxx.o:
+	$(MAKE) -f CMakeFiles/qualitycamera.dir/build.make CMakeFiles/qualitycamera.dir/quality_camera.cxx.o
+.PHONY : quality_camera.cxx.o
 
-project1F.i: project1F.cxx.i
+quality_camera.i: quality_camera.cxx.i
 
-.PHONY : project1F.i
+.PHONY : quality_camera.i
 
 # target to preprocess a source file
-project1F.cxx.i:
-	$(MAKE) -f CMakeFiles/project1F.dir/build.make CMakeFiles/project1F.dir/project1F.cxx.i
-.PHONY : project1F.cxx.i
+quality_camera.cxx.i:
+	$(MAKE) -f CMakeFiles/qualitycamera.dir/build.make CMakeFiles/qualitycamera.dir/quality_camera.cxx.i
+.PHONY : quality_camera.cxx.i
 
-project1F.s: project1F.cxx.s
+quality_camera.s: quality_camera.cxx.s
 
-.PHONY : project1F.s
+.PHONY : quality_camera.s
 
 # target to generate assembly for a file
-project1F.cxx.s:
-	$(MAKE) -f CMakeFiles/project1F.dir/build.make CMakeFiles/project1F.dir/project1F.cxx.s
-.PHONY : project1F.cxx.s
+quality_camera.cxx.s:
+	$(MAKE) -f CMakeFiles/qualitycamera.dir/build.make CMakeFiles/qualitycamera.dir/quality_camera.cxx.s
+.PHONY : quality_camera.cxx.s
+
+quality_triangle.o: quality_triangle.cxx.o
+
+.PHONY : quality_triangle.o
+
+# target to build an object file
+quality_triangle.cxx.o:
+	$(MAKE) -f CMakeFiles/qualitytriangles.dir/build.make CMakeFiles/qualitytriangles.dir/quality_triangle.cxx.o
+.PHONY : quality_triangle.cxx.o
+
+quality_triangle.i: quality_triangle.cxx.i
+
+.PHONY : quality_triangle.i
+
+# target to preprocess a source file
+quality_triangle.cxx.i:
+	$(MAKE) -f CMakeFiles/qualitytriangles.dir/build.make CMakeFiles/qualitytriangles.dir/quality_triangle.cxx.i
+.PHONY : quality_triangle.cxx.i
+
+quality_triangle.s: quality_triangle.cxx.s
+
+.PHONY : quality_triangle.s
+
+# target to generate assembly for a file
+quality_triangle.cxx.s:
+	$(MAKE) -f CMakeFiles/qualitytriangles.dir/build.make CMakeFiles/qualitytriangles.dir/quality_triangle.cxx.s
+.PHONY : quality_triangle.cxx.s
+
+quality_work.o: quality_work.cxx.o
+
+.PHONY : quality_work.o
+
+# target to build an object file
+quality_work.cxx.o:
+	$(MAKE) -f CMakeFiles/qualitywork.dir/build.make CMakeFiles/qualitywork.dir/quality_work.cxx.o
+.PHONY : quality_work.cxx.o
+
+quality_work.i: quality_work.cxx.i
+
+.PHONY : quality_work.i
+
+# target to preprocess a source file
+quality_work.cxx.i:
+	$(MAKE) -f CMakeFiles/qualitywork.dir/build.make CMakeFiles/qualitywork.dir/quality_work.cxx.i
+.PHONY : quality_work.cxx.i
+
+quality_work.s: quality_work.cxx.s
+
+.PHONY : quality_work.s
+
+# target to generate assembly for a file
+quality_work.cxx.s:
+	$(MAKE) -f CMakeFiles/qualitywork.dir/build.make CMakeFiles/qualitywork.dir/quality_work.cxx.s
+.PHONY : quality_work.cxx.s
 
 # Help Target
 help:
@@ -184,14 +270,22 @@ help:
 	@echo "... clean"
 	@echo "... depend"
 	@echo "... edit_cache"
+	@echo "... qualitywork"
+	@echo "... qualitycamera"
+	@echo "... qualitytriangles"
 	@echo "... rebuild_cache"
-	@echo "... project1F"
 	@echo "... CameraPositions.o"
 	@echo "... CameraPositions.i"
 	@echo "... CameraPositions.s"
-	@echo "... project1F.o"
-	@echo "... project1F.i"
-	@echo "... project1F.s"
+	@echo "... quality_camera.o"
+	@echo "... quality_camera.i"
+	@echo "... quality_camera.s"
+	@echo "... quality_triangle.o"
+	@echo "... quality_triangle.i"
+	@echo "... quality_triangle.s"
+	@echo "... quality_work.o"
+	@echo "... quality_work.i"
+	@echo "... quality_work.s"
 .PHONY : help
 
 

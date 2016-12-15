@@ -116,7 +116,7 @@ public:
 			int buffer_index = (y * 3 * width) + (x * 3);
 			int depth_buffer_index = y * width + x;
 			if (buffer_index < width * height * 3
-					/*&& (current_depth > -1 && current_depth < 1)*/
+					&& (current_depth > -1 && current_depth < 1)
 					&& current_depth >= depth_buffer[depth_buffer_index]) {
 				/*double shading_amount = calculate_phong_shading(lp,
 				 view_direction, current_normal);*/
@@ -130,10 +130,10 @@ public:
 						ceil441((shading_amount * color[2]) * 255),
 						(double) 255);
 				depth_buffer[depth_buffer_index] = current_depth;
-				return true;
 			}
+			return true;
 		}
-		return true;
+		return false;
 	}
 
 	/*
@@ -640,7 +640,7 @@ double calculate_phong_shading(LightingParameters lp, double *view_direction,
 
 std::vector<Triangle> GetTriangles(const char *filename) {
 
-	/*vtkPolyDataReader *rdr = vtkPolyDataReader::New();
+	vtkPolyDataReader *rdr = vtkPolyDataReader::New();
 	rdr->SetFileName(filename);
 	//cerr << "Reading" << endl;
 	rdr->Update();
@@ -830,7 +830,12 @@ Matrix get_total_transform_matrix(Matrix camera_transform,
 
 int main(int argc, char *argv[]) {
 	int no_of_procs = 56;
-	double camera_positions[114][3];
+	int helix = 1, num_cameras;
+	if(helix)
+		num_cameras = 41;
+	else
+		num_cameras = 114;
+	double camera_positions[num_cameras][3];
 	int pixels_deposited = 0;
 	get_camera_positions(camera_positions);
 	int pixels_deposited_per_node[no_of_procs];
@@ -841,7 +846,7 @@ int main(int argc, char *argv[]) {
 		std::vector<Triangle> triangles = GetTriangles(oss.str().c_str());
 		oss.str("");
 		oss.clear();
-		for(int cam_index = 0; cam_index < 114; cam_index++) {
+		for(int cam_index = 0; cam_index < num_cameras; cam_index++) {
 			vtkImageData *image = NewImage(1000, 1000);
 			unsigned char *buffer = (unsigned char *) image->GetScalarPointer(0, 0, 0);
 			int npixels = 1000 * 1000;
@@ -867,25 +872,35 @@ int main(int argc, char *argv[]) {
 				camera = GetCamera(camera_positions[cam_index], focus);*/
 				int focus_index = 0;
 				double focus[3];
-				if(cam_index < 16)
-					focus_index = (cam_index + 6) % 16;
-				else if (1) {
-					int quotient = (cam_index - 16) / 14;
-					int pseudo_index = (cam_index - 16) % 14;
-					int pseudo_focus_index = (pseudo_index + 5) % 14;
-					focus_index = ((quotient*14) + 16) + pseudo_focus_index;
-				} else {
-					int pseudo_index = cam_index + 56;
-					if(pseudo_index >= 114) {
-						focus_index = (pseudo_index % 114) + 16;
+				if(0) {
+					if(cam_index < 16)
+						focus_index = (cam_index + 7) % 16;
+					else if (1) {
+						int quotient = (cam_index - 16) / 14;
+						int pseudo_index = (cam_index - 16) % 14;
+						int pseudo_focus_index = (pseudo_index + 6) % 14;
+						focus_index = ((quotient*14) + 16) + pseudo_focus_index;
 					} else {
-						focus_index = pseudo_index;
+						int pseudo_index = cam_index + 56;
+						if(pseudo_index >= 114) {
+							focus_index = (pseudo_index % 114) + 16;
+						} else {
+							focus_index = pseudo_index;
+						}
 					}
+				} else {
+						if(cam_index < num_cameras - 3) {
+							focus_index = (cam_index + 3) % num_cameras;
+						}
+						else
+							break;
 				}
 				focus[0] = camera_positions[focus_index][0];
 				focus[1] = camera_positions[focus_index][1];
 				focus[2] = camera_positions[focus_index][2];
 				camera = GetCamera(camera_positions[cam_index], focus);
+				/*cout << "Camera Position {" << camera_positions[cam_index][0] << "," << camera_positions[cam_index][1] << "," << camera_positions[cam_index][2] << "} " <<
+				" Focus {" << focus[0] << "," << focus[1] << "," << focus[2] << "}" << endl;*/
 				//cout << file_index << ", " << cam_index << " : " << "{" << camera_positions[cam_index][0] << ", " << camera_positions[cam_index][1] << ", " << camera_positions[cam_index][2] << "} ";
 				//cout << "{" << camera_positions[focus_index][0] << ", " << camera_positions[focus_index][1] << ", " << camera_positions[focus_index][2] << "}" << endl;
 			}

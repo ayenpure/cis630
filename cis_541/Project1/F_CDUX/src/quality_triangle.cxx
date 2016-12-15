@@ -657,9 +657,9 @@ std::vector<Triangle> GetTriangles() {
 		rdr->SetFileName(oss.str().c_str());
 		oss.str("");
 		oss.clear();
-		cerr << "Reading :" << file_index << endl;
+		//cerr << "Reading :" << file_index << endl;
 		rdr->Update();
-		cerr << "Done reading" << endl;
+		//cerr << "Done reading" << endl;
 		if (rdr->GetOutput()->GetNumberOfCells() == 0) {
 			cerr << "Unable to open file!!" << endl;
 			exit (EXIT_FAILURE);
@@ -882,15 +882,20 @@ double get_distance(double *camera_position, double *focus,
 }
 
 int main(int argc, char *argv[]) {
-	double camera_positions[114][3];
+	int no_of_procs = 56;
+	int helix = 1, num_cameras;
+	if(helix)
+		num_cameras = 41;
+	else
+		num_cameras = 114;
+	double camera_positions[num_cameras][3];
 	get_camera_positions(camera_positions);
-	int active_pixels[114];
 	std::vector<Triangle> triangles = GetTriangles();
 	int no_of_triangles = triangles.size();
 	double triangle_pixels[no_of_triangles];
 	for (int i = 0; i < no_of_triangles; i++)
 		triangle_pixels[i] = 0;
-	for (int cam_index = 0; cam_index < 114; cam_index++) {
+	for (int cam_index = 0; cam_index < num_cameras; cam_index++) {
 		vtkImageData *image = NewImage(1000, 1000);
 		unsigned char *buffer = (unsigned char *) image->GetScalarPointer(0, 0,
 				0);
@@ -907,37 +912,47 @@ int main(int argc, char *argv[]) {
 		screen.height = 1000;
 
 		Camera camera;
-		double focus[3] = {0,0,0};
-		//Camera camera = GetCamera(mock_camera, 1000);
-		if (0) {
-				focus[0] = 0;
-				focus[1] = 0;
-				focus[2] = 0;
-				camera = GetCamera(camera_positions[cam_index], focus);
-		} else if(1){
-			int focus_index;
-			//double focus[3] = {0,0,0};
-			//camera = GetCamera(camera_positions[cam_index], focus);
-			if (cam_index < 16)
-				focus_index = (cam_index + 6) % 16;
-			else if (1) {
-				int quotient = (cam_index - 16) / 14;
-				int pseudo_index = (cam_index - 16) % 14;
-				int pseudo_focus_index = (pseudo_index + 5) % 14;
-				focus_index = ((quotient * 14) + 16) + pseudo_focus_index;
-			} else {
-				int pseudo_index = cam_index -16 + 70;
-				if (pseudo_index >= 98) {
-					focus_index = (pseudo_index % 98) + 7;
+		/*double mock_camera[3] = {0,0,40};
+		Camera camera = GetCamera(mock_camera, 1000);*/
+		if(0) {
+			double focus[3] = {0,0,0};
+			camera = GetCamera(camera_positions[cam_index], focus);
+		} else {
+			/*double focus[3] = {0,0,0};
+			camera = GetCamera(camera_positions[cam_index], focus);*/
+			int focus_index = 0;
+			double focus[3];
+			if(0) {
+				if(cam_index < 16)
+					focus_index = (cam_index + 7) % 16;
+				else if (1) {
+					int quotient = (cam_index - 16) / 14;
+					int pseudo_index = (cam_index - 16) % 14;
+					int pseudo_focus_index = (pseudo_index + 6) % 14;
+					focus_index = ((quotient*14) + 16) + pseudo_focus_index;
 				} else {
-					focus_index = pseudo_index;
+					int pseudo_index = cam_index + 56;
+					if(pseudo_index >= 114) {
+						focus_index = (pseudo_index % 114) + 16;
+					} else {
+						focus_index = pseudo_index;
+					}
 				}
-				focus_index+=16;
+			} else {
+					if(cam_index < num_cameras - 3) {
+						focus_index = (cam_index + 3) % num_cameras;
+					}
+					else
+						break;
 			}
 			focus[0] = camera_positions[focus_index][0];
 			focus[1] = camera_positions[focus_index][1];
 			focus[2] = camera_positions[focus_index][2];
 			camera = GetCamera(camera_positions[cam_index], focus);
+			/*cout << "Camera Position {" << camera_positions[cam_index][0] << "," << camera_positions[cam_index][1] << "," << camera_positions[cam_index][2] << "} " <<
+			" Focus {" << focus[0] << "," << focus[1] << "," << focus[2] << "}" << endl;*/
+			//cout << file_index << ", " << cam_index << " : " << "{" << camera_positions[cam_index][0] << ", " << camera_positions[cam_index][1] << ", " << camera_positions[cam_index][2] << "} ";
+			//cout << "{" << camera_positions[focus_index][0] << ", " << camera_positions[focus_index][1] << ", " << camera_positions[focus_index][2] << "}" << endl;
 		}
 		Matrix camera_transform = camera.CameraTransform();
 		//cout<<"\nCamera Transform Matrix :\n";camera_transform.Print(std::cout);
@@ -965,23 +980,11 @@ int main(int argc, char *argv[]) {
 		}
 		std::ostringstream oss;
 		oss << "camera_" << cam_index;
-		active_pixels[cam_index] = 0;
-		for(int pxl =0; pxl < 3*npixels; pxl+=3) {
-			if(!(buffer[pxl] == 0 &&
-				buffer[pxl+1] == 0 &&
-				buffer[pxl+2] == 0 ))
-				active_pixels[cam_index]++;
-		}
 		WriteImage(image, oss.str().c_str());
 		oss.str("");
 		oss.clear();
-		//cout << active_pixels[cam_index] << endl;
 	}
-	for (int i = 0; i < 114; i++) {
-		cout << active_pixels[i] << endl;
+	for (int i = 0; i < no_of_triangles; i++) {
+		cout << triangle_pixels[i] << endl;
 	}
-	//double mock_camera[3] = {40,0,0};
-	//double focus[3] = {-28,-28,-28};
-	//Camera camera = GetCamera(mock_camera, focus);
-	//analyze_camera_configuration(camera_positions);
 }
