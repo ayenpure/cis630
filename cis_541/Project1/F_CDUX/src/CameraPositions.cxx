@@ -101,9 +101,9 @@ void get_camera_positions(double (*camera_positions)[3]) {
     //cout << camera_position[0] << ", " << camera_position[1] << ", " << camera_position[2] << endl;
     cam_index++;
     do {
-      rotate(camera_position, M_PI / 4, Y, rotated_camera);
+      rotate(camera_position, M_PI / 8, Y, rotated_camera);
       camera_position[0] = rotated_camera[0];
-      y += .75;
+      y += .375;
       camera_position[1] = y;
       camera_position[2] = rotated_camera[2];
       //cout << camera_position[0] << ", " << camera_position[1] << ", " << camera_position[2] << endl;

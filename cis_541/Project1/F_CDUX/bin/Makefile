@@ -149,6 +149,19 @@ qualitytriangles/fast:
 	$(MAKE) -f CMakeFiles/qualitytriangles.dir/build.make CMakeFiles/qualitytriangles.dir/build
 .PHONY : qualitytriangles/fast
 
+#=============================================================================
+# Target rules for targets named qualitympiwork
+
+# Build rule for target.
+qualitympiwork: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 qualitympiwork
+.PHONY : qualitympiwork
+
+# fast build rule for target.
+qualitympiwork/fast:
+	$(MAKE) -f CMakeFiles/qualitympiwork.dir/build.make CMakeFiles/qualitympiwork.dir/build
+.PHONY : qualitympiwork/fast
+
 CameraPositions.o: CameraPositions.cxx.o
 
 .PHONY : CameraPositions.o
@@ -158,6 +171,7 @@ CameraPositions.cxx.o:
 	$(MAKE) -f CMakeFiles/qualitywork.dir/build.make CMakeFiles/qualitywork.dir/CameraPositions.cxx.o
 	$(MAKE) -f CMakeFiles/qualitycamera.dir/build.make CMakeFiles/qualitycamera.dir/CameraPositions.cxx.o
 	$(MAKE) -f CMakeFiles/qualitytriangles.dir/build.make CMakeFiles/qualitytriangles.dir/CameraPositions.cxx.o
+	$(MAKE) -f CMakeFiles/qualitympiwork.dir/build.make CMakeFiles/qualitympiwork.dir/CameraPositions.cxx.o
 .PHONY : CameraPositions.cxx.o
 
 CameraPositions.i: CameraPositions.cxx.i
@@ -169,6 +183,7 @@ CameraPositions.cxx.i:
 	$(MAKE) -f CMakeFiles/qualitywork.dir/build.make CMakeFiles/qualitywork.dir/CameraPositions.cxx.i
 	$(MAKE) -f CMakeFiles/qualitycamera.dir/build.make CMakeFiles/qualitycamera.dir/CameraPositions.cxx.i
 	$(MAKE) -f CMakeFiles/qualitytriangles.dir/build.make CMakeFiles/qualitytriangles.dir/CameraPositions.cxx.i
+	$(MAKE) -f CMakeFiles/qualitympiwork.dir/build.make CMakeFiles/qualitympiwork.dir/CameraPositions.cxx.i
 .PHONY : CameraPositions.cxx.i
 
 CameraPositions.s: CameraPositions.cxx.s
@@ -180,6 +195,7 @@ CameraPositions.cxx.s:
 	$(MAKE) -f CMakeFiles/qualitywork.dir/build.make CMakeFiles/qualitywork.dir/CameraPositions.cxx.s
 	$(MAKE) -f CMakeFiles/qualitycamera.dir/build.make CMakeFiles/qualitycamera.dir/CameraPositions.cxx.s
 	$(MAKE) -f CMakeFiles/qualitytriangles.dir/build.make CMakeFiles/qualitytriangles.dir/CameraPositions.cxx.s
+	$(MAKE) -f CMakeFiles/qualitympiwork.dir/build.make CMakeFiles/qualitympiwork.dir/CameraPositions.cxx.s
 .PHONY : CameraPositions.cxx.s
 
 quality_camera.o: quality_camera.cxx.o
@@ -208,6 +224,33 @@ quality_camera.s: quality_camera.cxx.s
 quality_camera.cxx.s:
 	$(MAKE) -f CMakeFiles/qualitycamera.dir/build.make CMakeFiles/qualitycamera.dir/quality_camera.cxx.s
 .PHONY : quality_camera.cxx.s
+
+quality_mpi_work.o: quality_mpi_work.cxx.o
+
+.PHONY : quality_mpi_work.o
+
+# target to build an object file
+quality_mpi_work.cxx.o:
+	$(MAKE) -f CMakeFiles/qualitympiwork.dir/build.make CMakeFiles/qualitympiwork.dir/quality_mpi_work.cxx.o
+.PHONY : quality_mpi_work.cxx.o
+
+quality_mpi_work.i: quality_mpi_work.cxx.i
+
+.PHONY : quality_mpi_work.i
+
+# target to preprocess a source file
+quality_mpi_work.cxx.i:
+	$(MAKE) -f CMakeFiles/qualitympiwork.dir/build.make CMakeFiles/qualitympiwork.dir/quality_mpi_work.cxx.i
+.PHONY : quality_mpi_work.cxx.i
+
+quality_mpi_work.s: quality_mpi_work.cxx.s
+
+.PHONY : quality_mpi_work.s
+
+# target to generate assembly for a file
+quality_mpi_work.cxx.s:
+	$(MAKE) -f CMakeFiles/qualitympiwork.dir/build.make CMakeFiles/qualitympiwork.dir/quality_mpi_work.cxx.s
+.PHONY : quality_mpi_work.cxx.s
 
 quality_triangle.o: quality_triangle.cxx.o
 
@@ -270,16 +313,20 @@ help:
 	@echo "... clean"
 	@echo "... depend"
 	@echo "... edit_cache"
+	@echo "... rebuild_cache"
 	@echo "... qualitywork"
 	@echo "... qualitycamera"
 	@echo "... qualitytriangles"
-	@echo "... rebuild_cache"
+	@echo "... qualitympiwork"
 	@echo "... CameraPositions.o"
 	@echo "... CameraPositions.i"
 	@echo "... CameraPositions.s"
 	@echo "... quality_camera.o"
 	@echo "... quality_camera.i"
 	@echo "... quality_camera.s"
+	@echo "... quality_mpi_work.o"
+	@echo "... quality_mpi_work.i"
+	@echo "... quality_mpi_work.s"
 	@echo "... quality_triangle.o"
 	@echo "... quality_triangle.i"
 	@echo "... quality_triangle.s"

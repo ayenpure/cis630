@@ -885,7 +885,7 @@ int main(int argc, char *argv[]) {
 	int no_of_procs = 56;
 	int helix = 1, num_cameras;
 	if(helix)
-		num_cameras = 41;
+		num_cameras = 81;
 	else
 		num_cameras = 114;
 	double camera_positions[num_cameras][3];
@@ -939,8 +939,8 @@ int main(int argc, char *argv[]) {
 					}
 				}
 			} else {
-					if(cam_index < num_cameras - 3) {
-						focus_index = (cam_index + 3) % num_cameras;
+					if(cam_index < num_cameras - 7) {
+						focus_index = (cam_index + 7) % num_cameras;
 					}
 					else
 						break;
