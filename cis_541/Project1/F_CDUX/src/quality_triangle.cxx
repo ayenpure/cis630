@@ -882,14 +882,13 @@ double get_distance(double *camera_position, double *focus,
 }
 
 int main(int argc, char *argv[]) {
-	int no_of_procs = 56;
-	int helix = 1, num_cameras;
-	if(helix)
-		num_cameras = 81;
-	else
-		num_cameras = 114;
-	double camera_positions[num_cameras][3];
-	get_camera_positions(camera_positions);
+	if(argc < 2) {
+		cout << "Incorrect number of arguments for execution" << endl;
+		exit (EXIT_FAILURE);
+	}
+	int config_id = atoi(argv[1]);
+	int no_of_procs = 56, num_cameras = 0;
+	double** camera_positions = get_camera_positions(config_id,&num_cameras);
 	std::vector<Triangle> triangles = GetTriangles();
 	int no_of_triangles = triangles.size();
 	double triangle_pixels[no_of_triangles];
@@ -910,50 +909,10 @@ int main(int argc, char *argv[]) {
 		screen.depth_buffer = depth_buffer;
 		screen.width = 1000;
 		screen.height = 1000;
-
-		Camera camera;
-		/*double mock_camera[3] = {0,0,40};
-		Camera camera = GetCamera(mock_camera, 1000);*/
-		if(0) {
-			double focus[3] = {0,0,0};
-			camera = GetCamera(camera_positions[cam_index], focus);
-		} else {
-			/*double focus[3] = {0,0,0};
-			camera = GetCamera(camera_positions[cam_index], focus);*/
-			int focus_index = 0;
-			double focus[3];
-			if(0) {
-				if(cam_index < 16)
-					focus_index = (cam_index + 7) % 16;
-				else if (1) {
-					int quotient = (cam_index - 16) / 14;
-					int pseudo_index = (cam_index - 16) % 14;
-					int pseudo_focus_index = (pseudo_index + 6) % 14;
-					focus_index = ((quotient*14) + 16) + pseudo_focus_index;
-				} else {
-					int pseudo_index = cam_index + 56;
-					if(pseudo_index >= 114) {
-						focus_index = (pseudo_index % 114) + 16;
-					} else {
-						focus_index = pseudo_index;
-					}
-				}
-			} else {
-					if(cam_index < num_cameras - 7) {
-						focus_index = (cam_index + 7) % num_cameras;
-					}
-					else
-						break;
-			}
-			focus[0] = camera_positions[focus_index][0];
-			focus[1] = camera_positions[focus_index][1];
-			focus[2] = camera_positions[focus_index][2];
-			camera = GetCamera(camera_positions[cam_index], focus);
-			/*cout << "Camera Position {" << camera_positions[cam_index][0] << "," << camera_positions[cam_index][1] << "," << camera_positions[cam_index][2] << "} " <<
-			" Focus {" << focus[0] << "," << focus[1] << "," << focus[2] << "}" << endl;*/
-			//cout << file_index << ", " << cam_index << " : " << "{" << camera_positions[cam_index][0] << ", " << camera_positions[cam_index][1] << ", " << camera_positions[cam_index][2] << "} ";
-			//cout << "{" << camera_positions[focus_index][0] << ", " << camera_positions[focus_index][1] << ", " << camera_positions[focus_index][2] << "}" << endl;
-		}
+		double camera_position[3], focus_point[3];
+		get_camera_position_and_focus(config_id, cam_index, num_cameras, camera_positions,
+			camera_position, focus_point);
+		Camera camera = GetCamera(camera_position, focus_point);
 		Matrix camera_transform = camera.CameraTransform();
 		//cout<<"\nCamera Transform Matrix :\n";camera_transform.Print(std::cout);
 		Matrix view_transform = camera.ViewTransform();

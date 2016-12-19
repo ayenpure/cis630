@@ -14,6 +14,7 @@
 #include <vtkCellArray.h>
 #include <vtkDataSetWriter.h>
 #include <string.h>
+#include <stdlib.h>
 #include <cmath>
 #include <algorithm>
 #include <vector>
@@ -781,10 +782,6 @@ double scan_line(Triangle *t, Screen *s) {
 			s->calculate_color_for_pixel(left_intercept, right_intercept,
 					current_x, color_at_left_intercept,
 					color_at_right_intercept, color_for_current_pixel);
-
-			/*double current_normal[3];
-			 interpolate_vector(left_intercept, right_intercept, normal_on_left,
-			 normal_on_right, current_x, current_normal);*/
 			if (s->find_pixel_and_color(current_x, current_y,
 					color_for_current_pixel, current_z, current_shading))
 				pixels_colored++;
@@ -829,15 +826,14 @@ Matrix get_total_transform_matrix(Matrix camera_transform,
 }
 
 int main(int argc, char *argv[]) {
-	int no_of_procs = 56;
-	int helix = 1, num_cameras;
-	if(helix)
-		num_cameras = 81;
-	else
-		num_cameras = 114;
-	double camera_positions[num_cameras][3];
+	if(argc < 2) {
+		cout << "Incorrect number of arguments for execution" << endl;
+		exit (EXIT_FAILURE);
+	}
+	int config_id = atoi(argv[1]);
+	int no_of_procs = 56, num_cameras = 0;
+	double** camera_positions = get_camera_positions(config_id,&num_cameras);
 	int pixels_deposited = 0;
-	get_camera_positions(camera_positions);
 	int pixels_deposited_per_node[no_of_procs];
 	for(int file_index = 0; file_index < no_of_procs; file_index++) {
 		pixels_deposited = 0;
@@ -860,65 +856,18 @@ int main(int argc, char *argv[]) {
 			screen.depth_buffer = depth_buffer;
 			screen.width = 1000;
 			screen.height = 1000;
-
-			Camera camera;
-			/*double mock_camera[3] = {0,0,40};
-			Camera camera = GetCamera(mock_camera, 1000);*/
-			if(0) {
-				double focus[3] = {0,0,0};
-				camera = GetCamera(camera_positions[cam_index], focus);
-			} else {
-				/*double focus[3] = {0,0,0};
-				camera = GetCamera(camera_positions[cam_index], focus);*/
-				int focus_index = 0;
-				double focus[3];
-				if(0) {
-					if(cam_index < 16)
-						focus_index = (cam_index + 7) % 16;
-					else if (1) {
-						int quotient = (cam_index - 16) / 14;
-						int pseudo_index = (cam_index - 16) % 14;
-						int pseudo_focus_index = (pseudo_index + 6) % 14;
-						focus_index = ((quotient*14) + 16) + pseudo_focus_index;
-					} else {
-						int pseudo_index = cam_index + 56;
-						if(pseudo_index >= 114) {
-							focus_index = (pseudo_index % 114) + 16;
-						} else {
-							focus_index = pseudo_index;
-						}
-					}
-				} else {
-						if(cam_index < num_cameras - 7) {
-							focus_index = (cam_index + 7) % num_cameras;
-						}
-						else
-							break;
-				}
-				focus[0] = camera_positions[focus_index][0];
-				focus[1] = camera_positions[focus_index][1];
-				focus[2] = camera_positions[focus_index][2];
-				camera = GetCamera(camera_positions[cam_index], focus);
-				/*cout << "Camera Position {" << camera_positions[cam_index][0] << "," << camera_positions[cam_index][1] << "," << camera_positions[cam_index][2] << "} " <<
-				" Focus {" << focus[0] << "," << focus[1] << "," << focus[2] << "}" << endl;*/
-				//cout << file_index << ", " << cam_index << " : " << "{" << camera_positions[cam_index][0] << ", " << camera_positions[cam_index][1] << ", " << camera_positions[cam_index][2] << "} ";
-				//cout << "{" << camera_positions[focus_index][0] << ", " << camera_positions[focus_index][1] << ", " << camera_positions[focus_index][2] << "}" << endl;
-			}
+			double camera_position[3], focus_point[3];
+			get_camera_position_and_focus(config_id, cam_index, num_cameras, camera_positions,
+				camera_position, focus_point);
+			Camera camera = GetCamera(camera_position, focus_point);
 			Matrix camera_transform = camera.CameraTransform();
-			//cout<<"\nCamera Transform Matrix :\n";camera_transform.Print(std::cout);
 			Matrix view_transform = camera.ViewTransform();
-			//cout<<"\nView Transform Matrix :\n";view_transform.Print(std::cout);
 			Matrix device_transform = camera.DeviceTransform(screen);
-			//cout<<"\nDevice Transform Matrix :\n";device_transform.Print(std::cout);
 			Matrix composite = get_total_transform_matrix(camera_transform,
 					view_transform, device_transform);
-			//cout<<"\nComposite Matrix :\n";composite.Print(std::cout);
 			for (int vecIndex = 0; vecIndex < triangles.size(); vecIndex++) {
-				//cout << "Triangle #" << vecIndex << " for file " << file_index << " and camera " << cam_index << endl;
 				Triangle t = triangles[vecIndex];
-				//print_triangle(t);
 				transformTriangle(&t, composite, camera);
-				//print_triangle(t);
 				if (t.is_flat_bottom_triangle()) {
 					pixels_deposited += scan_line(&t, &screen);
 				} else {
@@ -929,7 +878,6 @@ int main(int argc, char *argv[]) {
 				}
 			}
 			pixels_deposited_per_node[file_index] = pixels_deposited;
-			//cout << "****" << pixels_deposited << endl;
 			oss << "camera_" << file_index << "_" << cam_index;
 			WriteImage(image, oss.str().c_str());
 			oss.str("");
@@ -937,6 +885,7 @@ int main(int argc, char *argv[]) {
 			free(buffer);
 		}
 	}
+	free(camera_positions);
 	cout << "\n\n";
 	for(int i = 0; i < no_of_procs; i++) {
 		cout << pixels_deposited_per_node[i] << endl;

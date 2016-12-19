@@ -1,7 +1,13 @@
 #ifndef CAMERAPOSITIONS_H_
 #define CAMERAPOSITIONS_H_
 
-void rotate(double* camera_position, double angle, char axis,double* rotated_camera);
-void get_camera_positions(double (*camera_positions)[3]);
+void rotate(double* camera_position, double angle,
+   char axis, double* rotated_camera);
+
+double** get_camera_positions(int config_id, int *num_cameras);
+
+void get_camera_position_and_focus(int config_id, int cam_index,
+   int num_cameras ,double** camera_positions,double* camera_position,
+   double* focus_point);
 
 #endif
