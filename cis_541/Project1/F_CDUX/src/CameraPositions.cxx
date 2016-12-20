@@ -58,7 +58,6 @@ void rotate(double* camera_position, double angle, char axis,double* rotated_cam
 
 void get_config_random(double *camera_positions[3]) {
   double calc_camera_positions[8][16][3];
-  cout << "PI :" << M_PI << endl;
   double first_rotation[16] = {
     0, (M_PI/6), (M_PI/4), (M_PI/3),
     (M_PI/2), (2*M_PI/3), (3*M_PI/4), (5*M_PI/6),

@@ -111,6 +111,19 @@ depend:
 .PHONY : depend
 
 #=============================================================================
+# Target rules for targets named testrender
+
+# Build rule for target.
+testrender: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 testrender
+.PHONY : testrender
+
+# fast build rule for target.
+testrender/fast:
+	$(MAKE) -f CMakeFiles/testrender.dir/build.make CMakeFiles/testrender.dir/build
+.PHONY : testrender/fast
+
+#=============================================================================
 # Target rules for targets named qualitywork
 
 # Build rule for target.
@@ -168,6 +181,7 @@ CameraPositions.o: CameraPositions.cxx.o
 
 # target to build an object file
 CameraPositions.cxx.o:
+	$(MAKE) -f CMakeFiles/testrender.dir/build.make CMakeFiles/testrender.dir/CameraPositions.cxx.o
 	$(MAKE) -f CMakeFiles/qualitywork.dir/build.make CMakeFiles/qualitywork.dir/CameraPositions.cxx.o
 	$(MAKE) -f CMakeFiles/qualitycamera.dir/build.make CMakeFiles/qualitycamera.dir/CameraPositions.cxx.o
 	$(MAKE) -f CMakeFiles/qualitytriangles.dir/build.make CMakeFiles/qualitytriangles.dir/CameraPositions.cxx.o
@@ -180,6 +194,7 @@ CameraPositions.i: CameraPositions.cxx.i
 
 # target to preprocess a source file
 CameraPositions.cxx.i:
+	$(MAKE) -f CMakeFiles/testrender.dir/build.make CMakeFiles/testrender.dir/CameraPositions.cxx.i
 	$(MAKE) -f CMakeFiles/qualitywork.dir/build.make CMakeFiles/qualitywork.dir/CameraPositions.cxx.i
 	$(MAKE) -f CMakeFiles/qualitycamera.dir/build.make CMakeFiles/qualitycamera.dir/CameraPositions.cxx.i
 	$(MAKE) -f CMakeFiles/qualitytriangles.dir/build.make CMakeFiles/qualitytriangles.dir/CameraPositions.cxx.i
@@ -192,6 +207,7 @@ CameraPositions.s: CameraPositions.cxx.s
 
 # target to generate assembly for a file
 CameraPositions.cxx.s:
+	$(MAKE) -f CMakeFiles/testrender.dir/build.make CMakeFiles/testrender.dir/CameraPositions.cxx.s
 	$(MAKE) -f CMakeFiles/qualitywork.dir/build.make CMakeFiles/qualitywork.dir/CameraPositions.cxx.s
 	$(MAKE) -f CMakeFiles/qualitycamera.dir/build.make CMakeFiles/qualitycamera.dir/CameraPositions.cxx.s
 	$(MAKE) -f CMakeFiles/qualitytriangles.dir/build.make CMakeFiles/qualitytriangles.dir/CameraPositions.cxx.s
@@ -306,6 +322,33 @@ quality_work.cxx.s:
 	$(MAKE) -f CMakeFiles/qualitywork.dir/build.make CMakeFiles/qualitywork.dir/quality_work.cxx.s
 .PHONY : quality_work.cxx.s
 
+test_renders.o: test_renders.cxx.o
+
+.PHONY : test_renders.o
+
+# target to build an object file
+test_renders.cxx.o:
+	$(MAKE) -f CMakeFiles/testrender.dir/build.make CMakeFiles/testrender.dir/test_renders.cxx.o
+.PHONY : test_renders.cxx.o
+
+test_renders.i: test_renders.cxx.i
+
+.PHONY : test_renders.i
+
+# target to preprocess a source file
+test_renders.cxx.i:
+	$(MAKE) -f CMakeFiles/testrender.dir/build.make CMakeFiles/testrender.dir/test_renders.cxx.i
+.PHONY : test_renders.cxx.i
+
+test_renders.s: test_renders.cxx.s
+
+.PHONY : test_renders.s
+
+# target to generate assembly for a file
+test_renders.cxx.s:
+	$(MAKE) -f CMakeFiles/testrender.dir/build.make CMakeFiles/testrender.dir/test_renders.cxx.s
+.PHONY : test_renders.cxx.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -314,6 +357,7 @@ help:
 	@echo "... depend"
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
+	@echo "... testrender"
 	@echo "... qualitywork"
 	@echo "... qualitycamera"
 	@echo "... qualitytriangles"
@@ -333,6 +377,9 @@ help:
 	@echo "... quality_work.o"
 	@echo "... quality_work.i"
 	@echo "... quality_work.s"
+	@echo "... test_renders.o"
+	@echo "... test_renders.i"
+	@echo "... test_renders.s"
 .PHONY : help
 
 

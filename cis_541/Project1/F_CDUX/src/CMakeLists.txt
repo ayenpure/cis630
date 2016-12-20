@@ -12,6 +12,7 @@ add_executable(qualitywork quality_work.cxx CameraPositions.h CameraPositions.cx
 add_executable(qualitycamera quality_camera.cxx CameraPositions.h CameraPositions.cxx)
 add_executable(qualitytriangles quality_triangle.cxx CameraPositions.h CameraPositions.cxx)
 add_executable(qualitympiwork quality_mpi_work.cxx CameraPositions.h CameraPositions.cxx)
+add_executable(testrender test_renders.cxx CameraPositions.h CameraPositions.cxx)
 
 #if(MPI_COMPILE_FLAGS)
 #  set_target_properties(qualitympiwork PROPERTIES
@@ -27,6 +28,7 @@ if(VTK_LIBRARIES)
   target_link_libraries(qualitywork ${VTK_LIBRARIES})
   target_link_libraries(qualitycamera ${VTK_LIBRARIES})
   target_link_libraries(qualitytriangles ${VTK_LIBRARIES})
+  target_link_libraries(testrender ${VTK_LIBRARIES})
   if(MPI_C_LIBRARIES)
     target_link_libraries(qualitympiwork ${VTK_LIBRARIES} ${MPI_C_LIBRARIES})
   endif()
