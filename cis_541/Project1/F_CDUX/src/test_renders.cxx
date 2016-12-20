@@ -607,6 +607,7 @@ public:
 	}
 
 	void calculate_normals() {
+		cout << "Caluclating normal ----> calculate_normals" << endl;
 		for (int i = 0; i < 3; i++) {
 			int adj_1 = (i + 1) % 3;
 			int adj_2 = (i + 2) % 3;
@@ -618,6 +619,8 @@ public:
 			normalize_vector(adj_2_vector);
 			double normal[3];
 			cross_product(adj_1_vector, adj_2_vector, normal);
+			double t_area = vector_magnitude(normal)/2.;
+			cout << "Area of Triangle : " << t_area << endl;
 			normalize_vector(normal);
 			normals[i][0] = normal[0];
 			normals[i][1] = normal[1];
@@ -737,6 +740,47 @@ std::vector<Triangle> SplitTriangle(std::vector<Triangle> &list)
 		return output;
 }
 
+std::vector<Triangle> getOctantTriangles(std::vector<Triangle> &list) {
+	std::vector<Triangle> octant_triangles(list.size()*2);
+	int count = 0;
+	for(int i = 0; i < list.size(); i++) {
+		Triangle t1, t2;
+		Triangle t = list[i];
+		int offset_index = (t.Y[0] > t.Y[1] && t.Y[0] > t.Y[2]) ? 0 :
+					(t.Y[1] > t.Y[0] && t.Y[1] > t.Y[2]) ? 1 : 2;
+		int adj_1, adj_2;
+		adj_1 = (offset_index + 1) % 3;
+		adj_2 = (offset_index + 2) % 3;
+		double mid[3];
+		mid[0] = (t.X[adj_1]+t.X[adj_2])/2;
+		mid[1] = (t.Y[adj_1]+t.Y[adj_2])/2;
+		mid[2] = (t.Z[adj_1]+t.Z[adj_2])/2;
+		t1.X[0] = t.X[offset_index];
+		t1.X[1] = t.X[adj_1];
+		t1.X[2] = mid[0];
+		t1.Y[0] = t.Y[offset_index];
+		t1.Y[1] = t.Y[adj_1];
+		t1.Y[2] = mid[1];
+		t1.Z[0] = t.Z[offset_index];
+		t1.Z[1] = t.Z[adj_1];
+		t1.Z[2] = mid[2];
+		octant_triangles[count++] = t1;
+
+		t2.X[0] = t.X[offset_index];
+		t2.X[1] = t.X[adj_2];
+		t2.X[2] = mid[0];
+		t2.Y[0] = t.Y[offset_index];
+		t2.Y[1] = t.Y[adj_2];
+		t2.Y[2] = mid[1];
+		t2.Z[0] = t.Z[offset_index];
+		t2.Z[1] = t.Z[adj_2];
+		t2.Z[2] = mid[2];
+		octant_triangles[count++] = t2;
+	}
+	cout << "number of octant triangles : " << count << endl;
+	return octant_triangles;
+}
+
 std::vector<Triangle> GetTriangles() {
 	Triangle t;
 	t.X[0] = 1;
@@ -755,12 +799,8 @@ std::vector<Triangle> GetTriangles() {
 	}
 	std::vector<Triangle> list;
 	list.push_back(t);
-	for (int r = 0 ; r < 3 ; r++)
-	{
-			cout << "Init size " << list.size() << endl;
-	    list = SplitTriangle(list);
-			cout << "Late size " << list.size() << endl;
-	}
+	list = SplitTriangle(list);
+	list = getOctantTriangles(list);
 	std::vector<Triangle> newlist(list.size());
 	for(int i = 0; i < list.size(); i++) {
 		Triangle t = list[i];
@@ -771,6 +811,12 @@ std::vector<Triangle> GetTriangles() {
 			t.X[j] = t.X[j] / ptMag;
 			t.Y[j] = t.Y[j] / ptMag;
 			t.Z[j] = t.Z[j] / ptMag;
+			for (int j = 0; j < 3; j++) {
+				t.colors[j][0] = 0./255.0;
+				t.colors[j][1] = 96./255.0;
+				t.colors[j][2] = 69./255.0;
+			}
+			cout << "Caluclating normal ----> GetTriangles" << endl;
 			t.calculate_normals();
 			newlist[i] = t;
 		}
