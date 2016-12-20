@@ -936,6 +936,7 @@ int main(int argc, char *argv[]) {
 				triangle_pixels[vecIndex] = triangle_pixels[vecIndex] + scan_line(&t1, &screen);
 				triangle_pixels[vecIndex] = triangle_pixels[vecIndex] + scan_line(&t2, &screen);
 			}
+			triangle_pixels[vecIndex] = triangle_pixels[vecIndex] / num_cameras;
 		}
 		std::ostringstream oss;
 		oss << "camera_" << cam_index;

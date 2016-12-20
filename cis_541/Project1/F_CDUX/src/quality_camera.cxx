@@ -946,6 +946,7 @@ int main(int argc, char *argv[]) {
 				buffer[pxl+2] == 0 ))
 				active_pixels[cam_index]++;
 		}
+		active_pixels[cam_index] = active_pixels[cam_index] / no_of_procs;
 		WriteImage(image, oss.str().c_str());
 		oss.str("");
 		oss.clear();

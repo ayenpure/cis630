@@ -877,13 +877,13 @@ int main(int argc, char *argv[]) {
 					pixels_deposited += scan_line(&t2, &screen);
 				}
 			}
-			pixels_deposited_per_node[file_index] = pixels_deposited;
 			oss << "camera_" << file_index << "_" << cam_index;
 			WriteImage(image, oss.str().c_str());
 			oss.str("");
 			oss.clear();
 			free(buffer);
 		}
+		pixels_deposited_per_node[file_index] = pixels_deposited / num_cameras;
 	}
 	free(camera_positions);
 	cout << "\n\n";
