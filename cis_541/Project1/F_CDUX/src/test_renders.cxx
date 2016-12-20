@@ -754,12 +754,14 @@ std::vector<Triangle> GetTriangles() {
 		t.colors[j][2] = 69./255.0;
 	}
 	std::vector<Triangle> list;
-	std::vector<Triangle> newlist;
 	list.push_back(t);
 	for (int r = 0 ; r < 3 ; r++)
 	{
+			cout << "Init size " << list.size() << endl;
 	    list = SplitTriangle(list);
+			cout << "Late size " << list.size() << endl;
 	}
+	std::vector<Triangle> newlist(list.size());
 	for(int i = 0; i < list.size(); i++) {
 		Triangle t = list[i];
 		for(int j = 0; j < 3; j++) {
@@ -770,9 +772,10 @@ std::vector<Triangle> GetTriangles() {
 			t.Y[j] = t.Y[j] / ptMag;
 			t.Z[j] = t.Z[j] / ptMag;
 			t.calculate_normals();
-			newlist.push_back(t);
+			newlist[i] = t;
 		}
 	}
+	cout << "Total triangles " << newlist.size() << endl;
 	return newlist;
 }
 
@@ -980,7 +983,7 @@ int main(int argc, char *argv[]) {
 		oss.str("");
 		oss.clear();
 	}
-	for (int i = 0; i < num_cameras; i++) {
+	/*for (int i = 0; i < num_cameras; i++) {
 		cout << active_pixels[i] << endl;
-	}
+	}*/
 }
