@@ -607,7 +607,7 @@ public:
 	}
 
 	void calculate_normals() {
-		cout << "Caluclating normal ----> calculate_normals" << endl;
+		//cout << "Caluclating normal ----> calculate_normals" << endl;
 		for (int i = 0; i < 3; i++) {
 			int adj_1 = (i + 1) % 3;
 			int adj_2 = (i + 2) % 3;
@@ -619,8 +619,8 @@ public:
 			normalize_vector(adj_2_vector);
 			double normal[3];
 			cross_product(adj_1_vector, adj_2_vector, normal);
-			double t_area = vector_magnitude(normal)/2.;
-			cout << "Area of Triangle : " << t_area << endl;
+			double t_area = vector_magnitude(normal);
+			//cout << "Area of Triangle : " << t_area << endl;
 			normalize_vector(normal);
 			normals[i][0] = normal[0];
 			normals[i][1] = normal[1];
@@ -740,7 +740,7 @@ std::vector<Triangle> SplitTriangle(std::vector<Triangle> &list)
 		return output;
 }
 
-std::vector<Triangle> getOctantTriangles(std::vector<Triangle> &list) {
+std::vector<Triangle> SplitHalfTriangle(std::vector<Triangle> &list) {
 	std::vector<Triangle> octant_triangles(list.size()*2);
 	int count = 0;
 	for(int i = 0; i < list.size(); i++) {
@@ -781,14 +781,42 @@ std::vector<Triangle> getOctantTriangles(std::vector<Triangle> &list) {
 	return octant_triangles;
 }
 
+Triangle rotate_triangle(Triangle t, double angle, char axis) {
+	Triangle temp;
+	for (int i = 0; i < 3; i++) {
+		double current_vertex[3] = { t.X[i], t.Y[i], t.Z[i] };
+		double transformed_vertex[3] = {0, 0, 0};
+		rotate(current_vertex, angle, axis,transformed_vertex);
+		temp.X[i] = transformed_vertex[0];
+		temp.Y[i] = transformed_vertex[1];
+		temp.Z[i] = transformed_vertex[2];
+	}
+	return temp;
+}
+
+std::vector<Triangle> get_all_octants(Triangle t) {
+	int num_octants = 8;
+	std::vector<Triangle> octants(num_octants);
+	octants[0] = t;
+	for(int i = 1; i < num_octants; i++) {
+		if(i == 4 )
+			octants[i] = rotate_triangle(octants[0],M_PI / 2, 'z');
+		else
+			octants[i] = rotate_triangle(octants[i-1],M_PI / 2, 'y');
+	}
+	return octants;
+}
+
 std::vector<Triangle> GetTriangles() {
+	int recuresion = 7;
+	std::vector<Triangle> list;
 	Triangle t;
 	t.X[0] = 1;
 	t.Y[0] = 0;
 	t.Z[0] = 0;
 	t.X[1] = 0;
-	t.Y[1] = 1;
 	t.Z[1] = 0;
+	t.Y[1] = 1;
 	t.X[2] = 0;
 	t.Y[2] = 0;
 	t.Z[2] = 1;
@@ -797,31 +825,43 @@ std::vector<Triangle> GetTriangles() {
 		t.colors[j][1] = 96./255.0;
 		t.colors[j][2] = 69./255.0;
 	}
-	std::vector<Triangle> list;
-	list.push_back(t);
+	list = get_all_octants(t);
 	list = SplitTriangle(list);
-	list = getOctantTriangles(list);
-	std::vector<Triangle> newlist(list.size());
-	for(int i = 0; i < list.size(); i++) {
-		Triangle t = list[i];
-		for(int j = 0; j < 3; j++) {
-			double ptMag = sqrt(t.X[j]*t.X[j]+
-													t.Y[j]*t.Y[j]+
-													t.Z[j]*t.Z[j]);
-			t.X[j] = t.X[j] / ptMag;
-			t.Y[j] = t.Y[j] / ptMag;
-			t.Z[j] = t.Z[j] / ptMag;
-			for (int j = 0; j < 3; j++) {
-				t.colors[j][0] = 0./255.0;
-				t.colors[j][1] = 96./255.0;
-				t.colors[j][2] = 69./255.0;
-			}
-			cout << "Caluclating normal ----> GetTriangles" << endl;
-			t.calculate_normals();
-			newlist[i] = t;
+	list = SplitHalfTriangle(list);
+	cout << "To split for processor work : " << list.size() << endl;
+	std::vector< std::vector<Triangle> > proc_parted_triangles(64);
+	for(int i = 0; i < 64; i++) {
+		std::vector<Triangle> toExpand;
+		toExpand.push_back(list[i]);
+		for(int j = 0; j < recuresion; j++) {
+			toExpand = SplitTriangle(toExpand);
 		}
+		for(int j = 0; j < toExpand.size(); j++) {
+			Triangle t = toExpand[j];
+			for(int k = 0; k < 3; k++) {
+				double ptMag = sqrt(t.X[k]*t.X[k]+
+														t.Y[k]*t.Y[k]+
+														t.Z[k]*t.Z[k]);
+				t.X[k] = (t.X[k] / ptMag)*10;
+				t.Y[k] = (t.Y[k] / ptMag)*10;
+				t.Z[k] = (t.Z[k] / ptMag)*10;
+			}
+			for (int k = 0; k < 3; k++) {
+				t.colors[k][0] = 0./255.0;
+				t.colors[k][1] = 96./255.0;
+				t.colors[k][2] = 69./255.0;
+			}
+			t.calculate_normals();
+			toExpand[j] = t;
+		}
+		proc_parted_triangles[i] = toExpand;
+		//cout << "Proc " << i << " has " << toExpand.size() << " triangles" << endl;
 	}
-	cout << "Total triangles " << newlist.size() << endl;
+	std::vector<Triangle> newlist(64*1024);
+	for(int j = 0; j < 64; j++) {
+		newlist.insert(newlist.end(), proc_parted_triangles[j].begin(), proc_parted_triangles[j].end());
+	}
+	cout << "Triangles to process : " << newlist.size() << endl;
 	return newlist;
 }
 
