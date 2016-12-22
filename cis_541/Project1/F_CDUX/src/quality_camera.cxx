@@ -647,7 +647,7 @@ double calculate_phong_shading(LightingParameters lp, double *view_direction,
 			+ lp.Ks * specular_component;
 }
 
-std::vector<Triangle> GetTriangles() {
+std::vector<Triangle> GetTrianglesFromFiles() {
 	int index = 0, no_of_procs = 56;
 	std::vector<Triangle> tris(0);
 	for (int file_index = 0; file_index < no_of_procs; file_index++) {

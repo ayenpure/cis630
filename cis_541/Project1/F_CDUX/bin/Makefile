@@ -111,69 +111,76 @@ depend:
 .PHONY : depend
 
 #=============================================================================
-# Target rules for targets named testrender
+# Target rules for targets named triangleactivepixels
 
 # Build rule for target.
-testrender: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 testrender
-.PHONY : testrender
+triangleactivepixels: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 triangleactivepixels
+.PHONY : triangleactivepixels
 
 # fast build rule for target.
-testrender/fast:
-	$(MAKE) -f CMakeFiles/testrender.dir/build.make CMakeFiles/testrender.dir/build
-.PHONY : testrender/fast
+triangleactivepixels/fast:
+	$(MAKE) -f CMakeFiles/triangleactivepixels.dir/build.make CMakeFiles/triangleactivepixels.dir/build
+.PHONY : triangleactivepixels/fast
 
 #=============================================================================
-# Target rules for targets named qualitywork
+# Target rules for targets named cameraactivepixels
 
 # Build rule for target.
-qualitywork: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 qualitywork
-.PHONY : qualitywork
+cameraactivepixels: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 cameraactivepixels
+.PHONY : cameraactivepixels
 
 # fast build rule for target.
-qualitywork/fast:
-	$(MAKE) -f CMakeFiles/qualitywork.dir/build.make CMakeFiles/qualitywork.dir/build
-.PHONY : qualitywork/fast
+cameraactivepixels/fast:
+	$(MAKE) -f CMakeFiles/cameraactivepixels.dir/build.make CMakeFiles/cameraactivepixels.dir/build
+.PHONY : cameraactivepixels/fast
 
 #=============================================================================
-# Target rules for targets named qualitycamera
+# Target rules for targets named procactivepixels
 
 # Build rule for target.
-qualitycamera: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 qualitycamera
-.PHONY : qualitycamera
+procactivepixels: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 procactivepixels
+.PHONY : procactivepixels
 
 # fast build rule for target.
-qualitycamera/fast:
-	$(MAKE) -f CMakeFiles/qualitycamera.dir/build.make CMakeFiles/qualitycamera.dir/build
-.PHONY : qualitycamera/fast
+procactivepixels/fast:
+	$(MAKE) -f CMakeFiles/procactivepixels.dir/build.make CMakeFiles/procactivepixels.dir/build
+.PHONY : procactivepixels/fast
 
-#=============================================================================
-# Target rules for targets named qualitytriangles
+Camera.o: Camera.cxx.o
 
-# Build rule for target.
-qualitytriangles: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 qualitytriangles
-.PHONY : qualitytriangles
+.PHONY : Camera.o
 
-# fast build rule for target.
-qualitytriangles/fast:
-	$(MAKE) -f CMakeFiles/qualitytriangles.dir/build.make CMakeFiles/qualitytriangles.dir/build
-.PHONY : qualitytriangles/fast
+# target to build an object file
+Camera.cxx.o:
+	$(MAKE) -f CMakeFiles/triangleactivepixels.dir/build.make CMakeFiles/triangleactivepixels.dir/Camera.cxx.o
+	$(MAKE) -f CMakeFiles/cameraactivepixels.dir/build.make CMakeFiles/cameraactivepixels.dir/Camera.cxx.o
+	$(MAKE) -f CMakeFiles/procactivepixels.dir/build.make CMakeFiles/procactivepixels.dir/Camera.cxx.o
+.PHONY : Camera.cxx.o
 
-#=============================================================================
-# Target rules for targets named qualitympiwork
+Camera.i: Camera.cxx.i
 
-# Build rule for target.
-qualitympiwork: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 qualitympiwork
-.PHONY : qualitympiwork
+.PHONY : Camera.i
 
-# fast build rule for target.
-qualitympiwork/fast:
-	$(MAKE) -f CMakeFiles/qualitympiwork.dir/build.make CMakeFiles/qualitympiwork.dir/build
-.PHONY : qualitympiwork/fast
+# target to preprocess a source file
+Camera.cxx.i:
+	$(MAKE) -f CMakeFiles/triangleactivepixels.dir/build.make CMakeFiles/triangleactivepixels.dir/Camera.cxx.i
+	$(MAKE) -f CMakeFiles/cameraactivepixels.dir/build.make CMakeFiles/cameraactivepixels.dir/Camera.cxx.i
+	$(MAKE) -f CMakeFiles/procactivepixels.dir/build.make CMakeFiles/procactivepixels.dir/Camera.cxx.i
+.PHONY : Camera.cxx.i
+
+Camera.s: Camera.cxx.s
+
+.PHONY : Camera.s
+
+# target to generate assembly for a file
+Camera.cxx.s:
+	$(MAKE) -f CMakeFiles/triangleactivepixels.dir/build.make CMakeFiles/triangleactivepixels.dir/Camera.cxx.s
+	$(MAKE) -f CMakeFiles/cameraactivepixels.dir/build.make CMakeFiles/cameraactivepixels.dir/Camera.cxx.s
+	$(MAKE) -f CMakeFiles/procactivepixels.dir/build.make CMakeFiles/procactivepixels.dir/Camera.cxx.s
+.PHONY : Camera.cxx.s
 
 CameraPositions.o: CameraPositions.cxx.o
 
@@ -181,11 +188,9 @@ CameraPositions.o: CameraPositions.cxx.o
 
 # target to build an object file
 CameraPositions.cxx.o:
-	$(MAKE) -f CMakeFiles/testrender.dir/build.make CMakeFiles/testrender.dir/CameraPositions.cxx.o
-	$(MAKE) -f CMakeFiles/qualitywork.dir/build.make CMakeFiles/qualitywork.dir/CameraPositions.cxx.o
-	$(MAKE) -f CMakeFiles/qualitycamera.dir/build.make CMakeFiles/qualitycamera.dir/CameraPositions.cxx.o
-	$(MAKE) -f CMakeFiles/qualitytriangles.dir/build.make CMakeFiles/qualitytriangles.dir/CameraPositions.cxx.o
-	$(MAKE) -f CMakeFiles/qualitympiwork.dir/build.make CMakeFiles/qualitympiwork.dir/CameraPositions.cxx.o
+	$(MAKE) -f CMakeFiles/triangleactivepixels.dir/build.make CMakeFiles/triangleactivepixels.dir/CameraPositions.cxx.o
+	$(MAKE) -f CMakeFiles/cameraactivepixels.dir/build.make CMakeFiles/cameraactivepixels.dir/CameraPositions.cxx.o
+	$(MAKE) -f CMakeFiles/procactivepixels.dir/build.make CMakeFiles/procactivepixels.dir/CameraPositions.cxx.o
 .PHONY : CameraPositions.cxx.o
 
 CameraPositions.i: CameraPositions.cxx.i
@@ -194,11 +199,9 @@ CameraPositions.i: CameraPositions.cxx.i
 
 # target to preprocess a source file
 CameraPositions.cxx.i:
-	$(MAKE) -f CMakeFiles/testrender.dir/build.make CMakeFiles/testrender.dir/CameraPositions.cxx.i
-	$(MAKE) -f CMakeFiles/qualitywork.dir/build.make CMakeFiles/qualitywork.dir/CameraPositions.cxx.i
-	$(MAKE) -f CMakeFiles/qualitycamera.dir/build.make CMakeFiles/qualitycamera.dir/CameraPositions.cxx.i
-	$(MAKE) -f CMakeFiles/qualitytriangles.dir/build.make CMakeFiles/qualitytriangles.dir/CameraPositions.cxx.i
-	$(MAKE) -f CMakeFiles/qualitympiwork.dir/build.make CMakeFiles/qualitympiwork.dir/CameraPositions.cxx.i
+	$(MAKE) -f CMakeFiles/triangleactivepixels.dir/build.make CMakeFiles/triangleactivepixels.dir/CameraPositions.cxx.i
+	$(MAKE) -f CMakeFiles/cameraactivepixels.dir/build.make CMakeFiles/cameraactivepixels.dir/CameraPositions.cxx.i
+	$(MAKE) -f CMakeFiles/procactivepixels.dir/build.make CMakeFiles/procactivepixels.dir/CameraPositions.cxx.i
 .PHONY : CameraPositions.cxx.i
 
 CameraPositions.s: CameraPositions.cxx.s
@@ -207,147 +210,190 @@ CameraPositions.s: CameraPositions.cxx.s
 
 # target to generate assembly for a file
 CameraPositions.cxx.s:
-	$(MAKE) -f CMakeFiles/testrender.dir/build.make CMakeFiles/testrender.dir/CameraPositions.cxx.s
-	$(MAKE) -f CMakeFiles/qualitywork.dir/build.make CMakeFiles/qualitywork.dir/CameraPositions.cxx.s
-	$(MAKE) -f CMakeFiles/qualitycamera.dir/build.make CMakeFiles/qualitycamera.dir/CameraPositions.cxx.s
-	$(MAKE) -f CMakeFiles/qualitytriangles.dir/build.make CMakeFiles/qualitytriangles.dir/CameraPositions.cxx.s
-	$(MAKE) -f CMakeFiles/qualitympiwork.dir/build.make CMakeFiles/qualitympiwork.dir/CameraPositions.cxx.s
+	$(MAKE) -f CMakeFiles/triangleactivepixels.dir/build.make CMakeFiles/triangleactivepixels.dir/CameraPositions.cxx.s
+	$(MAKE) -f CMakeFiles/cameraactivepixels.dir/build.make CMakeFiles/cameraactivepixels.dir/CameraPositions.cxx.s
+	$(MAKE) -f CMakeFiles/procactivepixels.dir/build.make CMakeFiles/procactivepixels.dir/CameraPositions.cxx.s
 .PHONY : CameraPositions.cxx.s
 
-quality_camera.o: quality_camera.cxx.o
+RenderFunctions.o: RenderFunctions.cxx.o
 
-.PHONY : quality_camera.o
-
-# target to build an object file
-quality_camera.cxx.o:
-	$(MAKE) -f CMakeFiles/qualitycamera.dir/build.make CMakeFiles/qualitycamera.dir/quality_camera.cxx.o
-.PHONY : quality_camera.cxx.o
-
-quality_camera.i: quality_camera.cxx.i
-
-.PHONY : quality_camera.i
-
-# target to preprocess a source file
-quality_camera.cxx.i:
-	$(MAKE) -f CMakeFiles/qualitycamera.dir/build.make CMakeFiles/qualitycamera.dir/quality_camera.cxx.i
-.PHONY : quality_camera.cxx.i
-
-quality_camera.s: quality_camera.cxx.s
-
-.PHONY : quality_camera.s
-
-# target to generate assembly for a file
-quality_camera.cxx.s:
-	$(MAKE) -f CMakeFiles/qualitycamera.dir/build.make CMakeFiles/qualitycamera.dir/quality_camera.cxx.s
-.PHONY : quality_camera.cxx.s
-
-quality_mpi_work.o: quality_mpi_work.cxx.o
-
-.PHONY : quality_mpi_work.o
+.PHONY : RenderFunctions.o
 
 # target to build an object file
-quality_mpi_work.cxx.o:
-	$(MAKE) -f CMakeFiles/qualitympiwork.dir/build.make CMakeFiles/qualitympiwork.dir/quality_mpi_work.cxx.o
-.PHONY : quality_mpi_work.cxx.o
+RenderFunctions.cxx.o:
+	$(MAKE) -f CMakeFiles/triangleactivepixels.dir/build.make CMakeFiles/triangleactivepixels.dir/RenderFunctions.cxx.o
+	$(MAKE) -f CMakeFiles/cameraactivepixels.dir/build.make CMakeFiles/cameraactivepixels.dir/RenderFunctions.cxx.o
+	$(MAKE) -f CMakeFiles/procactivepixels.dir/build.make CMakeFiles/procactivepixels.dir/RenderFunctions.cxx.o
+.PHONY : RenderFunctions.cxx.o
 
-quality_mpi_work.i: quality_mpi_work.cxx.i
+RenderFunctions.i: RenderFunctions.cxx.i
 
-.PHONY : quality_mpi_work.i
+.PHONY : RenderFunctions.i
 
 # target to preprocess a source file
-quality_mpi_work.cxx.i:
-	$(MAKE) -f CMakeFiles/qualitympiwork.dir/build.make CMakeFiles/qualitympiwork.dir/quality_mpi_work.cxx.i
-.PHONY : quality_mpi_work.cxx.i
+RenderFunctions.cxx.i:
+	$(MAKE) -f CMakeFiles/triangleactivepixels.dir/build.make CMakeFiles/triangleactivepixels.dir/RenderFunctions.cxx.i
+	$(MAKE) -f CMakeFiles/cameraactivepixels.dir/build.make CMakeFiles/cameraactivepixels.dir/RenderFunctions.cxx.i
+	$(MAKE) -f CMakeFiles/procactivepixels.dir/build.make CMakeFiles/procactivepixels.dir/RenderFunctions.cxx.i
+.PHONY : RenderFunctions.cxx.i
 
-quality_mpi_work.s: quality_mpi_work.cxx.s
+RenderFunctions.s: RenderFunctions.cxx.s
 
-.PHONY : quality_mpi_work.s
+.PHONY : RenderFunctions.s
 
 # target to generate assembly for a file
-quality_mpi_work.cxx.s:
-	$(MAKE) -f CMakeFiles/qualitympiwork.dir/build.make CMakeFiles/qualitympiwork.dir/quality_mpi_work.cxx.s
-.PHONY : quality_mpi_work.cxx.s
+RenderFunctions.cxx.s:
+	$(MAKE) -f CMakeFiles/triangleactivepixels.dir/build.make CMakeFiles/triangleactivepixels.dir/RenderFunctions.cxx.s
+	$(MAKE) -f CMakeFiles/cameraactivepixels.dir/build.make CMakeFiles/cameraactivepixels.dir/RenderFunctions.cxx.s
+	$(MAKE) -f CMakeFiles/procactivepixels.dir/build.make CMakeFiles/procactivepixels.dir/RenderFunctions.cxx.s
+.PHONY : RenderFunctions.cxx.s
 
-quality_triangle.o: quality_triangle.cxx.o
+TriangleOperations.o: TriangleOperations.cxx.o
 
-.PHONY : quality_triangle.o
+.PHONY : TriangleOperations.o
 
 # target to build an object file
-quality_triangle.cxx.o:
-	$(MAKE) -f CMakeFiles/qualitytriangles.dir/build.make CMakeFiles/qualitytriangles.dir/quality_triangle.cxx.o
-.PHONY : quality_triangle.cxx.o
+TriangleOperations.cxx.o:
+	$(MAKE) -f CMakeFiles/triangleactivepixels.dir/build.make CMakeFiles/triangleactivepixels.dir/TriangleOperations.cxx.o
+	$(MAKE) -f CMakeFiles/cameraactivepixels.dir/build.make CMakeFiles/cameraactivepixels.dir/TriangleOperations.cxx.o
+	$(MAKE) -f CMakeFiles/procactivepixels.dir/build.make CMakeFiles/procactivepixels.dir/TriangleOperations.cxx.o
+.PHONY : TriangleOperations.cxx.o
 
-quality_triangle.i: quality_triangle.cxx.i
+TriangleOperations.i: TriangleOperations.cxx.i
 
-.PHONY : quality_triangle.i
+.PHONY : TriangleOperations.i
 
 # target to preprocess a source file
-quality_triangle.cxx.i:
-	$(MAKE) -f CMakeFiles/qualitytriangles.dir/build.make CMakeFiles/qualitytriangles.dir/quality_triangle.cxx.i
-.PHONY : quality_triangle.cxx.i
+TriangleOperations.cxx.i:
+	$(MAKE) -f CMakeFiles/triangleactivepixels.dir/build.make CMakeFiles/triangleactivepixels.dir/TriangleOperations.cxx.i
+	$(MAKE) -f CMakeFiles/cameraactivepixels.dir/build.make CMakeFiles/cameraactivepixels.dir/TriangleOperations.cxx.i
+	$(MAKE) -f CMakeFiles/procactivepixels.dir/build.make CMakeFiles/procactivepixels.dir/TriangleOperations.cxx.i
+.PHONY : TriangleOperations.cxx.i
 
-quality_triangle.s: quality_triangle.cxx.s
+TriangleOperations.s: TriangleOperations.cxx.s
 
-.PHONY : quality_triangle.s
+.PHONY : TriangleOperations.s
 
 # target to generate assembly for a file
-quality_triangle.cxx.s:
-	$(MAKE) -f CMakeFiles/qualitytriangles.dir/build.make CMakeFiles/qualitytriangles.dir/quality_triangle.cxx.s
-.PHONY : quality_triangle.cxx.s
+TriangleOperations.cxx.s:
+	$(MAKE) -f CMakeFiles/triangleactivepixels.dir/build.make CMakeFiles/triangleactivepixels.dir/TriangleOperations.cxx.s
+	$(MAKE) -f CMakeFiles/cameraactivepixels.dir/build.make CMakeFiles/cameraactivepixels.dir/TriangleOperations.cxx.s
+	$(MAKE) -f CMakeFiles/procactivepixels.dir/build.make CMakeFiles/procactivepixels.dir/TriangleOperations.cxx.s
+.PHONY : TriangleOperations.cxx.s
 
-quality_work.o: quality_work.cxx.o
+Utilities.o: Utilities.cxx.o
 
-.PHONY : quality_work.o
+.PHONY : Utilities.o
 
 # target to build an object file
-quality_work.cxx.o:
-	$(MAKE) -f CMakeFiles/qualitywork.dir/build.make CMakeFiles/qualitywork.dir/quality_work.cxx.o
-.PHONY : quality_work.cxx.o
+Utilities.cxx.o:
+	$(MAKE) -f CMakeFiles/triangleactivepixels.dir/build.make CMakeFiles/triangleactivepixels.dir/Utilities.cxx.o
+	$(MAKE) -f CMakeFiles/cameraactivepixels.dir/build.make CMakeFiles/cameraactivepixels.dir/Utilities.cxx.o
+	$(MAKE) -f CMakeFiles/procactivepixels.dir/build.make CMakeFiles/procactivepixels.dir/Utilities.cxx.o
+.PHONY : Utilities.cxx.o
 
-quality_work.i: quality_work.cxx.i
+Utilities.i: Utilities.cxx.i
 
-.PHONY : quality_work.i
+.PHONY : Utilities.i
 
 # target to preprocess a source file
-quality_work.cxx.i:
-	$(MAKE) -f CMakeFiles/qualitywork.dir/build.make CMakeFiles/qualitywork.dir/quality_work.cxx.i
-.PHONY : quality_work.cxx.i
+Utilities.cxx.i:
+	$(MAKE) -f CMakeFiles/triangleactivepixels.dir/build.make CMakeFiles/triangleactivepixels.dir/Utilities.cxx.i
+	$(MAKE) -f CMakeFiles/cameraactivepixels.dir/build.make CMakeFiles/cameraactivepixels.dir/Utilities.cxx.i
+	$(MAKE) -f CMakeFiles/procactivepixels.dir/build.make CMakeFiles/procactivepixels.dir/Utilities.cxx.i
+.PHONY : Utilities.cxx.i
 
-quality_work.s: quality_work.cxx.s
+Utilities.s: Utilities.cxx.s
 
-.PHONY : quality_work.s
+.PHONY : Utilities.s
 
 # target to generate assembly for a file
-quality_work.cxx.s:
-	$(MAKE) -f CMakeFiles/qualitywork.dir/build.make CMakeFiles/qualitywork.dir/quality_work.cxx.s
-.PHONY : quality_work.cxx.s
+Utilities.cxx.s:
+	$(MAKE) -f CMakeFiles/triangleactivepixels.dir/build.make CMakeFiles/triangleactivepixels.dir/Utilities.cxx.s
+	$(MAKE) -f CMakeFiles/cameraactivepixels.dir/build.make CMakeFiles/cameraactivepixels.dir/Utilities.cxx.s
+	$(MAKE) -f CMakeFiles/procactivepixels.dir/build.make CMakeFiles/procactivepixels.dir/Utilities.cxx.s
+.PHONY : Utilities.cxx.s
 
-test_renders.o: test_renders.cxx.o
+camera_active_pixels.o: camera_active_pixels.cxx.o
 
-.PHONY : test_renders.o
+.PHONY : camera_active_pixels.o
 
 # target to build an object file
-test_renders.cxx.o:
-	$(MAKE) -f CMakeFiles/testrender.dir/build.make CMakeFiles/testrender.dir/test_renders.cxx.o
-.PHONY : test_renders.cxx.o
+camera_active_pixels.cxx.o:
+	$(MAKE) -f CMakeFiles/cameraactivepixels.dir/build.make CMakeFiles/cameraactivepixels.dir/camera_active_pixels.cxx.o
+.PHONY : camera_active_pixels.cxx.o
 
-test_renders.i: test_renders.cxx.i
+camera_active_pixels.i: camera_active_pixels.cxx.i
 
-.PHONY : test_renders.i
+.PHONY : camera_active_pixels.i
 
 # target to preprocess a source file
-test_renders.cxx.i:
-	$(MAKE) -f CMakeFiles/testrender.dir/build.make CMakeFiles/testrender.dir/test_renders.cxx.i
-.PHONY : test_renders.cxx.i
+camera_active_pixels.cxx.i:
+	$(MAKE) -f CMakeFiles/cameraactivepixels.dir/build.make CMakeFiles/cameraactivepixels.dir/camera_active_pixels.cxx.i
+.PHONY : camera_active_pixels.cxx.i
 
-test_renders.s: test_renders.cxx.s
+camera_active_pixels.s: camera_active_pixels.cxx.s
 
-.PHONY : test_renders.s
+.PHONY : camera_active_pixels.s
 
 # target to generate assembly for a file
-test_renders.cxx.s:
-	$(MAKE) -f CMakeFiles/testrender.dir/build.make CMakeFiles/testrender.dir/test_renders.cxx.s
-.PHONY : test_renders.cxx.s
+camera_active_pixels.cxx.s:
+	$(MAKE) -f CMakeFiles/cameraactivepixels.dir/build.make CMakeFiles/cameraactivepixels.dir/camera_active_pixels.cxx.s
+.PHONY : camera_active_pixels.cxx.s
+
+proc_active_pixels.o: proc_active_pixels.cxx.o
+
+.PHONY : proc_active_pixels.o
+
+# target to build an object file
+proc_active_pixels.cxx.o:
+	$(MAKE) -f CMakeFiles/procactivepixels.dir/build.make CMakeFiles/procactivepixels.dir/proc_active_pixels.cxx.o
+.PHONY : proc_active_pixels.cxx.o
+
+proc_active_pixels.i: proc_active_pixels.cxx.i
+
+.PHONY : proc_active_pixels.i
+
+# target to preprocess a source file
+proc_active_pixels.cxx.i:
+	$(MAKE) -f CMakeFiles/procactivepixels.dir/build.make CMakeFiles/procactivepixels.dir/proc_active_pixels.cxx.i
+.PHONY : proc_active_pixels.cxx.i
+
+proc_active_pixels.s: proc_active_pixels.cxx.s
+
+.PHONY : proc_active_pixels.s
+
+# target to generate assembly for a file
+proc_active_pixels.cxx.s:
+	$(MAKE) -f CMakeFiles/procactivepixels.dir/build.make CMakeFiles/procactivepixels.dir/proc_active_pixels.cxx.s
+.PHONY : proc_active_pixels.cxx.s
+
+triangle_active_pixels.o: triangle_active_pixels.cxx.o
+
+.PHONY : triangle_active_pixels.o
+
+# target to build an object file
+triangle_active_pixels.cxx.o:
+	$(MAKE) -f CMakeFiles/triangleactivepixels.dir/build.make CMakeFiles/triangleactivepixels.dir/triangle_active_pixels.cxx.o
+.PHONY : triangle_active_pixels.cxx.o
+
+triangle_active_pixels.i: triangle_active_pixels.cxx.i
+
+.PHONY : triangle_active_pixels.i
+
+# target to preprocess a source file
+triangle_active_pixels.cxx.i:
+	$(MAKE) -f CMakeFiles/triangleactivepixels.dir/build.make CMakeFiles/triangleactivepixels.dir/triangle_active_pixels.cxx.i
+.PHONY : triangle_active_pixels.cxx.i
+
+triangle_active_pixels.s: triangle_active_pixels.cxx.s
+
+.PHONY : triangle_active_pixels.s
+
+# target to generate assembly for a file
+triangle_active_pixels.cxx.s:
+	$(MAKE) -f CMakeFiles/triangleactivepixels.dir/build.make CMakeFiles/triangleactivepixels.dir/triangle_active_pixels.cxx.s
+.PHONY : triangle_active_pixels.cxx.s
 
 # Help Target
 help:
@@ -356,30 +402,34 @@ help:
 	@echo "... clean"
 	@echo "... depend"
 	@echo "... edit_cache"
+	@echo "... triangleactivepixels"
+	@echo "... cameraactivepixels"
+	@echo "... procactivepixels"
 	@echo "... rebuild_cache"
-	@echo "... testrender"
-	@echo "... qualitywork"
-	@echo "... qualitycamera"
-	@echo "... qualitytriangles"
-	@echo "... qualitympiwork"
+	@echo "... Camera.o"
+	@echo "... Camera.i"
+	@echo "... Camera.s"
 	@echo "... CameraPositions.o"
 	@echo "... CameraPositions.i"
 	@echo "... CameraPositions.s"
-	@echo "... quality_camera.o"
-	@echo "... quality_camera.i"
-	@echo "... quality_camera.s"
-	@echo "... quality_mpi_work.o"
-	@echo "... quality_mpi_work.i"
-	@echo "... quality_mpi_work.s"
-	@echo "... quality_triangle.o"
-	@echo "... quality_triangle.i"
-	@echo "... quality_triangle.s"
-	@echo "... quality_work.o"
-	@echo "... quality_work.i"
-	@echo "... quality_work.s"
-	@echo "... test_renders.o"
-	@echo "... test_renders.i"
-	@echo "... test_renders.s"
+	@echo "... RenderFunctions.o"
+	@echo "... RenderFunctions.i"
+	@echo "... RenderFunctions.s"
+	@echo "... TriangleOperations.o"
+	@echo "... TriangleOperations.i"
+	@echo "... TriangleOperations.s"
+	@echo "... Utilities.o"
+	@echo "... Utilities.i"
+	@echo "... Utilities.s"
+	@echo "... camera_active_pixels.o"
+	@echo "... camera_active_pixels.i"
+	@echo "... camera_active_pixels.s"
+	@echo "... proc_active_pixels.o"
+	@echo "... proc_active_pixels.i"
+	@echo "... proc_active_pixels.s"
+	@echo "... triangle_active_pixels.o"
+	@echo "... triangle_active_pixels.i"
+	@echo "... triangle_active_pixels.s"
 .PHONY : help
 
 
