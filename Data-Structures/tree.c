@@ -19,7 +19,33 @@ treenode* newtreenode(const char* content) {
   return newnode;
 }
 
+void insertnode(treenode* node,const char* string) {
+  if ( strcmp(node->content, string) <= 0 ) {
+    //right
+    if(node->right == NULL) {
+      node->right = newtreenode(string);
+    } else
+      insertnode(node->right, string);
+  } else {
+    //left
+    if(node->left == NULL) {
+      node->left = newtreenode(string);
+    } else
+      insertnode(node->left, string);
+  }
+}
+
 treenode* constructtree(const char** fortree) {
+  // Construct root
+  treenode *root = newtreenode(fortree[0]);
+  for(int i = 1; i < NODE_COUNT; i++) {
+      insertnode(root, fortree[i]);
+  }
+  return root;
+}
+
+
+/*treenode* constructtree(const char** fortree) {
   // Construct root
   treenode *root = newtreenode(fortree[0]);
   for(int i = 1; i < NODE_COUNT; i++) {
@@ -52,13 +78,50 @@ treenode* constructtree(const char** fortree) {
     }
   }
   return root;
+}*/
+
+void inorder(treenode *node) {
+  if(node->left != NULL) {
+    inorder(node->left);
+  }
+  printf("%s \t", node->content);
+  if(node->right != NULL) {
+    inorder(node->right);
+  }
 }
+
+void preorder(treenode *node) {
+  printf("%s \t", node->content);
+  if(node->left != NULL) {
+    preorder(node->left);
+  }
+  if(node->right != NULL) {
+    preorder(node->right);
+  }
+}
+
+void postorder(treenode *node) {
+  if(node->left != NULL) {
+    postorder(node->left);
+  }
+  if(node->right != NULL) {
+    postorder(node->right);
+  }
+  printf("%s \t", node->content);
+}
+
 
 int main(int *argc, char** argv) {
   const char *fortree[100] = {
     "koenigsegg","lamborghini","maserati","pagani","tesla",
     "ferrari","alfa romeo","volkswagen","audi","bmw"
   };
-  treenode *content = constructtree(fortree);
+  treenode *root = constructtree(fortree);
+  inorder(root);
+  printf("\n");
+  preorder(root);
+  printf("\n");
+  postorder(root);
+  printf("\n");
   return 0;
 }
