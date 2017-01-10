@@ -5,6 +5,9 @@ double ceil441(double f);
 
 double floor441(double f);
 
+void rotate(double* camera_position, double angle,
+   char axis, double* rotated_camera);
+
 double interpolate(double point_1, double point_2, double value_1,
 		double value_2, double quest_point);
 

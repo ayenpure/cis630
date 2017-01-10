@@ -291,7 +291,7 @@ public:
 
 };
 
-std::vector<Triangle> SplitHalfTriangle(std::vector<Triangle> &list);
+std::vector<Triangle> SplitTriangle(std::vector<Triangle> list, int parts);
 
 Triangle rotate_triangle(Triangle t, double angle, char axis);
 
@@ -303,7 +303,7 @@ std::vector<Triangle> GetTriangles(const char *filename);
 
 std::vector<Triangle> GetTrianglesFromFiles(int no_of_procs);
 
-std::vector< std::vector<Triangle> > GetTrianglesForProcs();
+std::vector< std::vector<Triangle> > GetTrianglesForProcs(int split_parts, int split_rec, int tri_grain);
 
 std::vector<Triangle> SplitTriangle(std::vector<Triangle> &list);
 

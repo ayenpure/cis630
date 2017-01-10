@@ -19,7 +19,6 @@
 
 #include "Utilities.h"
 #include "TriangleOperations.h"
-#include "CameraPositions.h"
 #include "LightingParameters.h"
 #include "RenderFunctions.h"
 
@@ -118,42 +117,57 @@ std::vector<Triangle> SplitTriangle(std::vector<Triangle> &list)
 		return output;
 }
 
-std::vector<Triangle> SplitHalfTriangle(std::vector<Triangle> &list) {
-	std::vector<Triangle> octant_triangles(list.size()*2);
+std::vector<Triangle> SplitTriangle(std::vector<Triangle> list, int parts) {
+	if(parts == 0)
+		return list;
+	std::vector<Triangle> octant_triangles(list.size()*parts);
 	int count = 0;
 	for(int i = 0; i < list.size(); i++) {
-		Triangle t1, t2;
 		Triangle t = list[i];
 		int offset_index = (t.Y[0] > t.Y[1] && t.Y[0] > t.Y[2]) ? 0 :
 					(t.Y[1] > t.Y[0] && t.Y[1] > t.Y[2]) ? 1 : 2;
 		int adj_1, adj_2;
 		adj_1 = (offset_index + 1) % 3;
 		adj_2 = (offset_index + 2) % 3;
-		double mid[3];
-		mid[0] = (t.X[adj_1]+t.X[adj_2])/2;
-		mid[1] = (t.Y[adj_1]+t.Y[adj_2])/2;
-		mid[2] = (t.Z[adj_1]+t.Z[adj_2])/2;
-		t1.X[0] = t.X[offset_index];
-		t1.X[1] = t.X[adj_1];
-		t1.X[2] = mid[0];
-		t1.Y[0] = t.Y[offset_index];
-		t1.Y[1] = t.Y[adj_1];
-		t1.Y[2] = mid[1];
-		t1.Z[0] = t.Z[offset_index];
-		t1.Z[1] = t.Z[adj_1];
-		t1.Z[2] = mid[2];
-		octant_triangles[count++] = t1;
-
-		t2.X[0] = t.X[offset_index];
-		t2.X[1] = t.X[adj_2];
-		t2.X[2] = mid[0];
-		t2.Y[0] = t.Y[offset_index];
-		t2.Y[1] = t.Y[adj_2];
-		t2.Y[2] = mid[1];
-		t2.Z[0] = t.Z[offset_index];
-		t2.Z[1] = t.Z[adj_2];
-		t2.Z[2] = mid[2];
-		octant_triangles[count++] = t2;
+		for(int j = 0; j < parts; j++) {
+			Triangle tpart;
+			double point[3];
+			point[0] = interpolate(0, parts, t.X[adj_1], t.X[adj_2], j+1);
+			point[1] = interpolate(0, parts, t.Y[adj_1], t.Y[adj_2], j+1);
+			point[2] = interpolate(0, parts, t.Z[adj_1], t.Z[adj_2], j+1);
+			if(j == 0) {
+				tpart.X[0] = t.X[offset_index];
+				tpart.X[1] = t.X[adj_1];
+				tpart.X[2] = point[0];
+				tpart.Y[0] = t.Y[offset_index];
+				tpart.Y[1] = t.Y[adj_1];
+				tpart.Y[2] = point[1];
+				tpart.Z[0] = t.Z[offset_index];
+				tpart.Z[1] = t.Z[adj_1];
+				tpart.Z[2] = point[2];
+			} else if (j == parts - 1) {
+				tpart.X[0] = t.X[offset_index];
+				tpart.X[1] = octant_triangles[count-1].X[2];
+				tpart.X[2] = point[0];
+				tpart.Y[0] = t.Y[offset_index];
+				tpart.Y[1] = octant_triangles[count-1].Y[2];
+				tpart.Y[2] = point[1];
+				tpart.Z[0] = t.Z[offset_index];
+				tpart.Z[1] = octant_triangles[count-1].Z[2];
+				tpart.Z[2] = point[2];
+			} else {
+				tpart.X[0] = t.X[offset_index];
+				tpart.X[1] = octant_triangles[count-1].X[2];
+				tpart.X[2] = t.X[adj_2];
+				tpart.Y[0] = t.Y[offset_index];
+				tpart.Y[1] = octant_triangles[count-1].Y[2];
+				tpart.Y[2] = t.Y[adj_2];
+				tpart.Z[0] = t.Z[offset_index];
+				tpart.Z[1] = octant_triangles[count-1].Z[2];
+				tpart.Z[2] = t.Z[adj_2];
+			}
+			octant_triangles[count++] = tpart;
+		}
 	}
 	cout << "number of octant triangles : " << count << endl;
 	return octant_triangles;
@@ -185,16 +199,15 @@ std::vector<Triangle> get_all_octants(Triangle t) {
 	return octants;
 }
 
-std::vector<Triangle> GetTriangles() {
-	int recuresion = 7;
+std::vector<Triangle> GetTriangles(int split_parts, int split_rec, int tri_grain) {
 	std::vector<Triangle> list;
 	Triangle t;
 	t.X[0] = 1;
 	t.Y[0] = 0;
 	t.Z[0] = 0;
 	t.X[1] = 0;
-	t.Z[1] = 0;
 	t.Y[1] = 1;
+	t.Z[1] = 0;
 	t.X[2] = 0;
 	t.Y[2] = 0;
 	t.Z[2] = 1;
@@ -204,14 +217,15 @@ std::vector<Triangle> GetTriangles() {
 		t.colors[j][2] = 69./255.0;
 	}
 	list = get_all_octants(t);
-	list = SplitTriangle(list);
-	list = SplitHalfTriangle(list);
+	list = SplitTriangle(list, split_parts);
+	for(int i = 0; i < split_rec; i++)
+		list = SplitTriangle(list);
 	cout << "To split for processor work : " << list.size() << endl;
-	std::vector< std::vector<Triangle> > proc_parted_triangles(64);
-	for(int i = 0; i < 64; i++) {
+	std::vector< std::vector<Triangle> > proc_parted_triangles(list.size());
+	for(int i = 0; i < list.size(); i++) {
 		std::vector<Triangle> toExpand;
 		toExpand.push_back(list[i]);
-		for(int j = 0; j < recuresion; j++) {
+		for(int j = 0; j < tri_grain; j++) {
 			toExpand = SplitTriangle(toExpand);
 		}
 		for(int j = 0; j < toExpand.size(); j++) {
@@ -233,7 +247,6 @@ std::vector<Triangle> GetTriangles() {
 			toExpand[j] = t;
 		}
 		proc_parted_triangles[i] = toExpand;
-		//cout << "Proc " << i << " has " << toExpand.size() << " triangles" << endl;
 	}
 	std::vector<Triangle> newlist(64*1024);
 	for(int j = 0; j < 64; j++) {
@@ -243,16 +256,15 @@ std::vector<Triangle> GetTriangles() {
 	return newlist;
 }
 
-std::vector< std::vector<Triangle> > GetTrianglesForProcs() {
-	int recuresion = 7;
+std::vector< std::vector<Triangle> > GetTrianglesForProcs(int split_parts, int split_rec, int tri_grain) {
 	std::vector<Triangle> list;
 	Triangle t;
 	t.X[0] = 1;
 	t.Y[0] = 0;
 	t.Z[0] = 0;
 	t.X[1] = 0;
-	t.Z[1] = 0;
 	t.Y[1] = 1;
+	t.Z[1] = 0;
 	t.X[2] = 0;
 	t.Y[2] = 0;
 	t.Z[2] = 1;
@@ -262,14 +274,15 @@ std::vector< std::vector<Triangle> > GetTrianglesForProcs() {
 		t.colors[j][2] = 69./255.0;
 	}
 	list = get_all_octants(t);
-	list = SplitTriangle(list);
-	list = SplitHalfTriangle(list);
+	list = SplitTriangle(list, split_parts);
+	for(int i = 0; i < split_rec; i++)
+		list = SplitTriangle(list);
 	cout << "To split for processor work : " << list.size() << endl;
-	std::vector< std::vector<Triangle> > proc_parted_triangles(64);
-	for(int i = 0; i < 64; i++) {
+	std::vector< std::vector<Triangle> > proc_parted_triangles(list.size());
+	for(int i = 0; i < list.size(); i++) {
 		std::vector<Triangle> toExpand;
 		toExpand.push_back(list[i]);
-		for(int j = 0; j < recuresion; j++) {
+		for(int j = 0; j < tri_grain; j++) {
 			toExpand = SplitTriangle(toExpand);
 		}
 		for(int j = 0; j < toExpand.size(); j++) {
