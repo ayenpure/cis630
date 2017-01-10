@@ -54,16 +54,21 @@ void WriteImage(vtkImageData *img, const char *filename) {
 }
 
 int main(int argc, char *argv[]) {
-	int no_of_procs = 56, num_cameras = 0;
+	int config_id = 0,
+	 		no_of_procs = 0,
+			num_cameras = 0,
+			read_files = 0;
 	std::vector< std::vector<Triangle> > proc_triangles;
-	if(argc < 2) {
+	if(argc < 4) {
 		cout << "Incorrect number of arguments for execution" << endl;
 		exit (EXIT_FAILURE);
-	} else if (argc == 3) {
-		no_of_procs = 64;
-		proc_triangles = GetTrianglesForProcs();
+	} else {
+		no_of_procs = 3*8;//atoi(argv[1]);
+		config_id = atoi(argv[2]);
+		read_files = atoi(argv[3]);
+		if(!read_files)
+			proc_triangles = GetTrianglesForProcs(3,0,7);
 	}
-	int config_id = atoi(argv[1]);
 	double** camera_positions = get_camera_positions(config_id,&num_cameras);
 	int pixels_deposited = 0;
 	int pixels_deposited_per_node[no_of_procs];
@@ -71,7 +76,7 @@ int main(int argc, char *argv[]) {
 		pixels_deposited = 0;
 		std::vector<Triangle> triangles;
 		std::ostringstream oss;
-		if(argc == 2) {
+		if(read_files) {
 			oss << "hardyglobal." << file_index << ".vtk";
 			triangles = GetTriangles(oss.str().c_str());
 			oss.str("");
