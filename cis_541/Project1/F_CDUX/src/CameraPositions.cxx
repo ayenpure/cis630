@@ -4,57 +4,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "CameraPositions.h"
+#include "Utilities.h"
+#include "TriangleOperations.h"
 
 using std::sin;
 using std::cos;
 using std::endl;
 using std::cout;
 using std::abs;
-
-#define X 'x'
-#define Y 'y'
-#define Z 'z'
-
-void rotate(double* camera_position, double angle, char axis,double* rotated_camera) {
-  double rotation_matrix[3][3];
-  if(axis == X) {
-    double x_rotation_matrix[3][3] = {
-      1,0,0,
-      0,cos(angle),-sin(angle),
-      0,sin(angle),cos(angle)
-    };
-    memcpy(rotation_matrix, x_rotation_matrix, 9*sizeof(double));
-  } else if (axis == Y) {
-    double y_rotation_matrix[3][3] = {
-      cos(angle),0,-sin(angle),
-      0,1,0,
-      sin(angle),0,cos(angle)
-    };
-    memcpy(rotation_matrix, y_rotation_matrix, 9*sizeof(double));
-  } else if (axis == Z) {
-    double z_rotation_matrix[3][3] = {
-      cos(angle),-sin(angle),0,
-      sin(angle),cos(angle),0,
-      0,0,1
-    };
-    memcpy(rotation_matrix, z_rotation_matrix, 9*sizeof(double));
-  }
-  /*for (int i = 0 ; i < 4 ; i++)
-  {
-      char str[256];
-      sprintf(str, "(%.7f %.7f %.7f)\n", rotation_matrix[i][0], rotation_matrix[i][1], rotation_matrix[i][2]);
-      cout << str;
-  }*/
-  for(int i = 0; i < 3; i++) {
-    rotated_camera[i] = 0;
-    for(int j = 0; j < 3; j++) {
-      rotated_camera[i] = rotated_camera[i] + camera_position[j]*rotation_matrix[j][i];
-    }
-    if(abs(rotated_camera[i]) < 0.0000001)
-      rotated_camera[i] = 0;
-  }
-  //cout << "rotated position {" << rotated_camera[0] << ", " << rotated_camera[1] << ", " << rotated_camera[2] << " }" << endl;
-}
 
 void get_config_random(double *camera_positions[3]) {
   double calc_camera_positions[8][16][3];
@@ -69,11 +26,11 @@ void get_config_random(double *camera_positions[3]) {
   };
   double camera_position[3] = {40,0,0};
   for(int i = 0; i < 16; i++) {
-    rotate(camera_position, first_rotation[i], Y, calc_camera_positions[0][i]);
+    rotate(camera_position, first_rotation[i], 'y', calc_camera_positions[0][i]);
   };
   for(int i = 1; i < 8; i++) {
     for(int j = 0; j < 16; j++) {
-      rotate(calc_camera_positions[0][j], second_rotation[i-1], X, calc_camera_positions[i][j]);
+      rotate(calc_camera_positions[0][j], second_rotation[i-1], 'x', calc_camera_positions[i][j]);
     }
   };
   int positions_count = 0;
@@ -89,6 +46,26 @@ void get_config_random(double *camera_positions[3]) {
   }
 }
 
+void get_uniform_cinema_distribution(double *camera_positions[3]) {
+  std::vector< std::vector<Triangle> > proc_triangles;
+  proc_triangles = GetTrianglesForProcs(3,1,0);
+  cout << proc_triangles.size() << endl;
+  for(int i=0;i<proc_triangles.size();i++) {
+    Triangle t = proc_triangles[i][0];
+    for(int k = 0; k < 3; k++) {
+      double ptMag = sqrt(t.X[k]*t.X[k]+
+                          t.Y[k]*t.Y[k]+
+                          t.Z[k]*t.Z[k]);
+      t.X[k] = (t.X[k] / ptMag)*40;
+      t.Y[k] = (t.Y[k] / ptMag)*40;
+      t.Z[k] = (t.Z[k] / ptMag)*40;
+    }
+    camera_positions[i][0] = (t.X[0] + t.X[1] + t.X[2]) / 3;
+    camera_positions[i][1] = (t.Y[0] + t.Y[1] + t.Y[2]) / 3;
+    camera_positions[i][2] = (t.Z[0] + t.Z[1] + t.Z[2]) / 3;
+  }
+}
+
 void get_config_helix(double *camera_positions[3]) {
   double y = -15;
   int cam_index = 0;
@@ -100,7 +77,7 @@ void get_config_helix(double *camera_positions[3]) {
   //cout << camera_position[0] << ", " << camera_position[1] << ", " << camera_position[2] << endl;
   cam_index++;
   do {
-    rotate(camera_position, M_PI / 8, Y, rotated_camera);
+    rotate(camera_position, M_PI / 8, 'y', rotated_camera);
     camera_position[0] = rotated_camera[0];
     y += .375;
     camera_position[1] = y;
@@ -174,6 +151,7 @@ double** allocate_memory(int num_cameras) {
   return camera_positions;
 }
 
+
 double** get_camera_positions(int config_id, int *num_cameras) {
   double **camera_positions;
   switch(config_id) {
@@ -190,6 +168,11 @@ double** get_camera_positions(int config_id, int *num_cameras) {
       *num_cameras = 74;
       camera_positions = allocate_memory(81);
       get_config_helix(camera_positions);
+    break;
+    case 5:
+      *num_cameras = 96;
+      camera_positions = allocate_memory(96);
+      get_uniform_cinema_distribution(camera_positions);
     break;
   }
   return camera_positions;

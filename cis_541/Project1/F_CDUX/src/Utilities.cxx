@@ -23,6 +23,47 @@ double floor441(double f) {
 	return floor(f + 0.00001);
 }
 
+void rotate(double* camera_position, double angle, char axis,double* rotated_camera) {
+  double rotation_matrix[3][3];
+  if(axis == 'x') {
+    double x_rotation_matrix[3][3] = {
+      1,0,0,
+      0,cos(angle),-sin(angle),
+      0,sin(angle),cos(angle)
+    };
+    memcpy(rotation_matrix, x_rotation_matrix, 9*sizeof(double));
+  } else if (axis == 'y') {
+    double y_rotation_matrix[3][3] = {
+      cos(angle),0,-sin(angle),
+      0,1,0,
+      sin(angle),0,cos(angle)
+    };
+    memcpy(rotation_matrix, y_rotation_matrix, 9*sizeof(double));
+  } else if (axis == 'z') {
+    double z_rotation_matrix[3][3] = {
+      cos(angle),-sin(angle),0,
+      sin(angle),cos(angle),0,
+      0,0,1
+    };
+    memcpy(rotation_matrix, z_rotation_matrix, 9*sizeof(double));
+  }
+  /*for (int i = 0 ; i < 4 ; i++)
+  {
+      char str[256];
+      sprintf(str, "(%.7f %.7f %.7f)\n", rotation_matrix[i][0], rotation_matrix[i][1], rotation_matrix[i][2]);
+      cout << str;
+  }*/
+  for(int i = 0; i < 3; i++) {
+    rotated_camera[i] = 0;
+    for(int j = 0; j < 3; j++) {
+      rotated_camera[i] = rotated_camera[i] + camera_position[j]*rotation_matrix[j][i];
+    }
+    if(abs(rotated_camera[i]) < 0.0000001)
+      rotated_camera[i] = 0;
+  }
+  //cout << "rotated position {" << rotated_camera[0] << ", " << rotated_camera[1] << ", " << rotated_camera[2] << " }" << endl;
+}
+
 /**
  * This function interpolates the value at quest_point based on
  * values value_1 and value_2 at points point_1 and point_2 respectively
