@@ -12,10 +12,10 @@ include_directories(${MPI_INCLUDE_PATH})
 #add_executable(qualitycamera quality_camera.cxx CameraPositions.h CameraPositions.cxx)
 #add_executable(qualitytriangles quality_triangle.cxx CameraPositions.h CameraPositions.cxx)
 #add_executable(qualitympiwork quality_mpi_work.cxx CameraPositions.h CameraPositions.cxx)
-#add_executable(cameraactivepixels camera_active_pixels.cxx CameraPositions.h CameraPositions.cxx TriangleOperations.h TriangleOperations.cxx Utilities.h Utilities.cxx MatrixOperations.h
-#               Screen.h Camera.h Camera.cxx RenderFunctions.h RenderFunctions.cxx LightingParameters.h)
-#add_executable(triangleactivepixels triangle_active_pixels.cxx CameraPositions.h CameraPositions.cxx TriangleOperations.h TriangleOperations.cxx Utilities.h Utilities.cxx MatrixOperations.h
-#              Screen.h Camera.h Camera.cxx RenderFunctions.h RenderFunctions.cxx LightingParameters.h)
+add_executable(cameraactivepixels camera_active_pixels.cxx CameraPositions.h CameraPositions.cxx TriangleOperations.h TriangleOperations.cxx Utilities.h Utilities.cxx MatrixOperations.h
+               Screen.h Camera.h Camera.cxx RenderFunctions.h RenderFunctions.cxx LightingParameters.h)
+add_executable(triangleactivepixels triangle_active_pixels.cxx CameraPositions.h CameraPositions.cxx TriangleOperations.h TriangleOperations.cxx Utilities.h Utilities.cxx MatrixOperations.h
+              Screen.h Camera.h Camera.cxx RenderFunctions.h RenderFunctions.cxx LightingParameters.h)
 add_executable(procactivepixels proc_active_pixels.cxx CameraPositions.h CameraPositions.cxx TriangleOperations.h TriangleOperations.cxx Utilities.h Utilities.cxx MatrixOperations.h
                Screen.h Camera.h Camera.cxx RenderFunctions.h RenderFunctions.cxx LightingParameters.h)
 
@@ -34,8 +34,8 @@ if(VTK_LIBRARIES)
 #  target_link_libraries(qualitywork ${VTK_LIBRARIES})
 #  target_link_libraries(qualitycamera ${VTK_LIBRARIES})
 #  target_link_libraries(qualitytriangles ${VTK_LIBRARIES})
-#  target_link_libraries(cameraactivepixels ${VTK_LIBRARIES})
-#  target_link_libraries(triangleactivepixels ${VTK_LIBRARIES})
+  target_link_libraries(cameraactivepixels ${VTK_LIBRARIES})
+  target_link_libraries(triangleactivepixels ${VTK_LIBRARIES})
   target_link_libraries(procactivepixels ${VTK_LIBRARIES})
 #  if(MPI_C_LIBRARIES)
 #    target_link_libraries(qualitympiwork ${VTK_LIBRARIES} ${MPI_C_LIBRARIES})

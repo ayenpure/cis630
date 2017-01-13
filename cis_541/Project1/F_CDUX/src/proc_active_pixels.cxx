@@ -63,11 +63,11 @@ int main(int argc, char *argv[]) {
 		cout << "Incorrect number of arguments for execution" << endl;
 		exit (EXIT_FAILURE);
 	} else {
-		no_of_procs = 3*8;//atoi(argv[1]);
+		no_of_procs = 2*8;//atoi(argv[1]);
 		config_id = atoi(argv[2]);
 		read_files = atoi(argv[3]);
 		if(!read_files)
-			proc_triangles = GetTrianglesForProcs(3,0,7);
+			proc_triangles = GetTrianglesForProcs(2,0,7);
 	}
 	double** camera_positions = get_camera_positions(config_id,&num_cameras);
 	int pixels_deposited = 0;

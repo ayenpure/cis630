@@ -145,7 +145,7 @@ std::vector<Triangle> SplitTriangle(std::vector<Triangle> list, int parts) {
 				tpart.Z[0] = t.Z[offset_index];
 				tpart.Z[1] = t.Z[adj_1];
 				tpart.Z[2] = point[2];
-			} else if (j == parts - 1) {
+			} else {
 				tpart.X[0] = t.X[offset_index];
 				tpart.X[1] = octant_triangles[count-1].X[2];
 				tpart.X[2] = point[0];
@@ -155,16 +155,6 @@ std::vector<Triangle> SplitTriangle(std::vector<Triangle> list, int parts) {
 				tpart.Z[0] = t.Z[offset_index];
 				tpart.Z[1] = octant_triangles[count-1].Z[2];
 				tpart.Z[2] = point[2];
-			} else {
-				tpart.X[0] = t.X[offset_index];
-				tpart.X[1] = octant_triangles[count-1].X[2];
-				tpart.X[2] = t.X[adj_2];
-				tpart.Y[0] = t.Y[offset_index];
-				tpart.Y[1] = octant_triangles[count-1].Y[2];
-				tpart.Y[2] = t.Y[adj_2];
-				tpart.Z[0] = t.Z[offset_index];
-				tpart.Z[1] = octant_triangles[count-1].Z[2];
-				tpart.Z[2] = t.Z[adj_2];
 			}
 			octant_triangles[count++] = tpart;
 		}

@@ -297,11 +297,11 @@ Triangle rotate_triangle(Triangle t, double angle, char axis);
 
 std::vector<Triangle> get_all_octants(Triangle t);
 
-std::vector<Triangle> GetTriangles();
-
 std::vector<Triangle> GetTriangles(const char *filename);
 
 std::vector<Triangle> GetTrianglesFromFiles(int no_of_procs);
+
+std::vector<Triangle> GetTriangles(int split_parts, int split_rec, int tri_grain);
 
 std::vector< std::vector<Triangle> > GetTrianglesForProcs(int split_parts, int split_rec, int tri_grain);
 

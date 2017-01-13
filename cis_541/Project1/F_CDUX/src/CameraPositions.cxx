@@ -48,7 +48,7 @@ void get_config_random(double *camera_positions[3]) {
 
 void get_uniform_cinema_distribution(double *camera_positions[3]) {
   std::vector< std::vector<Triangle> > proc_triangles;
-  proc_triangles = GetTrianglesForProcs(3,1,0);
+  proc_triangles = GetTrianglesForProcs(2,1,0);
   cout << proc_triangles.size() << endl;
   for(int i=0;i<proc_triangles.size();i++) {
     Triangle t = proc_triangles[i][0];
@@ -170,8 +170,8 @@ double** get_camera_positions(int config_id, int *num_cameras) {
       get_config_helix(camera_positions);
     break;
     case 5:
-      *num_cameras = 96;
-      camera_positions = allocate_memory(96);
+      *num_cameras = 64;
+      camera_positions = allocate_memory(64);
       get_uniform_cinema_distribution(camera_positions);
     break;
   }
