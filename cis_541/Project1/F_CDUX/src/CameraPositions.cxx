@@ -52,17 +52,22 @@ void get_uniform_cinema_distribution(double *camera_positions[3]) {
   cout << proc_triangles.size() << endl;
   for(int i=0;i<proc_triangles.size();i++) {
     Triangle t = proc_triangles[i][0];
-    for(int k = 0; k < 3; k++) {
-      double ptMag = sqrt(t.X[k]*t.X[k]+
-                          t.Y[k]*t.Y[k]+
-                          t.Z[k]*t.Z[k]);
-      t.X[k] = (t.X[k] / ptMag)*40;
-      t.Y[k] = (t.Y[k] / ptMag)*40;
-      t.Z[k] = (t.Z[k] / ptMag)*40;
-    }
+    /*for(int k = 0; k < 3; k++) {
+      double vertex[3] = {
+        t.X[k], t.Y[k], t.Z[k]
+      };
+      normalize_vector(vertex);
+      t.X[k] = vertex[0];
+      t.Y[k] = vertex[1];
+      t.Z[k] = vertex[3];
+    }*/
     camera_positions[i][0] = (t.X[0] + t.X[1] + t.X[2]) / 3;
     camera_positions[i][1] = (t.Y[0] + t.Y[1] + t.Y[2]) / 3;
     camera_positions[i][2] = (t.Z[0] + t.Z[1] + t.Z[2]) / 3;
+    normalize_vector(camera_positions[i]);
+    camera_positions[i][0] = camera_positions[i][0] * 40;
+    camera_positions[i][1] = camera_positions[i][1] * 40;
+    camera_positions[i][2] = camera_positions[i][2] * 40;
   }
 }
 

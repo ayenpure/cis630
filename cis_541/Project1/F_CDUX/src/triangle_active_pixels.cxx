@@ -138,7 +138,7 @@ int main(int argc, char *argv[]) {
 		oss.clear();
 	}
 	for (int i = 0; i < no_of_triangles; i++) {
-		triangle_pixels[i] = triangle_pixels[i] / num_cameras;
+		//triangle_pixels[i] = triangle_pixels[i] / num_cameras;
 		cout <<  triangle_pixels[i] << endl;
 	}
 }

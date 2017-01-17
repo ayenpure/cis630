@@ -238,8 +238,11 @@ std::vector<Triangle> GetTriangles(int split_parts, int split_rec, int tri_grain
 		}
 		proc_parted_triangles[i] = toExpand;
 	}
-	std::vector<Triangle> newlist(64*1024);
-	for(int j = 0; j < 64; j++) {
+	int list_out = (split_rec == 0) ? 8 * split_parts
+																			: 8 * split_parts * pow(4, split_rec);
+	int total_triangles = (tri_grain == 0) ? list_out : list_out * pow(4, tri_grain);
+	std::vector<Triangle> newlist(total_triangles);
+	for(int j = 0; j < list_out; j++) {
 		newlist.insert(newlist.end(), proc_parted_triangles[j].begin(), proc_parted_triangles[j].end());
 	}
 	cout << "Triangles to process : " << newlist.size() << endl;
