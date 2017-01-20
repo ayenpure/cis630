@@ -54,17 +54,6 @@ void WriteImage(vtkImageData *img, const char *filename) {
 }
 
 int main(int argc, char *argv[]) {
-	/*int no_of_procs = 56, num_cameras = 0;
-	std::vector<Triangle> triangles;
-	if(argc < 2) {
-		cout << "Incorrect number of arguments for execution" << endl;
-		exit (EXIT_FAILURE);
-	} else if (argc == 2) {
-		triangles = GetTrianglesFromFiles(no_of_procs);
-	}  else if (argc == 3) {
-		no_of_procs = 64;
-		triangles = GetTriangles();
-	}*/
 	int config_id = 0,
 	 		no_of_procs = 0,
 			num_cameras = 0,
@@ -74,21 +63,13 @@ int main(int argc, char *argv[]) {
 		cout << "Incorrect number of arguments for execution" << endl;
 		exit (EXIT_FAILURE);
 	} else {
-<<<<<<< HEAD
 		no_of_procs = atoi(argv[1]);
-=======
-		no_of_procs = 2*8;//atoi(argv[1]);
->>>>>>> 4d9c4d6e222e651f0e1f370538b565646b113516
 		config_id = atoi(argv[2]);
 		read_files = atoi(argv[3]);
 		if(!read_files)
 			triangles = GetTriangles(2,0,7);
 		else {
-<<<<<<< HEAD
 			triangles = GetTrianglesFromFiles(no_of_procs, argv[4]);
-=======
-			triangles = GetTrianglesFromFiles(no_of_procs);
->>>>>>> 4d9c4d6e222e651f0e1f370538b565646b113516
 		}
 	}
 	double** camera_positions = get_camera_positions(config_id,&num_cameras);
