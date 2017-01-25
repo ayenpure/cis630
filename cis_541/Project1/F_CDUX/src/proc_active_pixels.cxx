@@ -63,11 +63,7 @@ int main(int argc, char *argv[]) {
 		cout << "Incorrect number of arguments for execution" << endl;
 		exit (EXIT_FAILURE);
 	} else {
-<<<<<<< HEAD
 		no_of_procs = atoi(argv[1]);
-=======
-		no_of_procs = 2*8;//atoi(argv[1]);
->>>>>>> 4d9c4d6e222e651f0e1f370538b565646b113516
 		config_id = atoi(argv[2]);
 		read_files = atoi(argv[3]);
 		if(!read_files)
@@ -81,13 +77,8 @@ int main(int argc, char *argv[]) {
 		std::vector<Triangle> triangles;
 		std::ostringstream oss;
 		if(read_files) {
-<<<<<<< HEAD
 			oss << argv[4] << "." << file_index << ".vtk";
 			triangles = GetTriangles(oss.str().c_str(), argv[4]);
-=======
-			oss << "hardyglobal." << file_index << ".vtk";
-			triangles = GetTriangles(oss.str().c_str());
->>>>>>> 4d9c4d6e222e651f0e1f370538b565646b113516
 			oss.str("");
 			oss.clear();
 		} else {

@@ -308,7 +308,6 @@ std::vector< std::vector<Triangle> > GetTrianglesForProcs(int split_parts, int s
 	return proc_parted_triangles;
 }
 
-<<<<<<< HEAD
 void get_color_for_vertex(double* color,float val) {
 	int num_colors = 5;
 	//double mins[num_colors-1] = { 1, 2.25, 3.5, 4.75};
@@ -338,10 +337,6 @@ void get_color_for_vertex(double* color,float val) {
 }
 
 std::vector<Triangle> GetTriangles(const char *filename, char *variable) {
-=======
-std::vector<Triangle> GetTriangles(const char *filename) {
->>>>>>> 4d9c4d6e222e651f0e1f370538b565646b113516
-
 	vtkPolyDataReader *rdr = vtkPolyDataReader::New();
 	rdr->SetFileName(filename);
 	//cerr << "Reading" << endl;
@@ -358,11 +353,7 @@ std::vector<Triangle> GetTriangles(const char *filename) {
 	vtkCellArray *cells = pd->GetPolys();
 	//vtkDoubleArray *var = (vtkDoubleArray *) pd->GetPointData()->GetArray("hardyglobal");
 	//double *color_ptr = var->GetPointer(0);
-<<<<<<< HEAD
 	vtkFloatArray *var = (vtkFloatArray *) pd->GetPointData()->GetArray(variable);
-=======
-	vtkFloatArray *var = (vtkFloatArray *) pd->GetPointData()->GetArray("hardyglobal");
->>>>>>> 4d9c4d6e222e651f0e1f370538b565646b113516
 	float *color_ptr = var->GetPointer(0);
 	vtkFloatArray *n = (vtkFloatArray *) pd->GetPointData()->GetNormals();
 	//float *normals = n->GetPointer(0);
@@ -389,67 +380,22 @@ std::vector<Triangle> GetTriangles(const char *filename) {
 		tris[idx].Y[2] = pt[1];
 		tris[idx].Z[2] = pt[2];
 
-<<<<<<< HEAD
 		for (int j = 0; j < 3; j++) {
 			float val = color_ptr[ptIds[j]];
 			get_color_for_vertex(tris[idx].colors[j], val);
-=======
-		// 1->2 interpolate between light blue, dark blue
-		// 2->2.5 interpolate between dark blue, cyan
-		// 2.5->3 interpolate between cyan, green
-		// 3->3.5 interpolate between green, yellow
-		// 3.5->4 interpolate between yellow, orange
-		// 4->5 interpolate between orange, brick
-		// 5->6 interpolate between brick, salmon
-		double mins[4] = { 1, 2.25, 3.5, 4.75};
-		double maxs[4] = { 2.25, 3.5, 4.75, 6};
-		unsigned char RGB[5][3] = {
-			{0, 0, 255},
-			{0, 204, 255},
-			{0, 153, 0},
-			{255, 204, 0},
-			{255, 0, 0},
-		 };
-		for (int j = 0; j < 3; j++) {
-			float val = color_ptr[ptIds[j]];
-			int r;
-			 for (r = 0 ; r < 4 ; r++)
-			 {
-			 if (mins[r] <= val && val < maxs[r])
-			 break;
-			 }
-			 if (r == 4)
-			 {
-			 cerr << "Could not interpolate color for " << val << endl;
-			 exit (EXIT_FAILURE);
-			 }
-			double proportion = (val-mins[r]) / (maxs[r]-mins[r]);
-			tris[idx].colors[j][0] = (RGB[r][0]+proportion*(RGB[r+1][0]-RGB[r][0]))/255.0;
-			tris[idx].colors[j][1] = (RGB[r][1]+proportion*(RGB[r+1][1]-RGB[r][1]))/255.0;
-			tris[idx].colors[j][2] = (RGB[r][2]+proportion*(RGB[r+1][2]-RGB[r][2]))/255.0;
->>>>>>> 4d9c4d6e222e651f0e1f370538b565646b113516
 		}
 		tris[idx].calculate_normals();
 	}
 	return tris;
 }
 
-<<<<<<< HEAD
-
 std::vector<Triangle> GetTrianglesFromFiles(int no_of_procs, char *variable) {
-=======
-std::vector<Triangle> GetTrianglesFromFiles(int no_of_procs) {
->>>>>>> 4d9c4d6e222e651f0e1f370538b565646b113516
 	int index = 0;
 	std::vector<Triangle> tris(0);
 	for (int file_index = 0; file_index < no_of_procs; file_index++) {
 		vtkPolyDataReader *rdr = vtkPolyDataReader::New();
 		std::ostringstream oss;
-<<<<<<< HEAD
 		oss << variable << "." << file_index << ".vtk";
-=======
-		oss << "hardyglobal." << file_index << ".vtk";
->>>>>>> 4d9c4d6e222e651f0e1f370538b565646b113516
 		rdr->SetFileName(oss.str().c_str());
 		oss.str("");
 		oss.clear();
@@ -467,11 +413,7 @@ std::vector<Triangle> GetTrianglesFromFiles(int no_of_procs) {
 		vtkCellArray *cells = pd->GetPolys();
 		//vtkDoubleArray *var = (vtkDoubleArray *) pd->GetPointData()->GetArray("hardyglobal");
 		//double *color_ptr = var->GetPointer(0);
-<<<<<<< HEAD
 		vtkFloatArray *var = (vtkFloatArray *) pd->GetPointData()->GetArray(variable);
-=======
-		vtkFloatArray *var = (vtkFloatArray *) pd->GetPointData()->GetArray("hardyglobal");
->>>>>>> 4d9c4d6e222e651f0e1f370538b565646b113516
 		float *color_ptr = var->GetPointer(0);
 		vtkFloatArray *n = (vtkFloatArray *) pd->GetPointData()->GetNormals();
 		//float *normals = n->GetPointer(0);
@@ -503,49 +445,9 @@ std::vector<Triangle> GetTrianglesFromFiles(int no_of_procs) {
 			tris[idx].X[2] = pt[0];
 			tris[idx].Y[2] = pt[1];
 			tris[idx].Z[2] = pt[2];
-<<<<<<< HEAD
 			for (int j = 0; j < 3; j++) {
 				float val = color_ptr[ptIds[j]];
 				get_color_for_vertex(tris[idx].colors[j], val);
-=======
-			/*tris[idx].normals[2][0] = normals[3*ptIds[2]+0];
-			 tris[idx].normals[2][1] = normals[3*ptIds[2]+1];
-			 tris[idx].normals[2][2] = normals[3*ptIds[2]+2];*/
-
-			// 1->2 interpolate between light blue, dark blue
-			// 2->2.5 interpolate between dark blue, cyan
-			// 2.5->3 interpolate between cyan, green
-			// 3->3.5 interpolate between green, yellow
-			// 3.5->4 interpolate between yellow, orange
-			// 4->5 interpolate between orange, brick
-			// 5->6 interpolate between brick, salmon
-			double mins[4] = { 1, 2.25, 3.5, 4.75};
-			double maxs[4] = { 2.25, 3.5, 4.75, 6};
-			unsigned char RGB[5][3] = {
-				{0, 0, 255},
-				{0, 204, 255},
-				{0, 153, 0},
-				{255, 204, 0},
-				{255, 0, 0},
-			 };
-			for (int j = 0; j < 3; j++) {
-				float val = color_ptr[ptIds[j]];
-				int r;
-				 for (r = 0 ; r < 4 ; r++)
-				 {
-				 if (mins[r] <= val && val < maxs[r])
-				 break;
-				 }
-				 if (r == 4)
-				 {
-				 cerr << "Could not interpolate color for " << val << endl;
-				 exit (EXIT_FAILURE);
-				 }
-				double proportion = (val-mins[r]) / (maxs[r]-mins[r]);
-				tris[idx].colors[j][0] = (RGB[r][0]+proportion*(RGB[r+1][0]-RGB[r][0]))/255.0;
-				tris[idx].colors[j][1] = (RGB[r][1]+proportion*(RGB[r+1][1]-RGB[r][1]))/255.0;
-				tris[idx].colors[j][2] = (RGB[r][2]+proportion*(RGB[r+1][2]-RGB[r][2]))/255.0;
->>>>>>> 4d9c4d6e222e651f0e1f370538b565646b113516
 			}
 			tris[idx].calculate_normals();
 		}
@@ -553,10 +455,6 @@ std::vector<Triangle> GetTrianglesFromFiles(int no_of_procs) {
 	return tris;
 }
 
-<<<<<<< HEAD
-=======
-
->>>>>>> 4d9c4d6e222e651f0e1f370538b565646b113516
 void transformTriangle(Triangle *t, Matrix composite, Camera camera) {
 	for (int i = 0; i < 3; i++) {
 		double view_dir[3] = { t->X[i] - camera.position[0], t->Y[i]
