@@ -7,6 +7,10 @@
 #include "Utilities.h"
 #include "TriangleOperations.h"
 
+#define MAX_GRAINS 12
+#define MAX_LEVELS 3
+#define SEED_X_VALUE 40
+
 using std::sin;
 using std::cos;
 using std::endl;
@@ -14,34 +18,30 @@ using std::cout;
 using std::abs;
 
 void get_config_random(double *camera_positions[3]) {
-  double calc_camera_positions[8][16][3];
-  double first_rotation[16] = {
-    0, (M_PI/6), (M_PI/4), (M_PI/3),
-    (M_PI/2), (2*M_PI/3), (3*M_PI/4), (5*M_PI/6),
-    (M_PI), (7*M_PI/6), (5*M_PI/4), (4*M_PI/3),
-    (3*M_PI/2), (5*M_PI/3),(7*M_PI/4) ,(11*M_PI/6)
-  };
-  double second_rotation[7] = {
-    (M_PI/6), (M_PI/4), (M_PI/3), (M_PI/2), (2*M_PI/3), (3*M_PI/4), (5*M_PI/6)
-  };
-  double camera_position[3] = {40,0,0};
-  for(int i = 0; i < 16; i++) {
-    rotate(camera_position, first_rotation[i], 'y', calc_camera_positions[0][i]);
-  };
-  for(int i = 1; i < 8; i++) {
-    for(int j = 0; j < 16; j++) {
-      rotate(calc_camera_positions[0][j], second_rotation[i-1], 'x', calc_camera_positions[i][j]);
+  double calc_camera_positions[2*MAX_LEVELS-1][MAX_GRAINS][3];
+  double about_y = 2*M_PI/MAX_GRAINS;
+  double about_z = M_PI/(2*MAX_LEVELS);
+  double seed_position[3] = {SEED_X_VALUE,0,0};
+  int middle_index = MAX_LEVELS - 1;
+  vector_copy(seed_position,calc_camera_positions[middle_index][0]);
+  for(int i = 0; i < middle_index; i++) {
+    rotate(seed_position, (middle_index-i)*about_z, 'z', calc_camera_positions[i][0]);
+  }
+  for(int i = middle_index+1; i < 2*MAX_LEVELS-1; i++) {
+    rotate(seed_position, 2*M_PI-((i-middle_index)*about_z), 'z', calc_camera_positions[i][0]);
+  }
+  for(int i=0;i<2*MAX_LEVELS-1;i++) {
+    for(int j=1;j<MAX_GRAINS;j++){
+      rotate(calc_camera_positions[i][0], j*about_y, 'y', calc_camera_positions[i][j]);
     }
-  };
-  int positions_count = 0;
-  for(int i = 0; i < 8 ; i++) {
-    for (int j = 0; j <16; j++) {
-      if(i > 0 && (j==0 || j==8))
-        continue;
-      camera_positions[positions_count][0] = calc_camera_positions[i][j][0];
-      camera_positions[positions_count][1] = calc_camera_positions[i][j][1];
-      camera_positions[positions_count][2] = calc_camera_positions[i][j][2];
-      positions_count++;
+  }
+  int total_num_cams = (2*MAX_LEVELS-1)*MAX_GRAINS + 2;
+  rotate(seed_position, M_PI/2, 'z', camera_positions[0]);
+  rotate(seed_position, 3*M_PI/2, 'z', camera_positions[total_num_cams-1]);
+  int position = 1;
+  for(int i=0;i<2*MAX_LEVELS-1;i++) {
+    for(int j=0;j<MAX_GRAINS;j++){
+      vector_copy(calc_camera_positions[i][j],camera_positions[position++]);
     }
   }
 }
@@ -164,8 +164,8 @@ double** get_camera_positions(int config_id, int *num_cameras) {
     case 1:
     case 2:
     default :
-      *num_cameras = 114;
-      camera_positions = allocate_memory(114);
+      *num_cameras = (2*MAX_LEVELS-1)*MAX_GRAINS + 2;
+      camera_positions = allocate_memory(*num_cameras);
       get_config_random(camera_positions);
     break;
     case 3:

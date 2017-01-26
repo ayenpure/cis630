@@ -23,6 +23,12 @@ double floor441(double f) {
 	return floor(f + 0.00001);
 }
 
+void vector_copy(double *source, double *destination) {
+	for(int i=0;i<3;i++) {
+		destination[i] = source[i];
+	}
+}
+
 void rotate(double* camera_position, double angle, char axis,double* rotated_camera) {
   double rotation_matrix[3][3];
   if(axis == 'x') {

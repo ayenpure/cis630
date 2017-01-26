@@ -310,10 +310,10 @@ std::vector< std::vector<Triangle> > GetTrianglesForProcs(int split_parts, int s
 
 void get_color_for_vertex(double* color,float val) {
 	int num_colors = 5;
-	//double mins[num_colors-1] = { 1, 2.25, 3.5, 4.75};
-	//double maxs[num_colors-1] = { 2.25, 3.5, 4.75, 6};
-	double mins[num_colors-1] = { -0.3765,-0.07857,0.2194,0.5173};
-	double maxs[num_colors-1] = { -0.07857,0.2194,0.5173, 0.8152};
+	double mins[num_colors-1] = { 1, 2.25, 3.5, 4.75};
+	double maxs[num_colors-1] = { 2.25, 3.5, 4.75, 6};
+	/*double mins[num_colors-1] = { -0.3765,-0.07857,0.2194,0.5173};
+	double maxs[num_colors-1] = { -0.07857,0.2194,0.5173, 0.8152};*/
 	unsigned char RGB[num_colors][3] = {
 		{0, 0, 255},
 		{0, 204, 255},

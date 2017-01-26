@@ -5,6 +5,8 @@ double ceil441(double f);
 
 double floor441(double f);
 
+void vector_copy(double *source, double *destination);
+
 void rotate(double* camera_position, double angle,
    char axis, double* rotated_camera);
 
