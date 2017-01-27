@@ -124,6 +124,19 @@ triangleactivepixels/fast:
 .PHONY : triangleactivepixels/fast
 
 #=============================================================================
+# Target rules for targets named sample
+
+# Build rule for target.
+sample: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 sample
+.PHONY : sample
+
+# fast build rule for target.
+sample/fast:
+	$(MAKE) -f CMakeFiles/sample.dir/build.make CMakeFiles/sample.dir/build
+.PHONY : sample/fast
+
+#=============================================================================
 # Target rules for targets named cameraactivepixels
 
 # Build rule for target.
@@ -368,6 +381,33 @@ proc_active_pixels.cxx.s:
 	$(MAKE) -f CMakeFiles/procactivepixels.dir/build.make CMakeFiles/procactivepixels.dir/proc_active_pixels.cxx.s
 .PHONY : proc_active_pixels.cxx.s
 
+sample.o: sample.cxx.o
+
+.PHONY : sample.o
+
+# target to build an object file
+sample.cxx.o:
+	$(MAKE) -f CMakeFiles/sample.dir/build.make CMakeFiles/sample.dir/sample.cxx.o
+.PHONY : sample.cxx.o
+
+sample.i: sample.cxx.i
+
+.PHONY : sample.i
+
+# target to preprocess a source file
+sample.cxx.i:
+	$(MAKE) -f CMakeFiles/sample.dir/build.make CMakeFiles/sample.dir/sample.cxx.i
+.PHONY : sample.cxx.i
+
+sample.s: sample.cxx.s
+
+.PHONY : sample.s
+
+# target to generate assembly for a file
+sample.cxx.s:
+	$(MAKE) -f CMakeFiles/sample.dir/build.make CMakeFiles/sample.dir/sample.cxx.s
+.PHONY : sample.cxx.s
+
 triangle_active_pixels.o: triangle_active_pixels.cxx.o
 
 .PHONY : triangle_active_pixels.o
@@ -403,9 +443,10 @@ help:
 	@echo "... depend"
 	@echo "... edit_cache"
 	@echo "... triangleactivepixels"
+	@echo "... sample"
+	@echo "... rebuild_cache"
 	@echo "... cameraactivepixels"
 	@echo "... procactivepixels"
-	@echo "... rebuild_cache"
 	@echo "... Camera.o"
 	@echo "... Camera.i"
 	@echo "... Camera.s"
@@ -427,6 +468,9 @@ help:
 	@echo "... proc_active_pixels.o"
 	@echo "... proc_active_pixels.i"
 	@echo "... proc_active_pixels.s"
+	@echo "... sample.o"
+	@echo "... sample.i"
+	@echo "... sample.s"
 	@echo "... triangle_active_pixels.o"
 	@echo "... triangle_active_pixels.i"
 	@echo "... triangle_active_pixels.s"

@@ -310,10 +310,10 @@ std::vector< std::vector<Triangle> > GetTrianglesForProcs(int split_parts, int s
 
 void get_color_for_vertex(double* color,float val) {
 	int num_colors = 5;
-	double mins[num_colors-1] = { 1, 2.25, 3.5, 4.75};
-	double maxs[num_colors-1] = { 2.25, 3.5, 4.75, 6};
-	/*double mins[num_colors-1] = { -0.3765,-0.07857,0.2194,0.5173};
-	double maxs[num_colors-1] = { -0.07857,0.2194,0.5173, 0.8152};*/
+	/*double mins[num_colors-1] = { 1, 2.25, 3.5, 4.75};
+	double maxs[num_colors-1] = { 2.25, 3.5, 4.75, 6};*/
+	double mins[num_colors-1] = { -0.3765,-0.07857,0.2194,0.5173};
+	double maxs[num_colors-1] = { -0.07857,0.2194,0.5173, 0.8152};
 	unsigned char RGB[num_colors][3] = {
 		{0, 0, 255},
 		{0, 204, 255},
@@ -428,23 +428,23 @@ std::vector<Triangle> GetTrianglesFromFiles(int no_of_procs, char *variable) {
 			}
 			double *pt = NULL;
 			pt = pts->GetPoint(ptIds[0]);
-			tris[idx].X[0] = pt[0];
-			tris[idx].Y[0] = pt[1];
-			tris[idx].Z[0] = pt[2];
+			tris[idx].X[0] = pt[0] - 10;
+			tris[idx].Y[0] = pt[1] - 10;
+			tris[idx].Z[0] = pt[2] - 10;
 			/*tris[idx].normals[0][0] = normals[3*ptIds[0]+0];
 			 tris[idx].normals[0][1] = normals[3*ptIds[0]+1];
 			 tris[idx].normals[0][2] = normals[3*ptIds[0]+2];*/
 			pt = pts->GetPoint(ptIds[1]);
-			tris[idx].X[1] = pt[0];
-			tris[idx].Y[1] = pt[1];
-			tris[idx].Z[1] = pt[2];
+			tris[idx].X[1] = pt[0] - 10;
+			tris[idx].Y[1] = pt[1] - 10;
+			tris[idx].Z[1] = pt[2] - 10;
 			/*tris[idx].normals[1][0] = normals[3*ptIds[1]+0];
 			 tris[idx].normals[1][1] = normals[3*ptIds[1]+1];
 			 tris[idx].normals[1][2] = normals[3*ptIds[1]+2];*/
 			pt = pts->GetPoint(ptIds[2]);
-			tris[idx].X[2] = pt[0];
-			tris[idx].Y[2] = pt[1];
-			tris[idx].Z[2] = pt[2];
+			tris[idx].X[2] = pt[0] - 10;
+			tris[idx].Y[2] = pt[1] - 10;
+			tris[idx].Z[2] = pt[2] - 10;
 			for (int j = 0; j < 3; j++) {
 				float val = color_ptr[ptIds[j]];
 				get_color_for_vertex(tris[idx].colors[j], val);
