@@ -32,7 +32,7 @@ Camera GetCamera(double* camera_position, double* focus_point) {
 	Camera c;
 	c.near = 5;
 	c.far = 200;
-	c.angle = M_PI / 6;
+	c.angle = M_PI / 3;
 	c.position[0] = camera_position[0];
 	c.position[1] = camera_position[1];
 	c.position[2] = camera_position[2];

@@ -9,7 +9,7 @@
 
 #define MAX_GRAINS 12
 #define MAX_LEVELS 3
-#define SEED_X_VALUE 40
+#define SEED_X_VALUE 50
 
 using std::sin;
 using std::cos;
@@ -41,9 +41,10 @@ void get_config_random(double *camera_positions[3]) {
   int position = 1;
   for(int i=0;i<2*MAX_LEVELS-1;i++) {
     for(int j=0;j<MAX_GRAINS;j++){
-      vector_copy(calc_camera_positions[i][j],camera_positions[position++]);
+        vector_copy(calc_camera_positions[i][j],camera_positions[position++]);
     }
   }
+  cout << "";
 }
 
 void get_uniform_cinema_distribution(double *camera_positions[3]) {

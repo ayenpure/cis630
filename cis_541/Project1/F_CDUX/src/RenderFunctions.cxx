@@ -38,6 +38,8 @@ double scan_line(Triangle *t, Screen *s) {
 	double y_max = t->gethighestY();
 	double x_min = t->getlowestX();
 	double x_max = t->gethighestX();
+	double z_min = t->getlowestZ();
+	double z_max = t->gethighestZ();
 	if (y_max < 0 || y_min > s->height)
 		return 0.;
 	if (x_max < 0 || x_min > s->width)

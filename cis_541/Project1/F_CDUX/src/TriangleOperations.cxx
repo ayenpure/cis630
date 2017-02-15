@@ -331,9 +331,12 @@ void get_color_for_vertex(double* color,float val) {
 		exit (EXIT_FAILURE);
 	}
 	double proportion = (val-mins[r]) / (maxs[r]-mins[r]);
-	color[0] = (RGB[r][0]+proportion*(RGB[r+1][0]-RGB[r][0]))/255.0;
-	color[1] = (RGB[r][1]+proportion*(RGB[r+1][1]-RGB[r][1]))/255.0;
-	color[2] = (RGB[r][2]+proportion*(RGB[r+1][2]-RGB[r][2]))/255.0;
+	//color[0] = (RGB[r][0]+proportion*(RGB[r+1][0]-RGB[r][0]))/255.0;
+	//color[1] = (RGB[r][1]+proportion*(RGB[r+1][1]-RGB[r][1]))/255.0;
+	//color[2] = (RGB[r][2]+proportion*(RGB[r+1][2]-RGB[r][2]))/255.0;
+	color[0] = 1;
+	color[1] = 0;
+	color[2] = 0;
 }
 
 std::vector<Triangle> GetTriangles(const char *filename, char *variable) {

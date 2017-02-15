@@ -57,6 +57,15 @@ public:
 		return ((X[0] > X[1]) ? X[0] : ((X[1] > X[2]) ? X[1] : X[2]));
 	}
 
+	double getlowestZ() {
+		return ((Z[0] < Z[1]) ? Z[0] : ((Z[1] < Z[2]) ? Z[1] : Z[2]));
+	}
+
+	double gethighestZ() {
+		return ((Z[0] > Z[1]) ? Z[0] : ((Z[1] > Z[2]) ? Z[1] : Z[2]));
+	}
+
+
 	void determine_triangle_orientation() {
 		/*
 		 * We determine the vertices that represent the base and the other
