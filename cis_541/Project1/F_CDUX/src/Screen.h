@@ -27,7 +27,7 @@ public:
 			int buffer_index = (y * 3 * width) + (x * 3);
 			int depth_buffer_index = y * width + x;
 			if (buffer_index < width * height * 3
-					/*&& (current_depth > -1 && current_depth < 1)*/
+					&& (current_depth > -1 && current_depth < 1)
 					&& current_depth >= depth_buffer[depth_buffer_index]) {
 				/*double shading_amount = calculate_phong_shading(lp,
 				 view_direction, current_normal);*/

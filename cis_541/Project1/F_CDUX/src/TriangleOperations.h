@@ -42,28 +42,35 @@ public:
 	int offset_index, left_index, right_index;
 
 	double getlowestY() {
-		return ((Y[0] < Y[1]) ? Y[0] : ((Y[1] < Y[2]) ? Y[1] : Y[2]));
+		double min = (Y[1] < Y[2]) ? Y[1] : Y[2];
+		return (Y[0] < min) ? Y[0] : min;
 	}
 
 	double gethighestY() {
-		return ((Y[0] > Y[1]) ? Y[0] : ((Y[1] > Y[2]) ? Y[1] : Y[2]));
+		double max = (Y[1] > Y[2]) ? Y[1] : Y[2];
+		return (Y[0] > max) ? Y[0] : max;
 	}
 
 	double getlowestX() {
-		return ((X[0] < X[1]) ? X[0] : ((X[1] < X[2]) ? X[1] : X[2]));
+		double min = (X[1] < X[2]) ? X[1] : X[2];
+		return (X[0] < min) ? X[0] : min;
 	}
 
 	double gethighestX() {
-		return ((X[0] > X[1]) ? X[0] : ((X[1] > X[2]) ? X[1] : X[2]));
+		double max = (X[1] > X[2]) ? X[1] : X[2];
+		return (X[0] > max) ? X[0] : max;
 	}
 
 	double getlowestZ() {
-		return ((Z[0] < Z[1]) ? Z[0] : ((Z[1] < Z[2]) ? Z[1] : Z[2]));
+		double min = (Z[1] < Z[2]) ? Z[1] : Z[2];
+		return (Z[0] < min) ? Z[0] : min;
 	}
 
 	double gethighestZ() {
-		return ((Z[0] > Z[1]) ? Z[0] : ((Z[1] > Z[2]) ? Z[1] : Z[2]));
+		double max = (Z[1] > Z[2]) ? Z[1] : Z[2];
+		return (Z[0] > max) ? Z[0] : max;
 	}
+
 
 
 	void determine_triangle_orientation() {

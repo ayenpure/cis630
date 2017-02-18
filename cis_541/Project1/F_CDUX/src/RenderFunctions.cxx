@@ -44,6 +44,8 @@ double scan_line(Triangle *t, Screen *s) {
 		return 0.;
 	if (x_max < 0 || x_min > s->width)
 		return 0.;
+	if (z_max < -1 || z_min > 1)
+		return 0.;
 
 	if (y_min < 0)
 		y_min = 0;
@@ -54,6 +56,8 @@ double scan_line(Triangle *t, Screen *s) {
 		x_min = 0;
 	if (x_max > s->width)
 		x_max = s->width;
+
+
 
 	// Determine the orientation for the triangle
 	t->determine_triangle_orientation();
