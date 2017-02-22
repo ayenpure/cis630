@@ -1,6 +1,7 @@
 *.tar.gz
 *.zip
 *.vtk
+*.png
 CMakeFiles
 MakeFile
 CMakeCache.txt
