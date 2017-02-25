@@ -8,6 +8,7 @@
 #include "Utilities.h"
 #include "Camera.h"
 #include "MatrixOperations.h"
+#include <iostream>
 
 using std::cerr;
 using std::endl;
@@ -20,6 +21,12 @@ using std::sin;
 
 class Triangle {
 public:
+void Print(std::ostream &o)
+{
+   o << "Triangle: (" << X[0] << ", " << Y[0] << ", " << Z[0]   
+                  << "/" << X[1] << ", " << Y[1] << ", " << Z[1]   
+                  << "/" << X[2] << ", " << Y[2] << ", " << Z[2] << endl;
+};
 	double X[3];
 	double Y[3];
 	double Z[3];

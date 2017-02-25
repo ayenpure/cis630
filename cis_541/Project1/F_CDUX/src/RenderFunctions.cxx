@@ -3,6 +3,7 @@
 #include "LightingParameters.h"
 #include "TriangleOperations.h"
 
+int numFrags = 0;
 double calculate_for_specular_lighting(LightingParameters lp, double *V,
 		double* N) {
 	/* R = 2*(L . N)*N - L
@@ -40,11 +41,14 @@ double scan_line(Triangle *t, Screen *s) {
 	double x_max = t->gethighestX();
 	double z_min = t->getlowestZ();
 	double z_max = t->gethighestZ();
+	cerr << "Scanline for triangle!" << endl;
+	t->Print(cerr);
 	if (y_max < 0 || y_min > s->height)
 		return 0.;
 	if (x_max < 0 || x_min > s->width)
 		return 0.;
-	if (z_max < -1 || z_min > 1)
+	//z_max < -1 || z_min > 1
+	if (!((z_min > -1 && z_min < 1) && (z_max > -1 && z_max < 1)))
 		return 0.;
 
 	if (y_min < 0)

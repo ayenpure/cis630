@@ -464,13 +464,12 @@ void transformTriangle(Triangle *t, Matrix composite, Camera camera) {
 				- camera.position[1], t->Z[i] - camera.position[2] };
 		normalize_vector(view_dir);
 		t->shading[i] = calculate_phong_shading(lp, view_dir, t->normals[i]);
-		double current_quadro[4] = { t->X[i], t->Y[i], t->Z[i], 1 };
+		double current_quadro[4] = { t->X[i], t->Y[i], t->Z[i], 1. };
 		double transformed_vertex[4];
 		composite.TransformPoint(current_quadro, transformed_vertex);
-		if (transformed_vertex[3] != 1) {
-			for (int j = 0; j < 4; j++)
-				transformed_vertex[j] = transformed_vertex[j]
-						/ transformed_vertex[3];
+		if (transformed_vertex[3] != 1.) {
+			for (int j = 0; j < 3; j++)
+				transformed_vertex[j] = transformed_vertex[j] / transformed_vertex[3];
 		}
 		t->X[i] = transformed_vertex[0];
 		t->Y[i] = transformed_vertex[1];

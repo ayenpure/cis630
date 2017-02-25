@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <vector>
 #include <sstream>
+#include <cstdio>
 
 //Defining all data structures
 class Matrix {
@@ -24,6 +25,17 @@ public:
 
   	return rv;
   }
+
+	void Print(std::ostream &o)
+	{
+	    for (int i = 0 ; i < 4 ; i++)
+	    {
+	        char str[256];
+	        sprintf(str, "(%.7f %.7f %.7f %.7f)\n", A[i][0], A[i][1], A[i][2], A[i][3]);
+	        o << str;
+	    }
+	}
+
 
   void TransformPoint(const double *ptIn, double *ptOut) {
   	ptOut[0] = ptIn[0] * A[0][0] + ptIn[1] * A[1][0] + ptIn[2] * A[2][0]
