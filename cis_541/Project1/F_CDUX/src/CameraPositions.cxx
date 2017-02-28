@@ -9,7 +9,7 @@
 
 #define MAX_GRAINS 12
 #define MAX_LEVELS 3
-#define SEED_X_VALUE 5
+#define SEED_X_VALUE 50
 
 using std::sin;
 using std::cos;

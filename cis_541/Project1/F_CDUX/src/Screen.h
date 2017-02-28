@@ -21,10 +21,11 @@ public:
 
 	bool find_pixel_and_color(int x, int y, double *color, double current_depth,
 			double shading_amount) {
-
+		/*
                 numFrags++;
                 if (numFrags % 10000 == 0)
                       cerr << "Num frags = " << numFrags << endl;
+		*/
 		/*
 		 * Ensure the pixels to be painted are in the frame.
 		 */

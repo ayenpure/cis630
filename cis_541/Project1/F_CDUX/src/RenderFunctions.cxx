@@ -41,8 +41,7 @@ double scan_line(Triangle *t, Screen *s) {
 	double x_max = t->gethighestX();
 	double z_min = t->getlowestZ();
 	double z_max = t->gethighestZ();
-	cerr << "Scanline for triangle!" << endl;
-	t->Print(cerr);
+
 	if (y_max < 0 || y_min > s->height)
 		return 0.;
 	if (x_max < 0 || x_min > s->width)
@@ -60,8 +59,6 @@ double scan_line(Triangle *t, Screen *s) {
 		x_min = 0;
 	if (x_max > s->width)
 		x_max = s->width;
-
-
 
 	// Determine the orientation for the triangle
 	t->determine_triangle_orientation();
