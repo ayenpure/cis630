@@ -1,0 +1,25 @@
+package algos;
+
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+
+class Machine {
+	double cost;
+	double reliability;
+}
+
+public class MissionCritical {
+
+	public static void main(String[] args) {
+		double budget;
+		double numberOfMachines;
+		try {
+			FileReader reader = new FileReader("input.txt");
+		} catch (FileNotFoundException e) {
+			
+		}
+		
+		
+	}
+	
+}

@@ -1,0 +1,14 @@
+package algos;
+
+class Machine {
+	double cost;
+	double reliability;
+}
+
+public class MissionCritical {
+
+	public static void main(String[] args) {
+		
+	}
+	
+}

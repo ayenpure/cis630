@@ -1,0 +1,9 @@
+package algos;
+
+public class MissionCritical {
+
+	public static void main(String[] args) {
+		
+	}
+	
+}
