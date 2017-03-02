@@ -290,6 +290,22 @@ void Print(std::ostream &o)
 				colors[right_index][2], quest_point);
 	}
 
+  void calculate_normal(double *normal) {
+		  int i = 0;
+			int adj_1 = (i + 1) % 3;
+			int adj_2 = (i + 2) % 3;
+			double adj_1_vector[3] = { X[adj_1] - X[i], Y[adj_1] - Y[i],
+					Z[adj_1] - Z[i] };
+			normalize_vector(adj_1_vector);
+			double adj_2_vector[3] = { X[adj_2] - X[i], Y[adj_2] - Y[i],
+					Z[adj_2] - Z[i] };
+			normalize_vector(adj_2_vector);
+			cross_product(adj_1_vector, adj_2_vector, normal);
+			double t_area = vector_magnitude(normal);
+			//cout << "Area of Triangle : " << t_area << endl;
+			normalize_vector(normal);
+	}
+
 	void calculate_normals() {
 		//cout << "Caluclating normal ----> calculate_normals" << endl;
 		for (int i = 0; i < 3; i++) {

@@ -60,20 +60,43 @@ namespace std {
 }
 
 void process_for_vertex_normals(std::vector<Triangle> tris) {
-	unordered_map<vert, pair<std::vector<double>, int>> vertices;
+	unordered_map<vert, pair<double*, int>> vertices;
 	int no_of_triangles = tris.size();
+  std::cout << "number of triangels" << no_of_triangles << endl;
 	for(int i = 0; i < no_of_triangles; i++) {
 		for(int j = 0; j < 3; j++) {
 			vert v = {tris[i].X[j],tris[i].Y[j],tris[i].Z[j]};
 			int count = vertices.count(v);
 			if(count == 0) {
-				// add vertex to the map
+        //calculate triangle normal
+        // add vertex to the map as key and the normal as value
+        // count in the pair is 1
+        double normal[3];
+        tris[i].calculate_normal(normal);
+        pair<double*, int> value = std::make_pair(normal, 1);
+        pair<vert, pair<double*, int>> toInsert = std::make_pair(v, value);
+        vertices.insert(toInsert);
 			} else {
 				// fetch the existing data
-				// overwrite it with the new data
+        // calculate triangle normal
+				// add the normal to existing normal
+        // increase count in the pair
+        // push new value (as it's a vector, it would change in actual values)
+        // doubtful about the count though
+        double normal[3];
+        tris[i].calculate_normal(normal);
+        auto toProcess = vertices.find(v);
+        if( toProcess != vertices.end() ) {
+          auto value = toProcess->second;
+          value.first[0] += normal[0];
+          value.first[1] += normal[1];
+          value.first[2] += normal[2];
+          value.second++;
+        }
 			}
 		}
 	}
+  std::cout << "number of vertices" << vertices.size() << endl;
 }
 
 
