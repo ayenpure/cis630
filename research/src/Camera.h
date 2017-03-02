@@ -72,9 +72,9 @@ public:
 	}
 
 	Matrix DeviceTransform(Screen screen) {
-		double device_transform[4][4] = { screen.width / 2, 0, 0, 0, 0,
-				screen.height / 2, 0, 0, 0, 0, 1, 0, screen.width / 2,
-				screen.height / 2, 0, 1 };
+		double device_transform[4][4] = { screen.width / 2., 0, 0, 0, 0,
+				screen.height / 2., 0, 0, 0, 0, 1, 0, screen.width / 2.,
+				screen.height / 2., 0, 1 };
 		Matrix m;
 		memcpy(m.A, device_transform, 16 * sizeof(double));
 		return m;

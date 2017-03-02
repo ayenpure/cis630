@@ -2,6 +2,7 @@
 #include <vector>
 #include <cmath>
 #include <algorithm>
+#include <unordered_map>
 #include <vtkDataSet.h>
 #include <vtkImageData.h>
 #include <vtkPNGWriter.h>
@@ -23,6 +24,8 @@
 #include "RenderFunctions.h"
 
 using std::cout;
+using std::unordered_map;
+using std::pair;
 using std::endl;
 using std::min;
 using std::max;
@@ -32,6 +35,47 @@ using std::tan;
 using std::sin;
 
 LightingParameters lp;
+
+struct vert {
+  double x,y,z;
+  bool operator==(const vert &other) const {
+    return ( x==other.x &&
+             y==other.y &&
+             z==other.z );
+  }
+};
+
+namespace std {
+  template<> struct hash<vert>
+  {
+    /*typedef vertex argument_type;
+    typedef std::size_t result_type;*/
+    size_t operator()(vert const& v) const {
+      size_t const h1 ( std::hash<double>{}(v.x) );
+      size_t const h2 ( std::hash<double>{}(v.y) );
+      size_t const h3 ( std::hash<double>{}(v.z) );
+      return h1 ^ (h2 << 1) ^ (h3 << 2);
+    }
+  };
+}
+
+void process_for_vertex_normals(std::vector<Triangle> tris) {
+	unordered_map<vert, pair<std::vector<double>, int>> vertices;
+	int no_of_triangles = tris.size();
+	for(int i = 0; i < no_of_triangles; i++) {
+		for(int j = 0; j < 3; j++) {
+			vert v = {tris[i].X[j],tris[i].Y[j],tris[i].Z[j]};
+			int count = vertices.count(v);
+			if(count == 0) {
+				// add vertex to the map
+			} else {
+				// fetch the existing data
+				// overwrite it with the new data
+			}
+		}
+	}
+}
+
 
 std::vector<Triangle> SplitTriangle(std::vector<Triangle> &list)
 {
@@ -452,9 +496,10 @@ std::vector<Triangle> GetTrianglesFromFiles(int no_of_procs, char *variable) {
 				float val = color_ptr[ptIds[j]];
 				get_color_for_vertex(tris[idx].colors[j], val);
 			}
-			tris[idx].calculate_normals();
+			//tris[idx].calculate_normals();
 		}
 	}
+	process_for_vertex_normals(tris);
 	return tris;
 }
 
