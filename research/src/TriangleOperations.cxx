@@ -88,15 +88,23 @@ void process_for_vertex_normals(std::vector<Triangle> tris) {
         auto toProcess = vertices.find(v);
         if( toProcess != vertices.end() ) {
           auto value = toProcess->second;
-          value.first[0] += normal[0];
-          value.first[1] += normal[1];
-          value.first[2] += normal[2];
-          value.second++;
+          normal[0] += value.first[0];
+          normal[1] += value.first[1];
+          normal[2] += value.first[2];
+          int count = ++value.second;
+					pair<double*, int> newValue = std::make_pair(normal, count);
+					toProcess->second = newValue;
         }
 			}
 		}
 	}
   std::cout << "number of vertices" << vertices.size() << endl;
+	std::cout << "mymap contains : " << endl;
+  for ( auto it = vertices.begin(); it != vertices.end(); ++it ) {
+		if(it->second.second > 10)
+			std::cout << it->second.second << "\t : " << "{ " <<it->first.x << ", " <<it->first.y << ", " << it->first.z << " }" << "\t : " << "{ " << it->first.x << ", " <<it->first.y << ", " << it->first.z << " }" << endl;
+	}
+  std::cout << std::endl;
 }
 
 

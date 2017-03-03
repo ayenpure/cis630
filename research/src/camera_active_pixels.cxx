@@ -72,6 +72,7 @@ int main(int argc, char *argv[]) {
 			triangles = GetTrianglesFromFiles(no_of_procs, argv[4]);
 		}
 	}
+	exit (EXIT_FAILURE);
 	double** camera_positions = get_camera_positions(config_id,&num_cameras);
 	int active_pixels[num_cameras];
 	int no_of_triangles = triangles.size();
