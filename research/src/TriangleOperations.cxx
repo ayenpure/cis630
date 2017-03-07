@@ -62,18 +62,26 @@ namespace std {
 void process_for_vertex_normals(std::vector<Triangle> tris) {
 	unordered_map<vert, pair<double*, int>> vertices;
 	int no_of_triangles = tris.size();
-  std::cout << "number of triangels" << no_of_triangles << endl;
-	for(int i = 0; i < no_of_triangles; i++) {
+  std::cout << "number of triangels : " << no_of_triangles << endl;
+	for(int i = 0; i <= no_of_triangles; i++) {
+		double normal[3];
+		bool normal_calculated = tris[i].calculate_normal(normal);
+		if(!normal_calculated) {
+			std::cout << "Normal not calculated properly at index " << i << endl;
+			continue;
+		}
 		for(int j = 0; j < 3; j++) {
+			/*Create entry in vertices for each vertex*/
 			vert v = {tris[i].X[j],tris[i].Y[j],tris[i].Z[j]};
+
 			int count = vertices.count(v);
 			if(count == 0) {
-        //calculate triangle normal
+        // calculate triangle normal
         // add vertex to the map as key and the normal as value
         // count in the pair is 1
-        double normal[3];
-        tris[i].calculate_normal(normal);
-        pair<double*, int> value = std::make_pair(normal, 1);
+				double* temp = (double*)malloc(3*sizeof(double));
+				vector_copy(normal, temp);
+        pair<double*, int> value = std::make_pair(temp, 1);
         pair<vert, pair<double*, int>> toInsert = std::make_pair(v, value);
         vertices.insert(toInsert);
 			} else {
@@ -83,28 +91,43 @@ void process_for_vertex_normals(std::vector<Triangle> tris) {
         // increase count in the pair
         // push new value (as it's a vector, it would change in actual values)
         // doubtful about the count though
-        double normal[3];
-        tris[i].calculate_normal(normal);
         auto toProcess = vertices.find(v);
-        if( toProcess != vertices.end() ) {
+        if(toProcess != vertices.end()) {
+					double* temp = (double*)malloc(3*sizeof(double));
           auto value = toProcess->second;
-          normal[0] += value.first[0];
-          normal[1] += value.first[1];
-          normal[2] += value.first[2];
+          temp[0] = value.first[0] + normal[0];
+          temp[1] = value.first[1] + normal[1];
+          temp[2] = value.first[2] + normal[2];
           int count = ++value.second;
-					pair<double*, int> newValue = std::make_pair(normal, count);
+					free(value.first);
+					pair<double*, int> newValue = std::make_pair(temp, count);
 					toProcess->second = newValue;
         }
 			}
 		}
 	}
-  std::cout << "number of vertices" << vertices.size() << endl;
+  std::cout << "number of vertices : " << vertices.size() << endl;
 	std::cout << "mymap contains : " << endl;
-  for ( auto it = vertices.begin(); it != vertices.end(); ++it ) {
-		if(it->second.second > 10)
-			std::cout << it->second.second << "\t : " << "{ " <<it->first.x << ", " <<it->first.y << ", " << it->first.z << " }" << "\t : " << "{ " << it->first.x << ", " <<it->first.y << ", " << it->first.z << " }" << endl;
+	for ( auto toPrint = vertices.begin(); toPrint != vertices.end(); ++toPrint ) {
+		 auto addedNormals = toPrint->second;
+		 double* normals = addedNormals.first;
+		 int count = addedNormals.second;
+		 normals[0] /= count;
+		 normals[1] /= count;
+		 normals[2] /= count;
+		 normalize_vector(normals);
 	}
-  std::cout << std::endl;
+	for(int i = 0 ;i < no_of_triangles; i++) {
+		for(int j = 0; j < 3; j++) {
+			vert v = {tris[i].X[j],tris[i].Y[j],tris[i].Z[j]};
+			auto toProcess = vertices.find(v);
+			if(toProcess != vertices.end()) {
+				tris[i].normals[j][0] = toProcess->second.first[0];
+				tris[i].normals[j][1] = toProcess->second.first[1];
+				tris[i].normals[j][2] = toProcess->second.first[2];
+			}
+		}
+	}
 }
 
 

@@ -109,7 +109,7 @@ void cross_product(double* vector_1, double* vector_2, double *cross_vec) {
 			- (vector_1[2] * vector_2[1]), (vector_1[2] * vector_2[0])
 			- (vector_1[0] * vector_2[2]), (vector_1[0] * vector_2[1])
 			- (vector_1[1] * vector_2[0]) };
-	memcpy(cross_vec, product, 3 * sizeof(double));
+	vector_copy(product, cross_vec);
 }
 
 void print_vector(double *print_vector) {
