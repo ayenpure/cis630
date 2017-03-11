@@ -115,7 +115,7 @@ void process_for_vertex_normals(std::vector<Triangle> tris) {
 		 normals[0] /= count;
 		 normals[1] /= count;
 		 normals[2] /= count;
-		 normalize_vector(normals);
+		 //normalize_vector(normals);
 	}
 	for(int i = 0 ;i < no_of_triangles; i++) {
 		for(int j = 0; j < 3; j++) {
