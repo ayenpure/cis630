@@ -28,4 +28,8 @@ double cot(double angle);
 void interpolate_vector(double point_1, double point_2, double* normal_1,
 		double* normal_2, double quest_point, double* quest_normal);
 
+void getRGBAforDepth(double depth, double *toReturn);
+
+double range_transform(double r2min, double r2max, double r1min, double r1max, double val);
+
 #endif

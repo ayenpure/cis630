@@ -21,7 +21,7 @@ public:
 	Matrix CameraTransform(void) {
 		double z_vector[3] = { position[0] - focus[0], position[1] - focus[1],
 				position[2] - focus[2] };
-		if(position[0] == 0 && position[2] == 0 && position[1] != 0) {
+		if( (position[0] == 0 && position[2] == 0 ) && (focus[0] == 0 && focus[2] == 0 )) {
 			up[0] = 0; up[1] = 0; up[2] = 1;
 		}
 		normalize_vector(z_vector);

@@ -80,14 +80,14 @@ int main(int argc, char *argv[]) {
 		active_pixels[i] = 0;
 	for (int cam_index = 0; cam_index < num_cameras; cam_index++) {
 		vtkImageData *image = NewImage(1000, 1000);
+		int npixels = 1000 * 1000;
 		unsigned char *buffer = (unsigned char *) image->GetScalarPointer(0, 0,
 				0);
-		int npixels = 1000 * 1000;
+		double *depth_buffer = (double*)malloc(npixels*sizeof(double));
 		for (int i = 0; i < npixels * 3; i++)
 			buffer[i] = 0;
-		double *depth_buffer = (double*)malloc(npixels*sizeof(double));
 		for (int i = 0; i < npixels; i++)
-			depth_buffer[i] = -1;
+			depth_buffer[i] = -2;
 		Screen screen;
 		screen.buffer = buffer;
 		screen.depth_buffer = depth_buffer;
@@ -128,6 +128,24 @@ int main(int argc, char *argv[]) {
 				active_pixels[cam_index]++;
 		}
 		active_pixels[cam_index] = active_pixels[cam_index] / no_of_procs;
+		WriteImage(image, oss.str().c_str());
+		oss.str("");
+		oss.clear();
+		/*For Shawn*/
+		for (int i = 0; i < npixels * 3; i++)
+			buffer[i] = 0;
+		for(int i = 0; i < npixels; i ++) {
+			if(!(depth_buffer[1] >= -1 && depth_buffer[1] <= 1))
+				continue;
+			double value = depth_buffer[i];
+			double newValue = range_transform(0.,1.,1.,-1., value);
+			double rgba[] = {0,0,0,0};
+			getRGBAforDepth(newValue, rgba);
+			buffer[i*3] = rgba[0];
+			buffer[i*3 + 1] = rgba[1];
+			buffer[i*3 + 2] = rgba[2];
+		}
+		oss << "depth_" << cam_index;
 		WriteImage(image, oss.str().c_str());
 		oss.str("");
 		oss.clear();

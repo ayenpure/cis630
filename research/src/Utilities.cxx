@@ -140,3 +140,18 @@ void interpolate_vector(double point_1, double point_2, double* normal_1,
 	quest_normal[2] = normal_1[2] + diff_vector[2];
 	normalize_vector(quest_normal);
 }
+
+void getRGBAforDepth(double depth, double *toReturn) {
+  double enc[] = {1., 255., 65025., 16581375.};
+  double intpart;
+  for(int i=0;i<4;i++) {
+    enc[i] *= depth;
+    enc[i] = modf(enc[i], &intpart);
+  }
+  vector_copy(enc, toReturn);
+}
+
+double range_transform(double r2min, double r2max, double r1min, double r1max, double val) {
+	double scale = (r2max - r2min) / (r1max - r1min);
+	return (val - r1min)*scale + r2min;
+}

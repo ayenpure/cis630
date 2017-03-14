@@ -10,6 +10,9 @@
 #define MAX_GRAINS 12
 #define MAX_LEVELS 3
 #define SEED_X_VALUE 10
+#define LENGTH 20
+#define HEIGHT 20
+#define WIDTH 20
 
 using std::sin;
 using std::cos;
@@ -96,6 +99,27 @@ void get_config_helix(double *camera_positions[3]) {
   } while ( y < 15);
 }
 
+void get_camera_positions_for_shawn(double *camera_positions[3]) {
+  camera_positions[0][0] = 0;
+  camera_positions[0][1] = 0;
+  camera_positions[0][2] = WIDTH / 2.;
+  camera_positions[1][0] = 0;
+  camera_positions[1][1] = 0;
+  camera_positions[1][2] = - WIDTH / 2.;
+  camera_positions[2][0] = 0;
+  camera_positions[2][1] = HEIGHT / 2.;
+  camera_positions[2][2] = 0;
+  camera_positions[3][0] = 0;
+  camera_positions[3][1] = - HEIGHT / 2.;
+  camera_positions[3][2] = 0;
+  camera_positions[4][0] = LENGTH / 2.;
+  camera_positions[4][1] = 0;
+  camera_positions[4][2] = 0;
+  camera_positions[5][0] = - LENGTH / 2.;
+  camera_positions[5][1] = 0;
+  camera_positions[5][2] = 0;
+}
+
 void get_camera_position_and_focus(int config_id, int cam_index, int num_cameras ,double** camera_positions,double* camera_position,double* focus_point) {
   int focus_index = 0;
   camera_position[0] = camera_positions[cam_index][0];
@@ -146,6 +170,14 @@ void get_camera_position_and_focus(int config_id, int cam_index, int num_cameras
       focus_point[1] = camera_positions[cam_index][1];
       focus_point[2] = 0;
     break;
+    case 6:
+    focus_point[0] = camera_positions[cam_index][0];
+    focus_point[1] = camera_positions[cam_index][1];
+    focus_point[2] = camera_positions[cam_index][2];
+    camera_position[0] = 0;
+    camera_position[1] = 0;
+    camera_position[2] = 0;
+    break;
   }
 }
 
@@ -179,6 +211,11 @@ double** get_camera_positions(int config_id, int *num_cameras) {
       *num_cameras = 64;
       camera_positions = allocate_memory(64);
       get_uniform_cinema_distribution(camera_positions);
+    break;
+    case 6:
+      *num_cameras = 6;
+      camera_positions = allocate_memory(6);
+      get_camera_positions_for_shawn(camera_positions);
     break;
   }
   return camera_positions;

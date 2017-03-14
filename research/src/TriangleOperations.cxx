@@ -59,7 +59,7 @@ namespace std {
   };
 }
 
-void process_for_vertex_normals(std::vector<Triangle> tris) {
+/*void process_for_vertex_normals(std::vector<Triangle> tris) {
 	unordered_map<vert, pair<double*, int>> vertices;
 	int no_of_triangles = tris.size();
   std::cout << "number of triangels : " << no_of_triangles << endl;
@@ -71,7 +71,7 @@ void process_for_vertex_normals(std::vector<Triangle> tris) {
 			continue;
 		}
 		for(int j = 0; j < 3; j++) {
-			/*Create entry in vertices for each vertex*/
+			//Create entry in vertices for each vertex
 			vert v = {tris[i].X[j],tris[i].Y[j],tris[i].Z[j]};
 
 			int count = vertices.count(v);
@@ -128,8 +128,7 @@ void process_for_vertex_normals(std::vector<Triangle> tris) {
 			}
 		}
 	}
-}
-
+}*/
 
 std::vector<Triangle> SplitTriangle(std::vector<Triangle> &list)
 {
@@ -550,10 +549,10 @@ std::vector<Triangle> GetTrianglesFromFiles(int no_of_procs, char *variable) {
 				float val = color_ptr[ptIds[j]];
 				get_color_for_vertex(tris[idx].colors[j], val);
 			}
-			//tris[idx].calculate_normals();
+			tris[idx].calculate_normals();
 		}
 	}
-	process_for_vertex_normals(tris);
+	//process_for_vertex_normals(tris);
 	return tris;
 }
 

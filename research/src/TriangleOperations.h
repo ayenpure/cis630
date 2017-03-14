@@ -290,7 +290,7 @@ void Print(std::ostream &o)
 				colors[right_index][2], quest_point);
 	}
 
-  bool calculate_normal(double *normal) {
+  /*bool calculate_normal(double *normal) {
 		  int i = 0;
 			int adj_1 = (i + 1) % 3;
 			int adj_2 = (i + 2) % 3;
@@ -306,7 +306,7 @@ void Print(std::ostream &o)
       if(std::isnan(normal[0]) || std::isnan(normal[1]) || std::isnan(normal[2]))
         return false;
       return true;
-	}
+	}*/
 
 	void calculate_normals() {
 		//cout << "Caluclating normal ----> calculate_normals" << endl;
