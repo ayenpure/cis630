@@ -78,7 +78,7 @@ int main(int argc, char *argv[]) {
 	int no_of_triangles = triangles.size();
 	for (int i = 0; i < num_cameras; i++)
 		active_pixels[i] = 0;
-	for (int cam_index = 0; cam_index < num_cameras; cam_index++) {
+	for (int cam_index = 3; cam_index < num_cameras; cam_index++) {
 		vtkImageData *image = NewImage(1000, 1000);
 		int npixels = 1000 * 1000;
 		unsigned char *buffer = (unsigned char *) image->GetScalarPointer(0, 0,
@@ -141,9 +141,9 @@ int main(int argc, char *argv[]) {
 			double newValue = range_transform(0.,1.,1.,-1., value);
 			double rgba[] = {0,0,0,0};
 			getRGBAforDepth(newValue, rgba);
-			buffer[i*3] = rgba[0];
-			buffer[i*3 + 1] = rgba[1];
-			buffer[i*3 + 2] = rgba[2];
+			buffer[i*3] = rgba[0]*255;
+			buffer[i*3 + 1] = rgba[1]*255;
+			buffer[i*3 + 2] = rgba[2]*255;
 		}
 		oss << "depth_" << cam_index;
 		WriteImage(image, oss.str().c_str());
