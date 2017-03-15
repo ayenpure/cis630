@@ -78,7 +78,7 @@ int main(int argc, char *argv[]) {
 	int no_of_triangles = triangles.size();
 	for (int i = 0; i < num_cameras; i++)
 		active_pixels[i] = 0;
-	for (int cam_index = 3; cam_index < num_cameras; cam_index++) {
+	for (int cam_index = 0; cam_index < num_cameras; cam_index++) {
 		vtkImageData *image = NewImage(1000, 1000);
 		int npixels = 1000 * 1000;
 		unsigned char *buffer = (unsigned char *) image->GetScalarPointer(0, 0,
@@ -135,7 +135,7 @@ int main(int argc, char *argv[]) {
 		for (int i = 0; i < npixels * 3; i++)
 			buffer[i] = 0;
 		for(int i = 0; i < npixels; i ++) {
-			if(!(depth_buffer[1] >= -1 && depth_buffer[1] <= 1))
+			if(!(depth_buffer[i] >= -1 && depth_buffer[i] <= 1))
 				continue;
 			double value = depth_buffer[i];
 			double newValue = range_transform(0.,1.,1.,-1., value);
