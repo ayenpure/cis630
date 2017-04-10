@@ -26,7 +26,7 @@ void get_config_random(double *camera_positions[3]) {
   double about_z = M_PI/(2*MAX_LEVELS);
   double seed_position[3] = {SEED_X_VALUE,0,0};
   int middle_index = MAX_LEVELS - 1;
-  vector_copy(seed_position,calc_camera_positions[middle_index][0]);
+  vector_copy(seed_position,calc_camera_positions[middle_index][0],3);
   for(int i = 0; i < middle_index; i++) {
     rotate(seed_position, (middle_index-i)*about_z, 'z', calc_camera_positions[i][0]);
   }
@@ -44,7 +44,7 @@ void get_config_random(double *camera_positions[3]) {
   int position = 1;
   for(int i=0;i<2*MAX_LEVELS-1;i++) {
     for(int j=0;j<MAX_GRAINS;j++){
-        vector_copy(calc_camera_positions[i][j],camera_positions[position++]);
+        vector_copy(calc_camera_positions[i][j],camera_positions[position++],3);
     }
   }
   cout << "";

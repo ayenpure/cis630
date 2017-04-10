@@ -36,10 +36,18 @@ using std::tan;
 using std::sin;
 
 vtkImageData *
-NewImage(int width, int height) {
+NewRGBImage(int width, int height) {
 	vtkImageData *img = vtkImageData::New();
 	img->SetDimensions(width, height, 1);
 	img->AllocateScalars(VTK_UNSIGNED_CHAR, 3);
+	return img;
+}
+
+vtkImageData *
+NewRGBAImage(int width, int height) {
+	vtkImageData *img = vtkImageData::New();
+	img->SetDimensions(width, height, 1);
+	img->AllocateScalars(VTK_UNSIGNED_CHAR, 4);
 	return img;
 }
 
@@ -54,6 +62,7 @@ void WriteImage(vtkImageData *img, const char *filename) {
 }
 
 int main(int argc, char *argv[]) {
+	int height = 1024, width = 1024;
 	int config_id = 0,
 	 		no_of_procs = 0,
 			num_cameras = 0,
@@ -79,10 +88,11 @@ int main(int argc, char *argv[]) {
 	for (int i = 0; i < num_cameras; i++)
 		active_pixels[i] = 0;
 	for (int cam_index = 0; cam_index < num_cameras; cam_index++) {
-		vtkImageData *image = NewImage(1000, 1000);
-		int npixels = 1000 * 1000;
-		unsigned char *buffer = (unsigned char *) image->GetScalarPointer(0, 0,
-				0);
+		vtkImageData *image;
+		unsigned char *buffer;
+		image = NewRGBImage(height, width);
+		int npixels = height * width;
+		buffer = (unsigned char *) image->GetScalarPointer(0, 0, 0);
 		double *depth_buffer = (double*)malloc(npixels*sizeof(double));
 		for (int i = 0; i < npixels * 3; i++)
 			buffer[i] = 0;
@@ -91,8 +101,8 @@ int main(int argc, char *argv[]) {
 		Screen screen;
 		screen.buffer = buffer;
 		screen.depth_buffer = depth_buffer;
-		screen.width = 1000;
-		screen.height = 1000;
+		screen.width = width;
+		screen.height = height;
 		double camera_position[3], focus_point[3];
 		get_camera_position_and_focus(config_id, cam_index, num_cameras,
 			 camera_positions, camera_position, focus_point);
@@ -131,8 +141,11 @@ int main(int argc, char *argv[]) {
 		WriteImage(image, oss.str().c_str());
 		oss.str("");
 		oss.clear();
+		free(buffer);
+		image = NewRGBAImage(height,width);
+		buffer = (unsigned char *) image->GetScalarPointer(0, 0, 0);
 		/*For Shawn*/
-		for (int i = 0; i < npixels * 3; i++)
+		for (int i = 0; i < npixels * 4; i++)
 			buffer[i] = 0;
 		for(int i = 0; i < npixels; i ++) {
 			if(!(depth_buffer[i] >= -1 && depth_buffer[i] <= 1))
@@ -141,14 +154,17 @@ int main(int argc, char *argv[]) {
 			double newValue = range_transform(0.,1.,1.,-1., value);
 			double rgba[] = {0,0,0,0};
 			getRGBAforDepth(newValue, rgba);
-			buffer[i*3] = rgba[0]*255;
-			buffer[i*3 + 1] = rgba[1]*255;
-			buffer[i*3 + 2] = rgba[2]*255;
+			buffer[i*4] = rgba[0]*255;
+			buffer[i*4 + 1] = rgba[1]*255;
+			buffer[i*4 + 2] = rgba[2]*255;
+			buffer[i*4 + 3] = rgba[3]*255;
 		}
 		oss << "depth_" << cam_index;
 		WriteImage(image, oss.str().c_str());
 		oss.str("");
 		oss.clear();
+		free(buffer);
+		free(depth_buffer);
 	}
 	for (int i = 0; i < num_cameras; i++) {
 		cout << active_pixels[i] << endl;

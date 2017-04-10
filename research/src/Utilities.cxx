@@ -23,8 +23,8 @@ double floor441(double f) {
 	return floor(f + 0.00001);
 }
 
-void vector_copy(double *source, double *destination) {
-	for(int i=0;i<3;i++) {
+void vector_copy(double *source, double *destination, int num) {
+	for(int i=0;i<num;i++) {
 		destination[i] = source[i];
 	}
 }
@@ -109,7 +109,7 @@ void cross_product(double* vector_1, double* vector_2, double *cross_vec) {
 			- (vector_1[2] * vector_2[1]), (vector_1[2] * vector_2[0])
 			- (vector_1[0] * vector_2[2]), (vector_1[0] * vector_2[1])
 			- (vector_1[1] * vector_2[0]) };
-	vector_copy(product, cross_vec);
+	vector_copy(product, cross_vec, 3);
 }
 
 void print_vector(double *print_vector) {
@@ -148,7 +148,7 @@ void getRGBAforDepth(double depth, double *toReturn) {
     enc[i] *= depth;
     enc[i] = modf(enc[i], &intpart);
   }
-  vector_copy(enc, toReturn);
+  vector_copy(enc, toReturn, 4);
 }
 
 double range_transform(double r2min, double r2max, double r1min, double r1max, double val) {

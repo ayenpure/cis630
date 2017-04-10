@@ -30,9 +30,9 @@ double SineParameterize(int curFrame, int nFrames, int ramp) {
 Camera GetCamera(double* camera_position, double* focus_point) {
 	//double t = SineParameterize(frame, nframes, nframes / 10);
 	Camera c;
-	c.near = 5;
-	c.far =  50;
-	c.angle = M_PI / 3;
+	c.near = 0.01;
+	c.far =  50.01;
+	c.angle = M_PI / 2;
 	c.position[0] = camera_position[0];
 	c.position[1] = camera_position[1];
 	c.position[2] = camera_position[2];
