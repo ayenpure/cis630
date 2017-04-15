@@ -1,0 +1,11 @@
+cmake_minimum_required(VERSION 3.3) 
+project(pointelev) 
+find_package(VTKm REQUIRED   
+COMPONENTS Rendering   
+OPTIONAL_COMPONENTS TBB   ) 
+add_executable(pointelev elevationfilter.cxx) 
+target_include_directories(pointelev PRIVATE ${VTKm_INCLUDE_DIRS}) 
+target_link_libraries(pointelev ${VTKm_LIBRARIES}) 
+target_compile_options(pointelev PRIVATE ${VTKm_COMPILE_OPTIONS})
+
+

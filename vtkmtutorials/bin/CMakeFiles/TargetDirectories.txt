@@ -1,0 +1,4 @@
+/home/abhishek/Projects/vtkmtutorials/bin/CMakeFiles/rebuild_cache.dir
+/home/abhishek/Projects/vtkmtutorials/bin/CMakeFiles/vecex.dir
+/home/abhishek/Projects/vtkmtutorials/bin/CMakeFiles/edit_cache.dir
+/home/abhishek/Projects/vtkmtutorials/bin/CMakeFiles/pointelev.dir

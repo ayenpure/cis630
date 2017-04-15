@@ -69,7 +69,8 @@ int main(int argc, char *argv[]) {
 			read_files = 0;
 	std::vector<Triangle> triangles;
 	if(argc < 4) {
-		cout << "Incorrect number of arguments for execution" << endl;
+		cout << "Incorrect number of arguments for execution\n"
+		<< "Usage : <program> <no of pros> <camera config> <read flag>" << endl;
 		exit (EXIT_FAILURE);
 	} else {
 		no_of_procs = atoi(argv[1]);
