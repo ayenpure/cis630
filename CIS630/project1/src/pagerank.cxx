@@ -19,9 +19,9 @@ void addEdgeBetweenNodes(int nodeId1, int nodeId2, unordered_map<int,vector<int>
 	}
 }
 
-int main() {
+int main(int argc, char* argv[]) {
 	string line;
-  ifstream graph("/media/extension/fl_undir.tab.txt");
+  ifstream graph(argv[1]);
 	unordered_map<int, int> nodetorank;
 	unordered_map<int,vector<int>> nodeadjacency;
 	int nodeId1,nodeId2;
