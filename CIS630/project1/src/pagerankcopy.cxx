@@ -5,9 +5,8 @@
 #include <sstream>
 #include <vector>
 #include <chrono>
-#include <map>
 #include <unordered_map>
-//1861227
+
 using namespace std;
 using namespace std::chrono;
 
@@ -45,7 +44,7 @@ void calculateRanksForRound(unordered_map<int,double> &newnodetorank,
 			double rank = 0;
 			for(int i = 0; i < neighbors.size(); i++) {
 				int nodeId = neighbors[i];
-				double neighbor_rank = nodetorank.find(nodeId)->second;
+				double neighbor_rank = nodetorank.find(nodeId)->first;
 				double neighbor_degree = nodeadjacency.find(nodeId)->second.size();
 				rank += neighbor_rank / neighbor_degree;
 			}
@@ -56,7 +55,7 @@ void calculateRanksForRound(unordered_map<int,double> &newnodetorank,
 
 void writeToFile(unordered_map<int, double> &nodetorank,
 	unordered_map<int,vector<int>> &nodeadjacency) {
-		cout << "writing to file" << endl;
+		cout << "writing to file" <<;
 		ofstream toWrite;
 		toWrite.open("output.txt");
 		std::map<int,vector<int>> ordered(nodeadjacency.begin(), nodeadjacency.end());
