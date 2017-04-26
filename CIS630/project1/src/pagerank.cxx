@@ -27,7 +27,7 @@ void addEdgeBetweenNodes(int nodeId1, int nodeId2,
 
 void initRanks(unordered_map<int,vector<int>> &nodeadjacency,
 	unordered_map<int, double> &nodetorank) {
-	cout << "initializing ranks" << endl;
+	//cout << "initializing ranks" << endl;
 	unordered_map<int,vector<int>>::iterator nodeiter = nodeadjacency.begin();
 	while(nodeiter != nodeadjacency.end()) {
 		nodetorank.insert(make_pair(nodeiter->first, 1.));
@@ -39,7 +39,7 @@ void initRanks(unordered_map<int,vector<int>> &nodeadjacency,
 void calculateRanksForRound(unordered_map<int,double> &newnodetorank,
 	unordered_map<int, double> &nodetorank,
 	unordered_map<int,vector<int>> &nodeadjacency) {
-		cout << "Calculating new page ranks" << endl;
+		//cout << "Calculating new page ranks" << endl;
 		unordered_map<int,vector<int>>::iterator nodeiter = nodeadjacency.begin();
 		while(nodeiter != nodeadjacency.end()) {
 			vector<int> neighbors = nodeiter->second;
@@ -57,7 +57,7 @@ void calculateRanksForRound(unordered_map<int,double> &newnodetorank,
 
 void writeToFile(unordered_map<int, double> &nodetorank,
 	unordered_map<int,vector<int>> &nodeadjacency) {
-		cout << "writing to file" << endl;
+		//cout << "writing to file" << endl;
 		ofstream toWrite;
 		toWrite.open("output.txt");
 		std::map<int,vector<int>> ordered(nodeadjacency.begin(), nodeadjacency.end());
@@ -94,7 +94,7 @@ int main(int argc, char* argv[]) {
 	required_time.~duration();*/
 	initRanks(nodeadjacency, nodetorank);
 	int numrounds = atoi(argv[2]);
-	unordered_map<int, double> roundnodetorank;
+	unordered_map<int, double> roundnodetorank[];
 	for(int round = 0;round < numrounds; round++) {
 		//start = high_resolution_clock::now();
 		calculateRanksForRound(roundnodetorank, nodetorank, nodeadjacency);
