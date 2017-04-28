@@ -53,11 +53,6 @@ int readAndPopulate(char *nodeInfoFile, char* edgeListFile, int rank,
       }
       nodeInfo.close();
     }
-    /*snodeDegrees = new int[maxNode+1];
-    for(int i = 0; i <= maxNode; i++) {
-      snodeDegrees[i] = 0;
-    }*/
-    //int indextoinsert = 0;
     ifstream edgeList(edgeListFile);
     if(edgeList.is_open()) {
       while(edgeList >> snode >> dnode) {
@@ -69,49 +64,55 @@ int readAndPopulate(char *nodeInfoFile, char* edgeListFile, int rank,
     return maxNode;
 }
 
+void writeToFile(double* roundRanks, int maxNode) {
+		//cout << "writing to file" << endl;
+		ofstream toWrite;
+		toWrite.open("output.txt");
+		for(int i = 1; i <= maxNode; i++) {
+      toWrite << i << " : " << roundRanks[i] << endl;
+    }
+		//cout << nodetorank.size() << endl;
+		toWrite.close();
+}
+
 int main (int argc, char *argv[])
 {
   int  numProcesses, rank;
   MPI_Init(&argc, &argv);
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   MPI_Comm_size(MPI_COMM_WORLD, &numProcesses);
-
   //read file and populate data structures for the rank
   char* nodeInfoFile = argv[1];
   char* edgeListFile = argv[2];
   int numberOfRounds = atoi(argv[3]);
+  /*
+    might not need this because of MPI_AllReduce
+  */
   unordered_map<int, int> nodeLocation;
   unordered_map<int, int> nodeDegree;
   unordered_map<int, vector<int>> nodeAdjacencies;
   int maxNode = readAndPopulate(nodeInfoFile, edgeListFile, rank, nodeLocation, nodeDegree, nodeAdjacencies);
   cout << nodeLocation.size() << " " << nodeDegree.size() << " " << nodeAdjacencies.size() << endl;
 
-  if(rank == MASTER) {
-    map<int,vector<int>> ordered(nodeAdjacencies.begin(), nodeAdjacencies.end());
-    ofstream toWrite("verify");
-    toWrite << fixed;
-    for(auto iter = ordered.begin(); iter != ordered.end(); iter++) {
-      toWrite << iter->first << "\t" << (nodeDegree.find(iter->first))->second << " : ";
-      for(int i = 0; i < iter->second.size(); i++) {
-        toWrite << iter->second[i] << "\t";
-      }
-      toWrite << endl;
-    }
-    toWrite.close();
-  }
-
   //allocate space for rounds of page credits calculation
   //either a 2D array or a map of vectors storing the credits
-  int** roundRanks = new int*[numberOfRounds + 1];
-  int* remoteRanks = new int[maxNode +1];
-  for(int i = 0; i <= numberOfRounds; i++) {
-    roundRanks = new int[maxNode];
+  double** roundRanks;
+  double* remoteRanks;
+  double* reduce = new double[maxNode +1];
+  if(rank == MASTER) {
+    roundRanks = new double*[numberOfRounds + 1];
+    for(int i = 0; i <= numberOfRounds; i++) {
+      roundRanks[i] = new double[maxNode];
+    }
+    for (int i = 0; i <= maxNode; i++) {
+      roundRanks[0][i] = 1;
+    }
+  } else {
+    remoteRanks = new double[maxNode +1];
+    for (int i = 0; i <= maxNode; i++) {
+      remoteRanks[i] = 1;
+    }
   }
-  for (int i = 0; i <= maxNode; i++) {
-    roundRanks[0][i] = 1;
-    remoteRanks[i] = -1;
-  }
-
   /*start rounds {
     loop through nodes of this node.
     If the other node is on this machine get credits and degree.
@@ -122,12 +123,40 @@ int main (int argc, char *argv[])
     calculate the rank, store the result, move on.
   }*/
   for(int i = 1; i <= numberOfRounds; i++) {
-
+    for (int i = 0; i <= maxNode; i++) {
+      reduce[i] = 0;
+    }
+    //go to every local node
+    for(auto iter = nodeAdjacencies.begin() ; iter != nodeAdjacencies.end(); iter++ ) {
+      int snode = iter->first;
+      vector<int> incidences = iter->second;
+      double sum = 0;
+      //for each neighbor locally available calculate locally the credits.
+      for(int j = 0; j < incidences.size(); j++) {
+        int dnode = incidences[j];
+        if((nodeLocation.find(dnode))->second != rank)
+          continue;
+        sum += ((rank == MASTER)?roundRanks[i-1][dnode]:remoteRanks[dnode])/(nodeDegree.find(dnode))->second;
+      }
+      //store these credits in the designates arrays
+      if(rank == MASTER) {
+        reduce[snode] = sum;
+      } else {
+        reduce[snode] = sum;
+      }
+    }
+    //MPI_AllReduce with the data
+    if(rank == MASTER) {
+      MPI_Allreduce(reduce, roundRanks[i], maxNode+1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+    } else {
+      MPI_Allreduce(reduce, remoteRanks, maxNode+1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+    }
+    if(rank == MASTER)
+      writeToFile(roundRanks[i], maxNode);
   }
   /*
     Finish up the rounds, collect all the credits in the master
     write them to the output file
   */
-
   MPI_Finalize();
 }
