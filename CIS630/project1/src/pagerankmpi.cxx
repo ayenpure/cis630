@@ -33,15 +33,22 @@ int getMaxNode(char* nodeInfoFile) {
   return maxNode;
 }
 
-void writeToFile(double* roundRanks, int maxNode, int rank) {
-		//cout << "writing to file" << endl;
+void writeToFile(double** roundRanks, int numberOfRounds, int* nodeDegree, int* isLocalNode, int maxNode, int rank) {
     int i;
     ofstream toWrite;
-		toWrite.open("output.txt");
+    string name = to_string(rank) + ".txt";
+		toWrite.open(name);
+    toWrite << fixed;
+    toWrite << setprecision(6);
 		for(i = 1; i <= maxNode; i++) {
-      toWrite << i << " : " << roundRanks[i] << endl;
+      if(isLocalNode[i]){
+        toWrite << i << "\t" << nodeDegree[i] << "\t";
+        for(int j = 1; j <= numberOfRounds; j++) {
+            toWrite << roundRanks[j][i] << "\t";
+        }
+        toWrite << endl;
+      }
     }
-		//cout << nodetorank.size() << endl;
 		toWrite.close();
 }
 
@@ -153,7 +160,7 @@ int main (int argc, char *argv[])
     MPI_Allreduce(reduce, roundRanks[i], allocationSize, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
     /*if(rank == MASTER)*/
   }
-  writeToFile(roundRanks, isLocalNode, maxNode, rank);
+  writeToFile(roundRanks, numberOfRounds,nodeDegree, isLocalNode, maxNode, rank);
   /*
     Finish up the rounds, collect all the credits in the master
     write them to the output file
