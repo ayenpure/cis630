@@ -18,100 +18,109 @@
 
 using namespace std;
 
-void addEdgeBetweenNodes(int snode, int dnode, unordered_map<int, vector<int>> &nodeAdjacencies) {
-  auto adjancencies = nodeAdjacencies.find(snode);
-  if(adjancencies != nodeAdjacencies.end()) {
-    //indextoinsert = snodeDegrees[snode];
-    adjancencies->second.push_back(dnode);//[indextoinsert] = dnode;
-    //snodeDegrees[snode]++;
+int getMaxNode(char* nodeInfoFile) {
+  int maxNode = 0, nodeId1, nodeId2;
+  ifstream toRead(nodeInfoFile);
+  if (toRead.is_open()) {
+  	while (toRead >> nodeId1 >> nodeId2) {
+      if(nodeId1 > maxNode)
+        maxNode = nodeId1;
+      if(nodeId2 > maxNode)
+        maxNode = nodeId2;
+  	}
+  	toRead.close();
   }
+  return maxNode;
 }
 
-int readAndPopulate(char *nodeInfoFile, char* edgeListFile, int rank,
-  unordered_map<int, int> &nodeLocation,
-  unordered_map<int, int> &nodeDegree,
-  unordered_map<int, vector<int>> &nodeAdjacencies) {
-    int snode, dnode, sdegree, srank;
-    //int *snodeDegrees;
-    int maxNode = 0;
-    /*
-     Block to allocate memory for adjancencies and init the node
-     locations and degrees
-    */
-    ifstream nodeInfo(nodeInfoFile);
-    if(nodeInfo.is_open()) {
-      while(nodeInfo >> snode >> sdegree >> srank) {
-        nodeLocation.insert(make_pair(snode, srank));
-        if(snode > maxNode)
-          maxNode = snode;
-        if(srank != rank)
-          continue;
-        nodeDegree.insert(make_pair(snode, sdegree));
-        vector<int> adjancencies;
-        adjancencies.reserve(sdegree);
-        nodeAdjacencies.insert(make_pair(snode, adjancencies));
-      }
-      nodeInfo.close();
-    }
-    ifstream edgeList(edgeListFile);
-    if(edgeList.is_open()) {
-      while(edgeList >> snode >> dnode) {
-        addEdgeBetweenNodes(snode, dnode, nodeAdjacencies);
-        addEdgeBetweenNodes(dnode, snode, nodeAdjacencies);
-      }
-      edgeList.close();
-    }
-    return maxNode;
-}
-
-void writeToFile(double* roundRanks, int maxNode) {
+void writeToFile(double* roundRanks, int maxNode, int rank) {
 		//cout << "writing to file" << endl;
-		ofstream toWrite;
+    int i;
+    ofstream toWrite;
 		toWrite.open("output.txt");
-		for(int i = 1; i <= maxNode; i++) {
+		for(i = 1; i <= maxNode; i++) {
       toWrite << i << " : " << roundRanks[i] << endl;
     }
 		//cout << nodetorank.size() << endl;
 		toWrite.close();
 }
 
+void getNodeInfo(char *nodeInfoFile, int* nodeDegree, int* nodeLocation, int** adjacencyList, int rank) {
+  int snode, sdegree, srank;
+  ifstream nodeInfo(nodeInfoFile);
+  if(nodeInfo.is_open()) {
+    while(nodeInfo >> snode >> sdegree >> srank) {
+      if(srank != rank) {
+          nodeLocation[snode] = 0;
+          nodeDegree[snode] = sdegree;
+          continue;
+      }
+      nodeLocation[snode] = 1;
+      nodeDegree[snode] = sdegree;
+      adjacencyList[snode] = new int[sdegree];
+    }
+    nodeInfo.close();
+  }
+}
+
+void addEdgeBetweenNodes(int snode, int dnode,  int** adjacencyList, int index) {
+  adjacencyList[snode][index] = dnode;
+}
+
+void getEdgeInfo(char *edgeListFile, int** adjacencyList, int* isLocalNode, int allocationSize) {
+  int snode, dnode;
+  int i;
+  int index[allocationSize];
+  for(i = 0; i < allocationSize; i++) {
+    index[i] = 0;
+  }
+  ifstream edgeList(edgeListFile);
+  if(edgeList.is_open()) {
+    while(edgeList >> snode >> dnode) {
+      if(isLocalNode[snode]){
+        addEdgeBetweenNodes(snode, dnode, adjacencyList, index[snode]);
+        ++index[snode];
+      }
+      if(isLocalNode[dnode]) {
+        addEdgeBetweenNodes(dnode, snode, adjacencyList, index[dnode]);
+        ++index[dnode];
+      }
+    }
+    edgeList.close();
+  }
+}
+
 int main (int argc, char *argv[])
 {
   int  numProcesses, rank;
+  int i, j, snode, dnode;
+  double sum;
   MPI_Init(&argc, &argv);
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   MPI_Comm_size(MPI_COMM_WORLD, &numProcesses);
+
   //read file and populate data structures for the rank
   char* nodeInfoFile = argv[1];
   char* edgeListFile = argv[2];
-  int numberOfRounds = atoi(argv[3]);
-  /*
-    might not need this because of MPI_AllReduce
-  */
-  unordered_map<int, int> nodeLocation;
-  unordered_map<int, int> nodeDegree;
-  unordered_map<int, vector<int>> nodeAdjacencies;
-  int maxNode = readAndPopulate(nodeInfoFile, edgeListFile, rank, nodeLocation, nodeDegree, nodeAdjacencies);
-  cout << nodeLocation.size() << " " << nodeDegree.size() << " " << nodeAdjacencies.size() << endl;
+  const int numberOfRounds = atoi(argv[3]);
+  const int maxNode = getMaxNode(nodeInfoFile);
+  const int allocationSize = maxNode + 1;
+  int *nodeDegree = new int[allocationSize];
+  int *isLocalNode = new int[allocationSize];;
+  int **adjacencyList = new int*[allocationSize];
+  getNodeInfo(nodeInfoFile, nodeDegree, isLocalNode, adjacencyList, rank);
+  getEdgeInfo(edgeListFile, adjacencyList, isLocalNode, allocationSize);
 
   //allocate space for rounds of page credits calculation
   //either a 2D array or a map of vectors storing the credits
   double** roundRanks;
-  double* remoteRanks;
-  double* reduce = new double[maxNode +1];
-  if(rank == MASTER) {
-    roundRanks = new double*[numberOfRounds + 1];
-    for(int i = 0; i <= numberOfRounds; i++) {
-      roundRanks[i] = new double[maxNode];
-    }
-    for (int i = 0; i <= maxNode; i++) {
-      roundRanks[0][i] = 1;
-    }
-  } else {
-    remoteRanks = new double[maxNode +1];
-    for (int i = 0; i <= maxNode; i++) {
-      remoteRanks[i] = 1;
-    }
+  double* reduce = new double[allocationSize];
+  roundRanks = new double*[numberOfRounds + 1];
+  for (i = 0; i <= numberOfRounds; i++) {
+    roundRanks[i] = new double[maxNode];
+  }
+  for (i = 0; i <= maxNode; i++) {
+    roundRanks[0][i] = 1;
   }
   /*start rounds {
     loop through nodes of this node.
@@ -122,38 +131,29 @@ int main (int argc, char *argv[])
     -message req be an int and receive as an int
     calculate the rank, store the result, move on.
   }*/
-  for(int i = 1; i <= numberOfRounds; i++) {
-    for (int i = 0; i <= maxNode; i++) {
-      reduce[i] = 0;
+  for(i = 1; i <= numberOfRounds; i++) {
+    for (j = 0; j <= maxNode; j++) {
+      reduce[j] = 0;
     }
     //go to every local node
-    for(auto iter = nodeAdjacencies.begin() ; iter != nodeAdjacencies.end(); iter++ ) {
-      int snode = iter->first;
-      vector<int> incidences = iter->second;
-      double sum = 0;
+    for(snode = 1; snode <= maxNode; snode++) {
+      if(!isLocalNode[snode])
+        continue;
+      sum = 0;
       //for each neighbor locally available calculate locally the credits.
-      for(int j = 0; j < incidences.size(); j++) {
-        int dnode = incidences[j];
-        if((nodeLocation.find(dnode))->second != rank)
-          continue;
-        sum += ((rank == MASTER)?roundRanks[i-1][dnode]:remoteRanks[dnode])/(nodeDegree.find(dnode))->second;
+      for(j = 0; j < nodeDegree[snode]; j++) {
+        dnode = adjacencyList[snode][j];
+        /*if(!isLocalNode[dnode])
+          continue;*/
+        sum += roundRanks[i-1][dnode] / nodeDegree[dnode];
       }
-      //store these credits in the designates arrays
-      if(rank == MASTER) {
-        reduce[snode] = sum;
-      } else {
-        reduce[snode] = sum;
-      }
+      reduce[snode] = sum;
     }
-    //MPI_AllReduce with the data
-    if(rank == MASTER) {
-      MPI_Allreduce(reduce, roundRanks[i], maxNode+1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
-    } else {
-      MPI_Allreduce(reduce, remoteRanks, maxNode+1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
-    }
-    if(rank == MASTER)
-      writeToFile(roundRanks[i], maxNode);
+    //store these credits in the designates arrays
+    MPI_Allreduce(reduce, roundRanks[i], allocationSize, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+    /*if(rank == MASTER)*/
   }
+  writeToFile(roundRanks, isLocalNode, maxNode, rank);
   /*
     Finish up the rounds, collect all the credits in the master
     write them to the output file
