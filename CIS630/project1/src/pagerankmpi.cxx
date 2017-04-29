@@ -18,19 +18,20 @@
 
 using namespace std;
 
-int getMaxNode(char* nodeInfoFile) {
-  int maxNode = 0, nodeId1, nodeId2;
+void getMaxNodeAndEdges(char* nodeInfoFile, int *maxNode, int* maxEdges) {
+  *maxNode = 0;
+  *maxEdges = 0;
+  int node, degree, partition;
   ifstream toRead(nodeInfoFile);
   if (toRead.is_open()) {
-  	while (toRead >> nodeId1 >> nodeId2) {
-      if(nodeId1 > maxNode)
-        maxNode = nodeId1;
-      if(nodeId2 > maxNode)
-        maxNode = nodeId2;
+  	while (toRead >> snode >> sdegree >> spartition) {
+      if(node > maxNode)
+        maxNode = node;
+      maxEdges+=sdegree;
   	}
   	toRead.close();
   }
-  return maxNode;
+  maxEdges /= 2;
 }
 
 void writeToFile(double** roundRanks, int numberOfRounds, int* nodeDegree, int* isLocalNode, int maxNode, int rank) {
@@ -52,7 +53,7 @@ void writeToFile(double** roundRanks, int numberOfRounds, int* nodeDegree, int* 
 		toWrite.close();
 }
 
-void getNodeInfo(char *nodeInfoFile, int* nodeDegree, int* nodeLocation, int** adjacencyList, int rank) {
+void getNodeInfo(char *nodeInfoFile, int* nodeDegree, int* nodeLocation, int** , int rank) {
   int snode, sdegree, srank;
   ifstream nodeInfo(nodeInfoFile);
   if(nodeInfo.is_open()) {
@@ -64,36 +65,25 @@ void getNodeInfo(char *nodeInfoFile, int* nodeDegree, int* nodeLocation, int** a
       }
       nodeLocation[snode] = 1;
       nodeDegree[snode] = sdegree;
-      adjacencyList[snode] = new int[sdegree];
+      [snode] = new int[sdegree];
     }
     nodeInfo.close();
   }
 }
 
-void addEdgeBetweenNodes(int snode, int dnode,  int** adjacencyList, int index) {
-  adjacencyList[snode][index] = dnode;
-}
+/*void addEdgeBetweenNodes(int snode, int dnode,  int** , int index) {
+  [snode][index] = dnode;
+}*/
 
-void getEdgeInfo(char *edgeListFile, int** adjacencyList, int* isLocalNode, int allocationSize) {
-  int snode, dnode;
-  int i;
-  int index[allocationSize];
-  for(i = 0; i < allocationSize; i++) {
-    index[i] = 0;
-  }
-  ifstream edgeList(edgeListFile);
-  if(edgeList.is_open()) {
-    while(edgeList >> snode >> dnode) {
-      if(isLocalNode[snode]){
-        addEdgeBetweenNodes(snode, dnode, adjacencyList, index[snode]);
-        ++index[snode];
-      }
-      if(isLocalNode[dnode]) {
-        addEdgeBetweenNodes(dnode, snode, adjacencyList, index[dnode]);
-        ++index[dnode];
-      }
+void getEdgeInfo(char *edgeListFile, int** edgeList, int* isLocalNode, int allocationSize) {
+  int snode, dnode, i = 0;
+  ifstream edgeInfo(edgeListFile);
+  if(edgeInfo.is_open()) {
+    while(edgeInfo >> snode >> dnode) {
+      edgeList[i][0] = snode;
+      edgeList[i][1] = dnode;
     }
-    edgeList.close();
+    edgeInfo.close();
   }
 }
 
@@ -110,13 +100,16 @@ int main (int argc, char *argv[])
   char* nodeInfoFile = argv[1];
   char* edgeListFile = argv[2];
   const int numberOfRounds = atoi(argv[3]);
-  const int maxNode = getMaxNode(nodeInfoFile);
+  const int maxNode, maxEdges;
+  getMaxNodeAndEdges(nodeInfoFile, &maxNode, &maxEdges);
   const int allocationSize = maxNode + 1;
   int *nodeDegree = new int[allocationSize];
-  int *isLocalNode = new int[allocationSize];;
-  int **adjacencyList = new int*[allocationSize];
-  getNodeInfo(nodeInfoFile, nodeDegree, isLocalNode, adjacencyList, rank);
-  getEdgeInfo(edgeListFile, adjacencyList, isLocalNode, allocationSize);
+  int *isLocalNode = new int[allocationSize];
+  getNodeInfo(nodeInfoFile, nodeDegree, isLocalNode, rank);
+  int **edgeList = new int*[maxEdges];
+  for(i = 0; i < maxEdges; i++)
+    edgeList[i] = new int[2];
+  getEdgeInfo(edgeListFile, edgeList);
 
   //allocate space for rounds of page credits calculation
   //either a 2D array or a map of vectors storing the credits
@@ -143,19 +136,18 @@ int main (int argc, char *argv[])
       reduce[j] = 0;
     }
     //go to every local node
-    for(snode = 1; snode <= maxNode; snode++) {
+    /*for(snode = 1; snode <= maxNode; snode++) {
       if(!isLocalNode[snode])
         continue;
       sum = 0;
       //for each neighbor locally available calculate locally the credits.
       for(j = 0; j < nodeDegree[snode]; j++) {
-        dnode = adjacencyList[snode][j];
-        /*if(!isLocalNode[dnode])
-          continue;*/
+        dnode = [snode][j];
         sum += roundRanks[i-1][dnode] / nodeDegree[dnode];
       }
       reduce[snode] = sum;
-    }
+    }*/
+
     //store these credits in the designates arrays
     MPI_Allreduce(reduce, roundRanks[i], allocationSize, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
     /*if(rank == MASTER)*/
