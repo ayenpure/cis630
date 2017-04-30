@@ -1,22 +1,18 @@
-/******************************************************************************
-* FILE: mpi_helloBsend.c
-* DESCRIPTION:
-*   MPI tutorial example code: Simple hello world program that uses blocking
-*   send/receive routines.
-* AUTHOR: Blaise Barney
-* LAST REVISED: 06/08/15
-******************************************************************************/
 #include "mpi.h"
+#include <chrono>
 #include <cstdlib>
+#include <ctime>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
 #include <map>
+#include <ratio>
 #include <unordered_map>
 #include <vector>
 #define  MASTER	0
 
 using namespace std;
+using namespace std::chrono;
 
 void getMaxNodeAndEdges(char* nodeInfoFile, int *maxNode, int* maxEdges) {
   *maxNode = 0;
@@ -85,18 +81,36 @@ void getEdgeInfo(char *edgeListFile, int** edgeList) {
   }
 }
 
-int main (int argc, char *argv[])
-{
+void printTime(high_resolution_clock::time_point start,
+  high_resolution_clock::time_point end, string message, string rmessage,
+  int rank, int reduce) {
+  double toReduce,toCollect = 0;
+  duration<double> tspan;
+  tspan = duration_cast<duration<double>>(end - start);
+  toReduce = tspan.count();
+  cout << message << " " << rank << " : " << toReduce << " sec." << endl;
+  MPI_Reduce(&toReduce, &toCollect, 1, MPI_DOUBLE, MPI_MAX, MASTER, MPI_COMM_WORLD);
+  if(reduce) {
+    if(rank == MASTER)
+      cout << rmessage << " : " << toCollect << " sec." << endl;
+  }
+}
+
+int main (int argc, char *argv[]) {
+  char* nodeInfoFile = argv[1];
+  char* edgeListFile = argv[2];
+
   int  numProcesses, rank;
   int i, j, snode, dnode;
-  double sum;
+  high_resolution_clock::time_point start, end;
+  string message, rmessage;
+
   MPI_Init(&argc, &argv);
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   MPI_Comm_size(MPI_COMM_WORLD, &numProcesses);
 
+  start = high_resolution_clock::now();
   //read file and populate data structures for the rank
-  char* nodeInfoFile = argv[1];
-  char* edgeListFile = argv[2];
   const int numberOfRounds = atoi(argv[3]);
   int maxNode, maxEdges;
   getMaxNodeAndEdges(nodeInfoFile, &maxNode, &maxEdges);
@@ -108,7 +122,9 @@ int main (int argc, char *argv[])
   for(i = 0; i < maxEdges; i++)
     edgeList[i] = new int[2];
   getEdgeInfo(edgeListFile, edgeList);
-
+  end = high_resolution_clock::now();
+  message = "Time to read input files, partition";
+  printTime(start, end, message, rmessage, rank, 0);
   //allocate space for rounds of page credits calculation
   //either a 2D array or a map of vectors storing the credits
   double** roundRanks;
@@ -130,6 +146,7 @@ int main (int argc, char *argv[])
     calculate the rank, store the result, move on.
   }*/
   for(i = 1; i <= numberOfRounds; i++) {
+    start = high_resolution_clock::now();
     for (j = 0; j <= maxNode; j++) {
       reduce[j] = 0;
     }
@@ -153,11 +170,18 @@ int main (int argc, char *argv[])
         reduce[dnode] += roundRanks[i-1][snode] / nodeDegree[snode];
       }
     }
+    end = high_resolution_clock::now();
     //store these credits in the designates arrays
     MPI_Allreduce(reduce, roundRanks[i], allocationSize, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
-    /*if(rank == MASTER)*/
+    message = "Time for round " + to_string(i) +  ", partition";
+    rmessage = "Total time for round " + to_string(i);
+    printTime(start, end, message, rmessage, rank, 1);
   }
+  start = high_resolution_clock::now();
   writeToFile(roundRanks, numberOfRounds,nodeDegree, isLocalNode, maxNode, rank);
+  end = high_resolution_clock::now();
+  message = "Time to write output file, partition";
+  printTime(start, end, message, rmessage, rank, 1);
   /*
     Finish up the rounds, collect all the credits in the master
     write them to the output file
