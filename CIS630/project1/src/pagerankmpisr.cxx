@@ -58,16 +58,12 @@ void getNodeInfo(char *nodeInfoFile, int* nodeDegree, int* isLocalNode, int rank
   ifstream nodeInfo(nodeInfoFile);
   if(nodeInfo.is_open()) {
     while(nodeInfo >> snode >> sdegree >> srank) {
-        isLocalNode[snode] = rank;
+        isLocalNode[snode] = srank;
         nodeDegree[snode] = sdegree;
     }
     nodeInfo.close();
   }
 }
-
-/*void addEdgeBetweenNodes(int snode, int dnode,  int** , int index) {
-  [snode][index] = dnode;
-}*/
 
 void getEdgeInfo(char *edgeListFile, int** edgeList) {
   int snode, dnode, i = 0;
@@ -90,49 +86,53 @@ void printTime(high_resolution_clock::time_point start,
   tspan = duration_cast<duration<double>>(end - start);
   toReduce = tspan.count();
   cout << message << " " << rank << " : " << toReduce << " sec." << endl;
-  MPI_Reduce(&toReduce, &toCollect, 1, MPI_DOUBLE, MPI_MAX, MASTER, MPI_COMM_WORLD);
   if(reduce) {
-    if(rank == MASTER)
+    if(rank == MASTER) {
+      //MPI_Recv
       cout << rmessage << " : " << toCollect << " sec." << endl;
+    } else {
+      //MPI_Send
+    }
   }
 }
 
-void MPI_EXCHANGE(double* reduce, int LIMIT, int* nodeLocation, int rank, int roundid, int numProcesses) {
+void EXCHANGE(double* reduce, int LIMIT, int* nodeLocation, int rank, int roundid, int numProcesses) {
+
   int i,j;
   int scattertag = roundid + SCATTER;
   int reducetag = roundid + REDUCE;
+  double* collect = new double[LIMIT];
   //Reduce
   if(rank == MASTER) {
     //only receive
-    double* collect = new double[LIMIT];
     for(i = 1; i < numProcesses; i++) {
-      MPI_Recv(&collect, LIMIT, MPI_DOUBLE, i, reducetag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+      MPI_Recv(&collect[0], LIMIT, MPI_DOUBLE, i, reducetag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
       for(j = 0; j < LIMIT; j++) {
         reduce[j] += collect[j];
       }
     }
   } else {
     //only send
-    MPI_Send(&reduce, LIMIT, MPI_DOUBLE, MASTER, reducetag, MPI_COMM_WORLD);
+    MPI_Send(&reduce[0], LIMIT, MPI_DOUBLE, MASTER, reducetag, MPI_COMM_WORLD);
   }
-
   //Scatter
   if(rank == MASTER) {
     for(i = 1; i < numProcesses; i++) {
-      MPI_Send(&reduce, LIMIT, MPI_DOUBLE, i, scattertag, MPI_COMM_WORLD);
+      MPI_Send(&reduce[0], LIMIT, MPI_DOUBLE, i, scattertag, MPI_COMM_WORLD);
     }
   } else {
-    MPI_Recv(&reduce, LIMIT, MPI_DOUBLE, MASTER, scattertag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+    MPI_Recv(&reduce[0], LIMIT, MPI_DOUBLE, MASTER, scattertag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
   }
 }
 
 int main (int argc, char *argv[]) {
+  high_resolution_clock::time_point start, end, tstart, tend;
+  tstart = high_resolution_clock::now();
   char* nodeInfoFile = argv[1];
   char* edgeListFile = argv[2];
 
   int  numProcesses, rank;
   int i, j, snode, dnode;
-  high_resolution_clock::time_point start, end;
   string message, rmessage;
 
   MPI_Init(&argc, &argv);
@@ -140,7 +140,6 @@ int main (int argc, char *argv[]) {
   MPI_Comm_size(MPI_COMM_WORLD, &numProcesses);
 
   start = high_resolution_clock::now();
-  //read file and populate data structures for the rank
   const int numberOfRounds = atoi(argv[3]);
   int maxNode, maxEdges;
   getMaxNodeAndEdges(nodeInfoFile, &maxNode, &maxEdges);
@@ -153,45 +152,24 @@ int main (int argc, char *argv[]) {
     edgeList[i] = new int[2];
   getEdgeInfo(edgeListFile, edgeList);
   end = high_resolution_clock::now();
-  message = "Time to read input files, partition";
+  message = "-- Time to read input files, partition";
   printTime(start, end, message, rmessage, rank, 0);
-  //allocate space for rounds of page credits calculation
-  //either a 2D array or a map of vectors storing the credits
+
   double** roundRanks;
   double* reduce = new double[allocationSize];
   roundRanks = new double*[numberOfRounds + 1];
   for (i = 0; i <= numberOfRounds; i++) {
-    roundRanks[i] = new double[maxNode];
+    roundRanks[i] = new double[allocationSize];
   }
   for (i = 0; i <= maxNode; i++) {
     roundRanks[0][i] = 1;
   }
-  /*start rounds {
-    loop through nodes of this node.
-    If the other node is on this machine get credits and degree.
-    If the other node is not on this machine, request its credits
-    MPI_Send()/MPI_Rec()
-    -the tag be the round ID
-    -message req be an int and receive as an int
-    calculate the rank, store the result, move on.
-  }*/
+
   for(i = 1; i <= numberOfRounds; i++) {
     start = high_resolution_clock::now();
     for (j = 0; j <= maxNode; j++) {
       reduce[j] = 0;
     }
-    //go to every local node
-    /*for(snode = 1; snode <= maxNode; snode++) {
-      if(!isLocalNode[snode])
-        continue;
-      sum = 0;
-      //for each neighbor locally available calculate locally the credits.
-      for(j = 0; j < nodeDegree[snode]; j++) {
-        dnode = [snode][j];
-        sum += roundRanks[i-1][dnode] / nodeDegree[dnode];
-      }
-      reduce[snode] = sum;
-    }*/
     for(j = 0; j < maxEdges; j++) {
       snode = edgeList[j][0];
       if(isLocalNode[snode] == rank) {
@@ -201,22 +179,19 @@ int main (int argc, char *argv[]) {
       }
     }
     end = high_resolution_clock::now();
-    //store these credits in the designates arrays
-    //MPI_Allreduce(reduce, roundRanks[i], allocationSize, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
-    MPI_EXCHANGE(reduce, allocationSize, isLocalNode, rank, i, numProcesses);
+    EXCHANGE(reduce, allocationSize, isLocalNode, rank, i, numProcesses);
     copy(reduce, reduce + allocationSize, roundRanks[i]);
-    message = "Time for round " + to_string(i) +  ", partition";
+    message = "-- Time for round " + to_string(i) +  ", partition";
     rmessage = "Total time for round " + to_string(i);
     printTime(start, end, message, rmessage, rank, 1);
   }
   start = high_resolution_clock::now();
   writeToFile(roundRanks, numberOfRounds,nodeDegree, isLocalNode, maxNode, rank);
   end = high_resolution_clock::now();
-  message = "Time to write output file, partition";
+  message = "-- Time to write output file, partition";
+  rmessage = "Total time to write output files " + to_string(i);
   printTime(start, end, message, rmessage, rank, 1);
-  /*
-    Finish up the rounds, collect all the credits in the master
-    write them to the output file
-  */
   MPI_Finalize();
+  tend = high_resolution_clock::now();
+
 }
