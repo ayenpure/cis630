@@ -15,6 +15,9 @@
 using namespace std;
 using namespace std::chrono;
 
+#define REDUCE 100
+#define SCATTER 200
+
 void getMaxNodeAndEdges(char* nodeInfoFile, int *maxNode, int* maxEdges) {
   *maxNode = 0;
   *maxEdges = 0;
@@ -94,25 +97,33 @@ void printTime(high_resolution_clock::time_point start,
   }
 }
 
-void MPI_EXCHANGE(double* reduce, double* coallate, int LIMIT, int* nodeLocation, int rank, int roundid) {
-  int i;
-  for(i=1; i <= LIMIT; i++) {
-    int drank = nodeLocation[i];
-    if(drank != rank) {
-      /*
-        MPI send message about their partial credits with current node
-      */
-      double toSend = reduce[i];
-      MPI_Send(&toSend, 1, MPI_DOUBLE, drank, roundid, MPI_COMM_WORLD);
-      /*
-        MPI receive message about current node's partial credits with them
-      */
-      double toCollect = 0;
-      MPI_Recv(&toCollect, 1 , MPI_DOUBLE, drank, roundid, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-      reduce[i] += toCollect;
+void MPI_EXCHANGE(double* reduce, int LIMIT, int* nodeLocation, int rank, int roundid, int numProcesses) {
+  int i,j;
+  int scattertag = roundid + SCATTER;
+  int reducetag = roundid + REDUCE;
+  //Reduce
+  if(rank == MASTER) {
+    //only receive
+    double* collect = new double[LIMIT];
+    for(i = 1; i < numProcesses; i++) {
+      MPI_Recv(&collect, LIMIT, MPI_DOUBLE, i, reducetag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+      for(j = 0; j < LIMIT; j++) {
+        reduce[j] += collect[j];
+      }
     }
+  } else {
+    //only send
+    MPI_Send(&reduce, LIMIT, MPI_DOUBLE, MASTER, reducetag, MPI_COMM_WORLD);
   }
-  copy(reduce, reduce+LIMIT, coallate);
+
+  //Scatter
+  if(rank == MASTER) {
+    for(i = 1; i < numProcesses; i++) {
+      MPI_Send(&reduce, LIMIT, MPI_DOUBLE, i, scattertag, MPI_COMM_WORLD);
+    }
+  } else {
+    MPI_Recv(&reduce, LIMIT, MPI_DOUBLE, MASTER, scattertag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+  }
 }
 
 int main (int argc, char *argv[]) {
@@ -192,7 +203,8 @@ int main (int argc, char *argv[]) {
     end = high_resolution_clock::now();
     //store these credits in the designates arrays
     //MPI_Allreduce(reduce, roundRanks[i], allocationSize, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
-    MPI_EXCHANGE(reduce, roundRanks[i], allocationSize, isLocalNode, rank, i);
+    MPI_EXCHANGE(reduce, allocationSize, isLocalNode, rank, i, numProcesses);
+    copy(reduce, reduce + allocationSize, roundRanks[i]);
     message = "Time for round " + to_string(i) +  ", partition";
     rmessage = "Total time for round " + to_string(i);
     printTime(start, end, message, rmessage, rank, 1);
