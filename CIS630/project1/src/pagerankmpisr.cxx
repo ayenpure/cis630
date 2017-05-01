@@ -34,18 +34,18 @@ void getMaxNodeAndEdges(char* nodeInfoFile, int *maxNode, int* maxEdges) {
   *maxEdges /= 2;
 }
 
-void writeToFile(double** roundRanks, int numberOfRounds, int* nodeDegree, int* isLocalNode, int maxNode, int rank) {
+void writeToFile(double* roundRanks, int numberOfRounds, int* nodeDegree, int* isLocalNode, int allocationSize, int rank) {
     int i;
     ofstream toWrite;
     string name = to_string(rank) + ".txt";
 		toWrite.open(name);
     toWrite << fixed;
     toWrite << setprecision(6);
-		for(i = 1; i <= maxNode; i++) {
+		for(i = 1; i < allocationSize; i++) {
       if(isLocalNode[i] == rank){
         toWrite << i << "\t" << nodeDegree[i] << "\t";
         for(int j = 1; j <= numberOfRounds; j++) {
-            toWrite << roundRanks[j][i] << "\t";
+            toWrite << roundRanks[(j*allocationSize)+i] << "\t";
         }
         toWrite << endl;
       }
@@ -80,24 +80,31 @@ void getEdgeInfo(char *edgeListFile, int** edgeList) {
 
 void printTime(high_resolution_clock::time_point start,
   high_resolution_clock::time_point end, string message, string rmessage,
-  int rank, int reduce) {
-  double toReduce,toCollect = 0;
+  int rank, int reduce, int reduceonly, int numProcesses) {
+  double actDuration;
   duration<double> tspan;
   tspan = duration_cast<duration<double>>(end - start);
-  toReduce = tspan.count();
-  cout << message << " " << rank << " : " << toReduce << " sec." << endl;
+  actDuration = tspan.count();
+  if(!reduceonly)
+    cout << message << " " << rank << " : " << actDuration << " sec." << endl;
   if(reduce) {
     if(rank == MASTER) {
       //MPI_Recv
-      cout << rmessage << " : " << toCollect << " sec." << endl;
+      double maxTime = actDuration, toReceive = 0;
+      for(int i = 1; i < numProcesses; i++) {
+        MPI_Recv(&toReceive, 1, MPI_DOUBLE, i , REDUCE, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        if(toReceive > maxTime) {
+          maxTime = toReceive;
+        }
+      }
+      cout << rmessage << " : " << maxTime << " sec." << endl;
     } else {
-      //MPI_Send
+      MPI_Send(&actDuration, 1, MPI_DOUBLE, MASTER, REDUCE, MPI_COMM_WORLD);
     }
   }
 }
 
 void EXCHANGE(double* reduce, int LIMIT, int* nodeLocation, int rank, int roundid, int numProcesses) {
-
   int i,j;
   int scattertag = roundid + SCATTER;
   int reducetag = roundid + REDUCE;
@@ -153,16 +160,13 @@ int main (int argc, char *argv[]) {
   getEdgeInfo(edgeListFile, edgeList);
   end = high_resolution_clock::now();
   message = "-- Time to read input files, partition";
-  printTime(start, end, message, rmessage, rank, 0);
+  printTime(start, end, message, rmessage, rank, 0, 0, numProcesses);
 
-  double** roundRanks;
   double* reduce = new double[allocationSize];
-  roundRanks = new double*[numberOfRounds + 1];
-  for (i = 0; i <= numberOfRounds; i++) {
-    roundRanks[i] = new double[allocationSize];
-  }
-  for (i = 0; i <= maxNode; i++) {
-    roundRanks[0][i] = 1;
+  double* roundRanks;
+  roundRanks = new double[(numberOfRounds + 1)*allocationSize];
+  for (i = 0; i < allocationSize; i++) {
+    roundRanks[i] = 1;
   }
 
   for(i = 1; i <= numberOfRounds; i++) {
@@ -174,24 +178,25 @@ int main (int argc, char *argv[]) {
       snode = edgeList[j][0];
       if(isLocalNode[snode] == rank) {
         dnode = edgeList[j][1];
-        reduce[snode] += roundRanks[i-1][dnode] / nodeDegree[dnode];
-        reduce[dnode] += roundRanks[i-1][snode] / nodeDegree[snode];
+        reduce[snode] += roundRanks[(i-1)*allocationSize + dnode] / nodeDegree[dnode];
+        reduce[dnode] += roundRanks[(i-1)*allocationSize + snode] / nodeDegree[snode];
       }
     }
     end = high_resolution_clock::now();
     EXCHANGE(reduce, allocationSize, isLocalNode, rank, i, numProcesses);
-    copy(reduce, reduce + allocationSize, roundRanks[i]);
+    copy(reduce, reduce + allocationSize, &roundRanks[i*allocationSize]);
     message = "-- Time for round " + to_string(i) +  ", partition";
     rmessage = "Total time for round " + to_string(i);
-    printTime(start, end, message, rmessage, rank, 1);
+    printTime(start, end, message, rmessage, rank, 1, 0, numProcesses);
   }
   start = high_resolution_clock::now();
-  writeToFile(roundRanks, numberOfRounds,nodeDegree, isLocalNode, maxNode, rank);
+  writeToFile(roundRanks, numberOfRounds,nodeDegree, isLocalNode, allocationSize, rank);
   end = high_resolution_clock::now();
   message = "-- Time to write output file, partition";
-  rmessage = "Total time to write output files " + to_string(i);
-  printTime(start, end, message, rmessage, rank, 1);
-  MPI_Finalize();
+  rmessage = "Total time to write output files ";
+  printTime(start, end, message, rmessage, rank, 1, 0, numProcesses);
   tend = high_resolution_clock::now();
-
+  rmessage = "Total time for execution of program ";
+  printTime(tstart, tend, message, rmessage, rank, 1, 1, numProcesses);
+  MPI_Finalize();
 }
