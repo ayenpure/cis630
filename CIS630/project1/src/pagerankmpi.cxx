@@ -1,14 +1,21 @@
 #include "mpi.h"
-#include <chrono>
+#include <algorithm>
 #include <cstdlib>
+#include <chrono>
 #include <ctime>
+#include <ratio>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
 #include <map>
-#include <ratio>
 #include <unordered_map>
 #include <vector>
+#include <fcntl.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <sys/io.h>
+#include <sys/mman.h>
 #define  MASTER	0
 
 using namespace std;
@@ -17,8 +24,8 @@ using namespace std::chrono;
 void getMaxNodeAndEdges(char* nodeInfoFile, int *maxNode, int* maxEdges) {
   *maxNode = 0;
   *maxEdges = 0;
-  int snode, sdegree, spartition;
-  ifstream toRead(nodeInfoFile);
+  int i,snode, sdegree, spartition;
+  /*ifstream toRead(nodeInfoFile);
   if (toRead.is_open()) {
   	while (toRead >> snode >> sdegree >> spartition) {
       if(snode > *maxNode)
@@ -26,22 +33,41 @@ void getMaxNodeAndEdges(char* nodeInfoFile, int *maxNode, int* maxEdges) {
       *maxEdges+=sdegree;
   	}
   	toRead.close();
+  }*/
+  struct stat s;
+  int fd = open (nodeInfoFile, O_RDONLY);
+  int status = fstat (fd, & s);
+  /* Get the size of the file. */
+  int size = s.st_size;
+  char *file = (char *) mmap (0, size, PROT_READ, MAP_PRIVATE, fd, 0);
+  char *lstart = file, *lend;
+  for (i = 0; i < size;i++) {
+    if(file[i] == '\n') {
+      snode = strtol(lstart, &lend, 10);
+      sdegree = strtol(lend, &lend, 10);
+      spartition = strtol(lend, NULL, 10);
+      lstart = file + i + 1;
+      if(snode > *maxNode)
+        *maxNode = snode;
+      *maxEdges += sdegree;
+    }
   }
+  munmap(file, size);
   *maxEdges /= 2;
 }
 
-void writeToFile(double** roundRanks, int numberOfRounds, int* nodeDegree, int* isLocalNode, int maxNode, int rank) {
+void writeToFile(double* roundRanks, int numberOfRounds, int* nodeDegree, int* isLocalNode, int allocationSize, int rank) {
     int i;
     ofstream toWrite;
     string name = to_string(rank) + ".txt";
 		toWrite.open(name);
     toWrite << fixed;
     toWrite << setprecision(6);
-		for(i = 1; i <= maxNode; i++) {
-      if(isLocalNode[i]){
+		for(i = 1; i < allocationSize; i++) {
+      if(isLocalNode[i] == rank){
         toWrite << i << "\t" << nodeDegree[i] << "\t";
         for(int j = 1; j <= numberOfRounds; j++) {
-            toWrite << roundRanks[j][i] << "\t";
+            toWrite << roundRanks[(j*allocationSize)+i] << "\t";
         }
         toWrite << endl;
       }
@@ -50,27 +76,38 @@ void writeToFile(double** roundRanks, int numberOfRounds, int* nodeDegree, int* 
 }
 
 void getNodeInfo(char *nodeInfoFile, int* nodeDegree, int* isLocalNode, int rank) {
-  int snode, sdegree, srank;
-  ifstream nodeInfo(nodeInfoFile);
+  int i,snode, sdegree, srank;
+  /*ifstream nodeInfo(nodeInfoFile);
   if(nodeInfo.is_open()) {
     while(nodeInfo >> snode >> sdegree >> srank) {
-      if(srank != rank)
-        isLocalNode[snode] = 0;
-      else
-        isLocalNode[snode] = 1;
-      nodeDegree[snode] = sdegree;
+        isLocalNode[snode] = srank;
+        nodeDegree[snode] = sdegree;
     }
     nodeInfo.close();
+  }*/
+  struct stat s;
+  int fd = open (nodeInfoFile, O_RDONLY);
+  int status = fstat (fd, & s);
+  /* Get the size of the file. */
+  int size = s.st_size;
+  char *file = (char *) mmap (0, size, PROT_READ, MAP_PRIVATE, fd, 0);
+  char *lstart = file, *lend;
+  for (i = 0; i < size;i++) {
+    if(file[i] == '\n') {
+      snode = strtol(lstart, &lend, 10);
+      sdegree = strtol(lend, &lend, 10);
+      srank = strtol(lend, NULL, 10);
+      lstart = file + i + 1;
+      isLocalNode[snode] = srank;
+      nodeDegree[snode] = sdegree;
+    }
   }
+  munmap(file, size);
 }
 
-/*void addEdgeBetweenNodes(int snode, int dnode,  int** , int index) {
-  [snode][index] = dnode;
-}*/
-
 void getEdgeInfo(char *edgeListFile, int** edgeList) {
-  int snode, dnode, i = 0;
-  ifstream edgeInfo(edgeListFile);
+  int snode, dnode, edge = 0;
+  /*ifstream edgeInfo(edgeListFile);
   if(edgeInfo.is_open()) {
     while(edgeInfo >> snode >> dnode) {
       edgeList[i][0] = snode;
@@ -78,31 +115,53 @@ void getEdgeInfo(char *edgeListFile, int** edgeList) {
       i++;
     }
     edgeInfo.close();
+  }*/
+  struct stat s;
+  int fd = open (edgeListFile, O_RDONLY);
+  int status = fstat (fd, & s);
+  /* Get the size of the file. */
+  int size = s.st_size;
+  char *file = (char *) mmap (0, size, PROT_READ, MAP_PRIVATE, fd, 0);
+  char *lstart = file, *lend;
+  for (int i = 0; i < size;i++) {
+    if(file[i] == '\n') {
+      snode = strtol(lstart, &lend, 10);
+      dnode = strtol(lend, NULL, 10);
+      lstart = file + i + 1;
+      edgeList[edge][0] = snode;
+      edgeList[edge][1] = dnode;
+      edge++;
+    }
   }
+  munmap(file, size);
 }
 
 void printTime(high_resolution_clock::time_point start,
   high_resolution_clock::time_point end, string message, string rmessage,
-  int rank, int reduce) {
-  double toReduce,toCollect = 0;
+  int rank, int reduce, int reduceonly, int numProcesses) {
+  double actDuration;
   duration<double> tspan;
   tspan = duration_cast<duration<double>>(end - start);
-  toReduce = tspan.count();
-  cout << message << " " << rank << " : " << toReduce << " sec." << endl;
-  MPI_Reduce(&toReduce, &toCollect, 1, MPI_DOUBLE, MPI_MAX, MASTER, MPI_COMM_WORLD);
+  actDuration = tspan.count();
+  if(!reduceonly)
+    cout << message << " " << rank << " : " << actDuration << " sec." << endl;
   if(reduce) {
+    double maxTime;
+    MPI_Reduce(&actDuration, &maxTime, 1, MPI_DOUBLE, MPI_MAX, MASTER, MPI_COMM_WORLD);
     if(rank == MASTER)
-      cout << rmessage << " : " << toCollect << " sec." << endl;
+      cout << rmessage << " : " << maxTime << " sec." << endl;
   }
 }
 
+
 int main (int argc, char *argv[]) {
+  high_resolution_clock::time_point start, end, tstart, tend;
+  tstart = high_resolution_clock::now();
   char* nodeInfoFile = argv[1];
   char* edgeListFile = argv[2];
 
   int  numProcesses, rank;
   int i, j, snode, dnode;
-  high_resolution_clock::time_point start, end;
   string message, rmessage;
 
   MPI_Init(&argc, &argv);
@@ -110,7 +169,6 @@ int main (int argc, char *argv[]) {
   MPI_Comm_size(MPI_COMM_WORLD, &numProcesses);
 
   start = high_resolution_clock::now();
-  //read file and populate data structures for the rank
   const int numberOfRounds = atoi(argv[3]);
   int maxNode, maxEdges;
   getMaxNodeAndEdges(nodeInfoFile, &maxNode, &maxEdges);
@@ -123,68 +181,43 @@ int main (int argc, char *argv[]) {
     edgeList[i] = new int[2];
   getEdgeInfo(edgeListFile, edgeList);
   end = high_resolution_clock::now();
-  message = "Time to read input files, partition";
-  printTime(start, end, message, rmessage, rank, 0);
-  //allocate space for rounds of page credits calculation
-  //either a 2D array or a map of vectors storing the credits
-  double** roundRanks;
+  message = "-- Time to read input files, partition";
+  printTime(start, end, message, rmessage, rank, 0, 0, numProcesses);
+
   double* reduce = new double[allocationSize];
-  roundRanks = new double*[numberOfRounds + 1];
-  for (i = 0; i <= numberOfRounds; i++) {
-    roundRanks[i] = new double[maxNode];
+  double* roundRanks;
+  roundRanks = new double[(numberOfRounds + 1)*allocationSize];
+  for (i = 0; i < allocationSize; i++) {
+    roundRanks[i] = 1;
   }
-  for (i = 0; i <= maxNode; i++) {
-    roundRanks[0][i] = 1;
-  }
-  /*start rounds {
-    loop through nodes of this node.
-    If the other node is on this machine get credits and degree.
-    If the other node is not on this machine, request its credits
-    MPI_Send()/MPI_Rec()
-    -the tag be the round ID
-    -message req be an int and receive as an int
-    calculate the rank, store the result, move on.
-  }*/
+
   for(i = 1; i <= numberOfRounds; i++) {
     start = high_resolution_clock::now();
     for (j = 0; j <= maxNode; j++) {
       reduce[j] = 0;
     }
-    //go to every local node
-    /*for(snode = 1; snode <= maxNode; snode++) {
-      if(!isLocalNode[snode])
-        continue;
-      sum = 0;
-      //for each neighbor locally available calculate locally the credits.
-      for(j = 0; j < nodeDegree[snode]; j++) {
-        dnode = [snode][j];
-        sum += roundRanks[i-1][dnode] / nodeDegree[dnode];
-      }
-      reduce[snode] = sum;
-    }*/
     for(j = 0; j < maxEdges; j++) {
       snode = edgeList[j][0];
-      if(isLocalNode[snode]) {
+      if(isLocalNode[snode] == rank) {
         dnode = edgeList[j][1];
-        reduce[snode] += roundRanks[i-1][dnode] / nodeDegree[dnode];
-        reduce[dnode] += roundRanks[i-1][snode] / nodeDegree[snode];
+        reduce[snode] += roundRanks[(i-1)*allocationSize + dnode] / nodeDegree[dnode];
+        reduce[dnode] += roundRanks[(i-1)*allocationSize + snode] / nodeDegree[snode];
       }
     }
     end = high_resolution_clock::now();
-    //store these credits in the designates arrays
-    MPI_Allreduce(reduce, roundRanks[i], allocationSize, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
-    message = "Time for round " + to_string(i) +  ", partition";
+    MPI_Allreduce(reduce, &roundRanks[i], allocationSize, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+    message = "-- Time for round " + to_string(i) +  ", partition";
     rmessage = "Total time for round " + to_string(i);
-    printTime(start, end, message, rmessage, rank, 1);
+    printTime(start, end, message, rmessage, rank, 1, 0, numProcesses);
   }
   start = high_resolution_clock::now();
-  writeToFile(roundRanks, numberOfRounds,nodeDegree, isLocalNode, maxNode, rank);
+  writeToFile(roundRanks, numberOfRounds,nodeDegree, isLocalNode, allocationSize, rank);
   end = high_resolution_clock::now();
-  message = "Time to write output file, partition";
-  printTime(start, end, message, rmessage, rank, 1);
-  /*
-    Finish up the rounds, collect all the credits in the master
-    write them to the output file
-  */
+  message = "-- Time to write output file, partition";
+  rmessage = "Total time to write output files ";
+  printTime(start, end, message, rmessage, rank, 1, 0, numProcesses);
+  tend = high_resolution_clock::now();
+  rmessage = "Total time for execution of program ";
+  printTime(tstart, tend, message, rmessage, rank, 1, 1, numProcesses);
   MPI_Finalize();
 }
