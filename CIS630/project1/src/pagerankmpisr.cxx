@@ -10,6 +10,12 @@
 #include <map>
 #include <unordered_map>
 #include <vector>
+#include <fcntl.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <sys/io.h>
+#include <sys/mman.h>
 #define  MASTER	0
 
 using namespace std;
@@ -21,8 +27,8 @@ using namespace std::chrono;
 void getMaxNodeAndEdges(char* nodeInfoFile, int *maxNode, int* maxEdges) {
   *maxNode = 0;
   *maxEdges = 0;
-  int snode, sdegree, spartition;
-  ifstream toRead(nodeInfoFile);
+  int i,snode, sdegree, spartition;
+  /*ifstream toRead(nodeInfoFile);
   if (toRead.is_open()) {
   	while (toRead >> snode >> sdegree >> spartition) {
       if(snode > *maxNode)
@@ -30,7 +36,26 @@ void getMaxNodeAndEdges(char* nodeInfoFile, int *maxNode, int* maxEdges) {
       *maxEdges+=sdegree;
   	}
   	toRead.close();
+  }*/
+  struct stat s;
+  int fd = open (nodeInfoFile, O_RDONLY);
+  int status = fstat (fd, & s);
+  /* Get the size of the file. */
+  int size = s.st_size;
+  char *file = (char *) mmap (0, size, PROT_READ, MAP_PRIVATE, fd, 0);
+  char *lstart = file, *lend;
+  for (i = 0; i < size;i++) {
+    if(file[i] == '\n') {
+      snode = strtol(lstart, &lend, 10);
+      sdegree = strtol(lend, &lend, 10);
+      spartition = strtol(lend, NULL, 10);
+      lstart = file + i + 1;
+      if(snode > *maxNode)
+        *maxNode = snode;
+      *maxEdges += sdegree;
+    }
   }
+  munmap(file, size);
   *maxEdges /= 2;
 }
 
@@ -54,20 +79,38 @@ void writeToFile(double* roundRanks, int numberOfRounds, int* nodeDegree, int* i
 }
 
 void getNodeInfo(char *nodeInfoFile, int* nodeDegree, int* isLocalNode, int rank) {
-  int snode, sdegree, srank;
-  ifstream nodeInfo(nodeInfoFile);
+  int i,snode, sdegree, srank;
+  /*ifstream nodeInfo(nodeInfoFile);
   if(nodeInfo.is_open()) {
     while(nodeInfo >> snode >> sdegree >> srank) {
         isLocalNode[snode] = srank;
         nodeDegree[snode] = sdegree;
     }
     nodeInfo.close();
+  }*/
+  struct stat s;
+  int fd = open (nodeInfoFile, O_RDONLY);
+  int status = fstat (fd, & s);
+  /* Get the size of the file. */
+  int size = s.st_size;
+  char *file = (char *) mmap (0, size, PROT_READ, MAP_PRIVATE, fd, 0);
+  char *lstart = file, *lend;
+  for (i = 0; i < size;i++) {
+    if(file[i] == '\n') {
+      snode = strtol(lstart, &lend, 10);
+      sdegree = strtol(lend, &lend, 10);
+      srank = strtol(lend, NULL, 10);
+      lstart = file + i + 1;
+      isLocalNode[snode] = srank;
+      nodeDegree[snode] = sdegree;
+    }
   }
+  munmap(file, size);
 }
 
 void getEdgeInfo(char *edgeListFile, int** edgeList) {
-  int snode, dnode, i = 0;
-  ifstream edgeInfo(edgeListFile);
+  int snode, dnode, edge = 0;
+  /*ifstream edgeInfo(edgeListFile);
   if(edgeInfo.is_open()) {
     while(edgeInfo >> snode >> dnode) {
       edgeList[i][0] = snode;
@@ -75,7 +118,25 @@ void getEdgeInfo(char *edgeListFile, int** edgeList) {
       i++;
     }
     edgeInfo.close();
+  }*/
+  struct stat s;
+  int fd = open (edgeListFile, O_RDONLY);
+  int status = fstat (fd, & s);
+  /* Get the size of the file. */
+  int size = s.st_size;
+  char *file = (char *) mmap (0, size, PROT_READ, MAP_PRIVATE, fd, 0);
+  char *lstart = file, *lend;
+  for (int i = 0; i < size;i++) {
+    if(file[i] == '\n') {
+      snode = strtol(lstart, &lend, 10);
+      dnode = strtol(lend, NULL, 10);
+      lstart = file + i + 1;
+      edgeList[edge][0] = snode;
+      edgeList[edge][1] = dnode;
+      edge++;
+    }
   }
+  munmap(file, size);
 }
 
 void printTime(high_resolution_clock::time_point start,
