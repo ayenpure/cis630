@@ -1,3 +1,9 @@
+/*
+ *  Abhishek Yenpure
+ *  CIS 630
+ *  Project 1
+ */
+
 #include "mpi.h"
 #include <algorithm>
 #include <cstdlib>
@@ -25,19 +31,9 @@ void getMaxNodeAndEdges(char* nodeInfoFile, int *maxNode, int* maxEdges) {
   *maxNode = 0;
   *maxEdges = 0;
   int i,snode, sdegree, spartition;
-  /*ifstream toRead(nodeInfoFile);
-  if (toRead.is_open()) {
-  	while (toRead >> snode >> sdegree >> spartition) {
-      if(snode > *maxNode)
-        *maxNode = snode;
-      *maxEdges+=sdegree;
-  	}
-  	toRead.close();
-  }*/
   struct stat s;
   int fd = open (nodeInfoFile, O_RDONLY);
   int status = fstat (fd, & s);
-  /* Get the size of the file. */
   int size = s.st_size;
   char *file = (char *) mmap (0, size, PROT_READ, MAP_PRIVATE, fd, 0);
   char *lstart = file, *lend;
@@ -57,38 +53,27 @@ void getMaxNodeAndEdges(char* nodeInfoFile, int *maxNode, int* maxEdges) {
 }
 
 void writeToFile(double* roundRanks, int numberOfRounds, int* nodeDegree, int* isLocalNode, int allocationSize, int rank) {
-    int i;
-    ofstream toWrite;
-    string name = to_string(rank) + ".txt";
-		toWrite.open(name);
-    toWrite << fixed;
-    toWrite << setprecision(6);
-		for(i = 1; i < allocationSize; i++) {
-      if(isLocalNode[i] == rank){
-        toWrite << i << "\t" << nodeDegree[i] << "\t";
-        for(int j = 1; j <= numberOfRounds; j++) {
-            toWrite << roundRanks[(j*allocationSize)+i] << "\t";
-        }
-        toWrite << endl;
+  string name = to_string(rank) + ".txt";
+  int i,j;
+  FILE* fout = fopen(name.c_str(), "w");
+  for (i = 1; i < allocationSize; i++)
+  {
+    if(isLocalNode[i] == rank){
+      fprintf(fout, "%d\t%d\t", i, nodeDegree[i]);
+      for(int j = 1; j <= numberOfRounds; j++) {
+        fprintf(fout, "%lf\t", roundRanks[(j*allocationSize)+i]);
       }
+      fprintf(fout, "\n");
     }
-		toWrite.close();
+  }
+  fclose(fout);
 }
 
 void getNodeInfo(char *nodeInfoFile, int* nodeDegree, int* isLocalNode, int rank) {
   int i,snode, sdegree, srank;
-  /*ifstream nodeInfo(nodeInfoFile);
-  if(nodeInfo.is_open()) {
-    while(nodeInfo >> snode >> sdegree >> srank) {
-        isLocalNode[snode] = srank;
-        nodeDegree[snode] = sdegree;
-    }
-    nodeInfo.close();
-  }*/
   struct stat s;
   int fd = open (nodeInfoFile, O_RDONLY);
   int status = fstat (fd, & s);
-  /* Get the size of the file. */
   int size = s.st_size;
   char *file = (char *) mmap (0, size, PROT_READ, MAP_PRIVATE, fd, 0);
   char *lstart = file, *lend;
@@ -107,19 +92,9 @@ void getNodeInfo(char *nodeInfoFile, int* nodeDegree, int* isLocalNode, int rank
 
 void getEdgeInfo(char *edgeListFile, int** edgeList) {
   int snode, dnode, edge = 0;
-  /*ifstream edgeInfo(edgeListFile);
-  if(edgeInfo.is_open()) {
-    while(edgeInfo >> snode >> dnode) {
-      edgeList[i][0] = snode;
-      edgeList[i][1] = dnode;
-      i++;
-    }
-    edgeInfo.close();
-  }*/
   struct stat s;
   int fd = open (edgeListFile, O_RDONLY);
   int status = fstat (fd, & s);
-  /* Get the size of the file. */
   int size = s.st_size;
   char *file = (char *) mmap (0, size, PROT_READ, MAP_PRIVATE, fd, 0);
   char *lstart = file, *lend;
@@ -155,11 +130,16 @@ void printTime(high_resolution_clock::time_point start,
 
 
 int main (int argc, char *argv[]) {
+  if(argc != 5) {
+    cerr << "Err: Usage : " << argv[0] << " <graph file> <partition file> <number of rounds> <number of partitions>" << endl;
+    exit(1);
+  }
   high_resolution_clock::time_point start, end, tstart, tend;
   tstart = high_resolution_clock::now();
-  char* nodeInfoFile = argv[1];
-  char* edgeListFile = argv[2];
-
+  char* edgeListFile = argv[1];
+  char* nodeInfoFile = argv[2];
+  const int numberOfRounds = atoi(argv[3]);
+  int numPartitions = argv[4];
   int  numProcesses, rank;
   int i, j, snode, dnode;
   string message, rmessage;
@@ -167,9 +147,11 @@ int main (int argc, char *argv[]) {
   MPI_Init(&argc, &argv);
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   MPI_Comm_size(MPI_COMM_WORLD, &numProcesses);
-
+  if ( numProcesses != numPartitions) {
+    cerr << "Err : Number of partitions was not equal to the number of spawned MPI processes" << endl;
+    exit(1);
+  }
   start = high_resolution_clock::now();
-  const int numberOfRounds = atoi(argv[3]);
   int maxNode, maxEdges;
   getMaxNodeAndEdges(nodeInfoFile, &maxNode, &maxEdges);
   const int allocationSize = maxNode + 1;

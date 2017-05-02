@@ -4,7 +4,7 @@
 #include <chrono>
 #include <ctime>
 #include <ratio>
-#include <fstream>
+#include <cstdio>
 #include <iomanip>
 #include <iostream>
 #include <map>
@@ -60,22 +60,20 @@ void getMaxNodeAndEdges(char* nodeInfoFile, int *maxNode, int* maxEdges) {
 }
 
 void writeToFile(double* roundRanks, int numberOfRounds, int* nodeDegree, int* isLocalNode, int allocationSize, int rank) {
-    int i;
-    ofstream toWrite;
     string name = to_string(rank) + ".txt";
-		toWrite.open(name);
-    toWrite << fixed;
-    toWrite << setprecision(6);
-		for(i = 1; i < allocationSize; i++) {
+    int i,j;
+    FILE* fout = fopen(name.c_str(), "w");
+    for (i = 1; i < allocationSize; i++)
+    {
       if(isLocalNode[i] == rank){
-        toWrite << i << "\t" << nodeDegree[i] << "\t";
+        fprintf(fout, "%d\t%d\t", i, nodeDegree[i]);
         for(int j = 1; j <= numberOfRounds; j++) {
-            toWrite << roundRanks[(j*allocationSize)+i] << "\t";
+          fprintf(fout, "%lf\t", roundRanks[(j*allocationSize)+i]);
         }
-        toWrite << endl;
+        fprintf(fout, "\n");
       }
     }
-		toWrite.close();
+    fclose(fout);
 }
 
 void getNodeInfo(char *nodeInfoFile, int* nodeDegree, int* isLocalNode, int rank) {
