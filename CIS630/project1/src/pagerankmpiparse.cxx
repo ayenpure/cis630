@@ -3,29 +3,51 @@
  *  CIS 630
  *  Project 1
  */
-
-#include <mpi.h>
-#include <cstdlib>
 #include <chrono>
 #include <ctime>
-#include <ratio>
 #include <iostream>
-#include <fcntl.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
-#include <sys/io.h>
-#include <sys/mman.h>
+#include <mpi.h>
+#include <ratio>
+#include <stdio.h>
+#include <stdlib.h>
 #define  MASTER	0
 
 using namespace std;
 using namespace std::chrono;
 
-void getMaxNodeAndEdges(char* nodeInfoFile, int *maxNode, int* maxEdges) {
+void getMaxNodeAndEdges(const char* nodeInfoFile, int *maxNode, int* maxEdges) {
   *maxNode = 0;
   *maxEdges = 0;
-  int i,snode, sdegree, spartition;
-  struct stat s;
+  size_t readBytes;
+  char readNumber[11];
+  int i, nodeInfo[3], readlength = 0, numCount = 0;
+  char *buffer = (char*)malloc(1024*1024);
+  FILE *inputFile = fopen(nodeInfoFile, "r");
+  if(inputFile == NULL) {
+    cerr << "Error reading the input file : " << nodeInfoFile << endl;
+    exit(1);
+  }
+  while(!feof(inputFile)) {
+    readBytes = fread(buffer, 1, 1024*1024, inputFile);
+    for(i = 0; i < readBytes; i++) {
+      if(isdigit(buffer[i])) {
+        readNumber[readlength++] = buffer[i];
+      } else if(buffer[i] == '\n' || buffer[i] == '\t' || buffer[i] == EOF ) {
+        readNumber[readlength] = '\0';
+        readlength = 0;
+        nodeInfo[numCount++] = atoi(readNumber);
+        if(numCount == 3) {
+          numCount = 0;
+          if(nodeInfo[0] > *maxNode)
+            *maxNode = nodeInfo[0];
+          *maxEdges += nodeInfo[1];
+        }
+      }
+    }
+  }
+  free(buffer);
+  fclose(inputFile);
+  /*struct stat s;
   int fd = open (nodeInfoFile, O_RDONLY);
   int status = fstat (fd, & s);
   int size = s.st_size;
@@ -42,7 +64,7 @@ void getMaxNodeAndEdges(char* nodeInfoFile, int *maxNode, int* maxEdges) {
       *maxEdges += sdegree;
     }
   }
-  munmap(file, size);
+  munmap(file, size);*/
   *maxEdges /= 2;
 }
 
@@ -63,8 +85,8 @@ void writeToFile(double* roundRanks, int numberOfRounds, int* nodeDegree, int* i
   fclose(fout);
 }
 
-void getNodeInfo(char *nodeInfoFile, int* nodeDegree, int* isLocalNode, int rank) {
-  int i,snode, sdegree, srank;
+void getNodeInfo(const char *nodeInfoFile, int* nodeDegree, int* isLocalNode, int rank) {
+  /*int i,snode, sdegree, srank;
   struct stat s;
   int fd = open (nodeInfoFile, O_RDONLY);
   int status = fstat (fd, & s);
@@ -81,11 +103,39 @@ void getNodeInfo(char *nodeInfoFile, int* nodeDegree, int* isLocalNode, int rank
       nodeDegree[snode] = sdegree;
     }
   }
-  munmap(file, size);
+  munmap(file, size);*/
+  size_t readBytes;
+  char readNumber[11];
+  int i, nodeInfo[3], readlength = 0, numCount = 0;
+  char *buffer = (char*)malloc(1024*1024);
+  FILE *inputFile = fopen(nodeInfoFile, "r");
+  if(inputFile == NULL) {
+    cerr << "Error reading the input file : " << nodeInfoFile << endl;
+    exit(1);
+  }
+  while(!feof(inputFile)) {
+    readBytes = fread(buffer, 1, 1024*1024, inputFile);
+    for(i = 0; i < readBytes; i++) {
+      if(isdigit(buffer[i])) {
+        readNumber[readlength++] = buffer[i];
+      } else if(buffer[i] == '\n' || buffer[i] == '\t' || buffer[i] == EOF ) {
+        readNumber[readlength] = '\0';
+        readlength = 0;
+        nodeInfo[numCount++] = atoi(readNumber);
+        if(numCount == 3) {
+          numCount = 0;
+          isLocalNode[nodeInfo[0]] = nodeInfo[2];
+          nodeDegree[nodeInfo[0]] = nodeInfo[1];
+        }
+      }
+    }
+  }
+  free(buffer);
+  fclose(inputFile);
 }
 
-void getEdgeInfo(char *edgeListFile, int** edgeList) {
-  int snode, dnode, edge = 0;
+void getEdgeInfo(const char *edgeListFile, int** edgeList) {
+  /*int snode, dnode, edge = 0;
   struct stat s;
   int fd = open (edgeListFile, O_RDONLY);
   int status = fstat (fd, & s);
@@ -102,7 +152,36 @@ void getEdgeInfo(char *edgeListFile, int** edgeList) {
       edge++;
     }
   }
-  munmap(file, size);
+  munmap(file, size);*/
+  size_t readBytes;
+  char readNumber[11];
+  int i, nodeInfo[2], readlength = 0, numCount = 0, edge = 0;
+  char *buffer = (char*)malloc(1024*1024);
+  FILE *inputFile = fopen(edgeListFile, "r");
+  if(inputFile == NULL) {
+    cerr << "Error reading the input file : " << edgeListFile << endl;
+    exit(1);
+  }
+  while(!feof(inputFile)) {
+    readBytes = fread(buffer, 1, 1024*1024, inputFile);
+    for(i = 0; i < readBytes; i++) {
+      if(isdigit(buffer[i])) {
+        readNumber[readlength++] = buffer[i];
+      } else if(buffer[i] == '\n' || buffer[i] == '\t' || buffer[i] == EOF ) {
+        readNumber[readlength] = '\0';
+        readlength = 0;
+        nodeInfo[numCount++] = atoi(readNumber);
+        if(numCount == 2) {
+          numCount = 0;
+          edgeList[edge][0] = nodeInfo[0];
+          edgeList[edge][1] = nodeInfo[1];
+          edge++;
+        }
+      }
+    }
+  }
+  free(buffer);
+  fclose(inputFile);
 }
 
 void printTime(high_resolution_clock::time_point start,
@@ -130,8 +209,8 @@ int main (int argc, char *argv[]) {
   }
   high_resolution_clock::time_point start, end, tstart, tend;
   tstart = high_resolution_clock::now();
-  char* edgeListFile = argv[1];
-  char* nodeInfoFile = argv[2];
+  const char* edgeListFile = argv[1];
+  const char* nodeInfoFile = argv[2];
   const int numberOfRounds = atoi(argv[3]);
   const int numPartitions = atoi(argv[4]);
   int  numProcesses, rank;
