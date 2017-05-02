@@ -27,9 +27,18 @@ void getMaxNodeAndEdges(char* nodeInfoFile, int *maxNode, int* maxEdges) {
   int i,snode, sdegree, spartition;
   struct stat s;
   int fd = open (nodeInfoFile, O_RDONLY);
+  if(fd < 0) {
+    cerr << " Error occured while reading file : " << nodeInfoFile << endl;
+  }
   int status = fstat (fd, & s);
+  if(status < 0) {
+    cerr << " Error occured while reading file : " << nodeInfoFile << endl;
+  }
   int size = s.st_size;
   char *file = (char *) mmap (0, size, PROT_READ, MAP_PRIVATE, fd, 0);
+  if(file == MAP_FAILED) {
+    cerr << " Error occured while reading file : " << nodeInfoFile << endl;
+  }
   char *lstart = file, *lend;
   for (i = 0; i < size;i++) {
     if(file[i] == '\n') {
@@ -67,9 +76,18 @@ void getNodeInfo(char *nodeInfoFile, int* nodeDegree, int* isLocalNode, int rank
   int i,snode, sdegree, srank;
   struct stat s;
   int fd = open (nodeInfoFile, O_RDONLY);
+  if(fd < 0) {
+    cerr << " Error occured while reading file : " << nodeInfoFile << endl;
+  }
   int status = fstat (fd, & s);
+  if(status < 0) {
+    cerr << " Error occured while reading file : " << nodeInfoFile << endl;
+  }
   int size = s.st_size;
   char *file = (char *) mmap (0, size, PROT_READ, MAP_PRIVATE, fd, 0);
+  if(file == MAP_FAILED) {
+    cerr << " Error occured while reading file : " << nodeInfoFile << endl;
+  }
   char *lstart = file, *lend;
   for (i = 0; i < size;i++) {
     if(file[i] == '\n') {
@@ -88,9 +106,18 @@ void getEdgeInfo(char *edgeListFile, int** edgeList) {
   int snode, dnode, edge = 0;
   struct stat s;
   int fd = open (edgeListFile, O_RDONLY);
+  if(fd < 0) {
+    cerr << " Error occured while reading file : " << edgeListFile << endl;
+  }
   int status = fstat (fd, & s);
+  if(status < 0) {
+    cerr << " Error occured while reading file : " << edgeListFile << endl;
+  }
   int size = s.st_size;
   char *file = (char *) mmap (0, size, PROT_READ, MAP_PRIVATE, fd, 0);
+  if(file == MAP_FAILED) {
+    cerr << " Error occured while reading file : " << edgeListFile << endl;
+  }
   char *lstart = file, *lend;
   for (int i = 0; i < size;i++) {
     if(file[i] == '\n') {
