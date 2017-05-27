@@ -1,1 +1,0 @@
-/usr/bin/c++      CMakeFiles/pagerank.dir/pagerank.cxx.o  -o pagerank -rdynamic 
