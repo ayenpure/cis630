@@ -3,58 +3,140 @@
  *  CIS 630
  *  Project 1
  */
-
-#include <mpi.h>
-#include <cstdlib>
 #include <chrono>
 #include <ctime>
-#include <ratio>
 #include <iostream>
-#include <fcntl.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
-#include <sys/io.h>
-#include <sys/mman.h>
+#include <mpi.h>
+#include <ratio>
+#include <stdio.h>
+#include <stdlib.h>
 #define  MASTER	0
 
 using namespace std;
 using namespace std::chrono;
 
-void getMaxNodeAndEdges(char* nodeInfoFile, int *maxNode, int* maxEdges) {
+/* 
+I have used this function as a helper and have used it from a stackoverflow solution
+http://stackoverflow.com/questions/16826422/c-most-efficient-way-to-convert-string-to-int-faster-than-atoi
+*/
+int fast_atoi(const char * str) {
+    int val = 0;
+    while( *str ) {
+        val = val*10 + (*str++ - '0');
+    }
+    return val;
+}
+
+/*
+This function does the job of fetching the highest node and the number of edges of the graph
+*/
+void getMaxNodeAndEdges(const char* nodeInfoFile, int *maxNode, int* maxEdges) {
   *maxNode = 0;
   *maxEdges = 0;
-  int i,snode, sdegree, spartition;
-  struct stat s;
-  int fd = open (nodeInfoFile, O_RDONLY);
-  if(fd < 0) {
-    cerr << " Error occured while reading file : " << nodeInfoFile << endl;
+  size_t readBytes;
+  char readNumber[11];
+  int i, nodeInfo[3], readlength = 0, numCount = 0;
+  char *buffer = (char*)malloc(1024*1024);
+  FILE *inputFile = fopen(nodeInfoFile, "r");
+  if(inputFile == NULL) {
+    cerr << "Error reading the input file : " << nodeInfoFile << endl;
+    exit(1);
   }
-  int status = fstat (fd, & s);
-  if(status < 0) {
-    cerr << " Error occured while reading file : " << nodeInfoFile << endl;
-  }
-  int size = s.st_size;
-  char *file = (char *) mmap (0, size, PROT_READ, MAP_PRIVATE, fd, 0);
-  if(file == MAP_FAILED) {
-    cerr << " Error occured while reading file : " << nodeInfoFile << endl;
-  }
-  char *lstart = file, *lend;
-  for (i = 0; i < size;i++) {
-    if(file[i] == '\n') {
-      snode = strtol(lstart, &lend, 10);
-      sdegree = strtol(lend, &lend, 10);
-      spartition = strtol(lend, NULL, 10);
-      lstart = file + i + 1;
-      if(snode > *maxNode)
-        *maxNode = snode;
-      *maxEdges += sdegree;
+  while(!feof(inputFile)) {
+    readBytes = fread(buffer, 1, 1024*1024, inputFile);
+    for(i = 0; i < readBytes; i++) {
+      if(isdigit(buffer[i])) {
+        readNumber[readlength++] = buffer[i];
+      } else if(buffer[i] == '\n' || buffer[i] == '\t' || buffer[i] == EOF ) {
+        readNumber[readlength] = '\0';
+        readlength = 0;
+        nodeInfo[numCount++] = fast_atoi(readNumber);
+        if(numCount == 3) {
+          numCount = 0;
+          if(nodeInfo[0] > *maxNode)
+            *maxNode = nodeInfo[0];
+          *maxEdges += nodeInfo[1];
+        }
+      }
     }
   }
-  munmap(file, size);
+  free(buffer);
+  fclose(inputFile);
   *maxEdges /= 2;
 }
 
+/*
+This function updates the data strucutres storing node locations and degrees
+*/
+void getNodeInfo(const char *nodeInfoFile, int* nodeDegree, int* isLocalNode, int rank) {
+  size_t readBytes;
+  char readNumber[11];
+  int i, nodeInfo[3], readlength = 0, numCount = 0;
+  char *buffer = (char*)malloc(1024*1024);
+  FILE *inputFile = fopen(nodeInfoFile, "r");
+  if(inputFile == NULL) {
+    cerr << "Error reading the input file : " << nodeInfoFile << endl;
+    exit(1);
+  }
+  while(!feof(inputFile)) {
+    readBytes = fread(buffer, 1, 1024*1024, inputFile);
+    for(i = 0; i < readBytes; i++) {
+      if(isdigit(buffer[i])) {
+        readNumber[readlength++] = buffer[i];
+      } else if(buffer[i] == '\n' || buffer[i] == '\t' || buffer[i] == EOF ) {
+        readNumber[readlength] = '\0';
+        readlength = 0;
+        nodeInfo[numCount++] = fast_atoi(readNumber);
+        if(numCount == 3) {
+          numCount = 0;
+          isLocalNode[nodeInfo[0]] = nodeInfo[2];
+          nodeDegree[nodeInfo[0]] = nodeInfo[1];
+        }
+      }
+    }
+  }
+  free(buffer);
+  fclose(inputFile);
+}
+
+/*
+This function fetches the edgelist from the graph
+*/
+void getEdgeInfo(const char *edgeListFile, int** edgeList) {
+  size_t readBytes;
+  char readNumber[11];
+  int i, nodeInfo[2], readlength = 0, numCount = 0, edge = 0;
+  char *buffer = (char*)malloc(1024*1024);
+  FILE *inputFile = fopen(edgeListFile, "r");
+  if(inputFile == NULL) {
+    cerr << "Error reading the input file : " << edgeListFile << endl;
+    exit(1);
+  }
+  while(!feof(inputFile)) {
+    readBytes = fread(buffer, 1, 1024*1024, inputFile);
+    for(i = 0; i < readBytes; i++) {
+      if(isdigit(buffer[i])) {
+        readNumber[readlength++] = buffer[i];
+      } else if(buffer[i] == '\n' || buffer[i] == '\t' || buffer[i] == EOF ) {
+        readNumber[readlength] = '\0';
+        readlength = 0;
+        nodeInfo[numCount++] = fast_atoi(readNumber);
+        if(numCount == 2) {
+          numCount = 0;
+          edgeList[edge][0] = nodeInfo[0];
+          edgeList[edge][1] = nodeInfo[1];
+          edge++;
+        }
+      }
+    }
+  }
+  free(buffer);
+  fclose(inputFile);
+}
+
+/*
+This function writes the output of all rounds to an output file
+*/
 void writeToFile(double* roundRanks, int numberOfRounds, int* nodeDegree, int* isLocalNode, int allocationSize, int rank) {
   string name = to_string(rank) + ".out";
   int i,j;
@@ -72,66 +154,9 @@ void writeToFile(double* roundRanks, int numberOfRounds, int* nodeDegree, int* i
   fclose(fout);
 }
 
-void getNodeInfo(char *nodeInfoFile, int* nodeDegree, int* isLocalNode, int rank) {
-  int i,snode, sdegree, srank;
-  struct stat s;
-  int fd = open (nodeInfoFile, O_RDONLY);
-  if(fd < 0) {
-    cerr << " Error occured while reading file : " << nodeInfoFile << endl;
-  }
-  int status = fstat (fd, & s);
-  if(status < 0) {
-    cerr << " Error occured while reading file : " << nodeInfoFile << endl;
-  }
-  int size = s.st_size;
-  char *file = (char *) mmap (0, size, PROT_READ, MAP_PRIVATE, fd, 0);
-  if(file == MAP_FAILED) {
-    cerr << " Error occured while reading file : " << nodeInfoFile << endl;
-  }
-  char *lstart = file, *lend;
-  for (i = 0; i < size;i++) {
-    if(file[i] == '\n') {
-      snode = strtol(lstart, &lend, 10);
-      sdegree = strtol(lend, &lend, 10);
-      srank = strtol(lend, NULL, 10);
-      lstart = file + i + 1;
-      isLocalNode[snode] = srank;
-      nodeDegree[snode] = sdegree;
-    }
-  }
-  munmap(file, size);
-}
-
-void getEdgeInfo(char *edgeListFile, int** edgeList) {
-  int snode, dnode, edge = 0;
-  struct stat s;
-  int fd = open (edgeListFile, O_RDONLY);
-  if(fd < 0) {
-    cerr << " Error occured while reading file : " << edgeListFile << endl;
-  }
-  int status = fstat (fd, & s);
-  if(status < 0) {
-    cerr << " Error occured while reading file : " << edgeListFile << endl;
-  }
-  int size = s.st_size;
-  char *file = (char *) mmap (0, size, PROT_READ, MAP_PRIVATE, fd, 0);
-  if(file == MAP_FAILED) {
-    cerr << " Error occured while reading file : " << edgeListFile << endl;
-  }
-  char *lstart = file, *lend;
-  for (int i = 0; i < size;i++) {
-    if(file[i] == '\n') {
-      snode = strtol(lstart, &lend, 10);
-      dnode = strtol(lend, NULL, 10);
-      lstart = file + i + 1;
-      edgeList[edge][0] = snode;
-      edgeList[edge][1] = dnode;
-      edge++;
-    }
-  }
-  munmap(file, size);
-}
-
+/*
+This function prints the times to the output
+*/
 void printTime(high_resolution_clock::time_point start,
   high_resolution_clock::time_point end, string message, string rmessage,
   int rank, int reduce, int reduceonly, int numProcesses) {
@@ -157,14 +182,14 @@ int main (int argc, char *argv[]) {
   }
   high_resolution_clock::time_point start, end, tstart, tend;
   tstart = high_resolution_clock::now();
-  char* edgeListFile = argv[1];
-  char* nodeInfoFile = argv[2];
-  const int numberOfRounds = atoi(argv[3]);
-  const int numPartitions = atoi(argv[4]);
+  const char* edgeListFile = argv[1];
+  const char* nodeInfoFile = argv[2];
+  const int numberOfRounds = fast_atoi(argv[3]);
+  const int numPartitions = fast_atoi(argv[4]);
   int  numProcesses, rank;
   int i, j, snode, dnode;
   string message, rmessage;
-
+  
   MPI_Init(&argc, &argv);
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   MPI_Comm_size(MPI_COMM_WORLD, &numProcesses);
@@ -194,6 +219,9 @@ int main (int argc, char *argv[]) {
     roundRanks[i] = 1;
   }
 
+  /*
+	Begin rounds
+  */
   for(i = 1; i <= numberOfRounds; i++) {
     start = high_resolution_clock::now();
     for (j = 0; j <= maxNode; j++) {
