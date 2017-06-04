@@ -1,5 +1,9 @@
 package bullitenboard;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -9,24 +13,23 @@ import java.net.UnknownHostException;
 
 /**
  * Class representing a single Peer in the peer-to-peer ring based system.
- * 
  * @author abhishek
- *
  */
 public class Peer {
-
-	private static final int OFFSET = 1000; 
+	private static final String TOKEN = "TOKEN";
 	
 	private DatagramSocket socket;
+	int rangeStart, rangeEnd;
 	int neighbor;
 	int port;
-	int rangeStart, rangeEnd;
-	boolean status;
+	boolean alive;
 	
 	public Peer(int port, int rangeStart, int rangeEnd) {
 		this.port = port;
 		this.rangeStart = rangeStart;
 		this.rangeEnd = rangeEnd;
+		this.neighbor = -1;
+		this.alive = false;
 		try {
 			socket = new DatagramSocket(port);
 		} catch (SocketException e) {
@@ -40,7 +43,7 @@ public class Peer {
 		public void run() {
 			System.out.println("Client is up");
 			byte buffer[] = new byte[256];
-			while (Peer.this.status) {
+			while (Peer.this.alive) {
 				DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
 				try {
 					socket.receive(packet);
@@ -70,7 +73,7 @@ public class Peer {
 	class Send extends Thread {
 		@Override
 		public void run() {
-			while(Peer.this.status) {
+			while(Peer.this.alive) {
 				String request = "Hello!! from the requesting socket";
 				byte buffer[] = request.getBytes();
 				InetAddress address = null;
@@ -87,7 +90,7 @@ public class Peer {
 					System.err.println("Failed to send request to the serving peer");
 					System.exit(1);
 				}
-
+				
 				// get response
 				packet = new DatagramPacket(buffer, buffer.length);
 				try {
@@ -96,7 +99,7 @@ public class Peer {
 					System.err.println("Failed to receive response from the serving peer");
 					System.exit(1);
 				}
-
+				
 				// display response
 				String received = new String(packet.getData(), 0, packet.getLength());
 				System.out.println("Quote of the Moment: " + received);
@@ -104,25 +107,6 @@ public class Peer {
 			//socket.close();
 		};
 	};
-
-	
-	private class Discover extends Thread {
-	
-		@Override
-		public void run() {
-			int rangeStart = Peer.this.rangeStart;
-			int rangeEnd = Peer.this.rangeEnd;
-			try {
-				DatagramSocket socket = new DatagramSocket(port + Peer.OFFSET);
-				for(int i = rangeStart; i <= rangeEnd; i++) {
-					
-				}
-			} catch (SocketException e) {
-				
-			}
-		}
-		
-	}
 	
 	public void send() {
 		Send send = new Send();
@@ -134,16 +118,41 @@ public class Peer {
 		receive.start();
 	};
 	
-	private void discover() {
-		Discover discover = new Discover();
-		discover.start();
-	};
-	
 	public static void main(String[] args) {
-		Peer peer = new Peer(Integer.parseInt(args[0]), 4555, 4556);
-		peer.discover();
-		peer.receive();
-		peer.send();
+		Peer peer;
+		File config;
+		FileReader reader = null;
+		BufferedReader buffReader;
+		
+		config = new File(args[0]);
+		try {
+			reader = new FileReader(config);
+		} catch (FileNotFoundException e) {
+			System.err.println("Failed to read config file");
+			System.exit(1);
+		}
+		buffReader = new BufferedReader(reader);
+		
+		String line;
+		try {
+			int port, rangeStart,rangeEnd;
+			while((line = buffReader.readLine()) != null) {
+				if(line.contains("client_port")) {
+					
+				} else if (line.contains("my_port")) {
+					String[] split = line.split(":");
+					port = Integer.parseInt(split[1].trim());
+				} else if (line.contains("join_time")) {
+					
+				} else if (line.contains("leave_time")) {
+					
+				}
+			}
+			peer = new Peer(Integer.parseInt(args[0]), 4555, 4556);
+		} catch (NumberFormatException | IOException e) {
+			System.err.println("Error occured while reading config file");
+			System.exit(1);
+		}
 	}
 
 };
