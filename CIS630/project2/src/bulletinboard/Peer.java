@@ -1,4 +1,4 @@
-package bullitenboard;
+package bulletinboard;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -12,7 +12,6 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.NavigableMap;
@@ -28,6 +27,8 @@ public class Peer {
 	private static final String TOKEN = "TOKEN";
 	private static final String PROBE = "PROBE";
 	private static final String PROBE_REPLY = "PROBE-REPLY";
+	private static final long TIMEOUT = 500;
+	private static final long SLEEP = 1000;
 
 	private static final String INPUT = "-i";
 	private static final String CONFIG = "-c";
@@ -39,7 +40,9 @@ public class Peer {
 	private long join, leave;
 	private long probetime;
 	private boolean alive;
-	private Receive listener;
+	private boolean probeSuccess;
+	private Receive receiveThread;
+	private Probe probingThread;
 	private NavigableMap<Long, String> messages;
 
 	public long getJoin() {
@@ -77,11 +80,12 @@ public class Peer {
 		this.rangeEnd = rangeEnd;
 		this.join = join;
 		this.leave = leave;
-		this.nextHop = (port == rangeStart) ? rangeEnd : rangeStart;
+		this.nextHop = -1;
 		this.previousHop = -1;
 		System.out.println("Port : " + this.port);
 		System.out.println("Next hop : " + nextHop);
 		this.setAlive(false);
+		this.probeSuccess = false;
 		try {
 			socket = new DatagramSocket(this.port);
 		} catch (SocketException e) {
@@ -94,19 +98,15 @@ public class Peer {
 		while (!headMap.isEmpty()) {
 			Long firstKey = headMap.firstKey();
 			String message = headMap.get(firstKey);
-			
-			
 			/*SimpleDateFormat formatter = new SimpleDateFormat("mm:ss");
 			formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
 			System.out.println(formatter.format(new Date(firstKey)) + " : " + message);*/
-			
 			//TODO: Send all these messages
-			
 			headMap.remove(firstKey);
 			messages.remove(firstKey);
 		}
 		try {
-			Thread.sleep(1000);
+			Thread.sleep(SLEEP);
 		} catch (InterruptedException e) {
 			System.err.println("Sleep error");
 			System.exit(1);
@@ -126,12 +126,17 @@ public class Peer {
 					int senderPort = packet.getPort();
 					String message = new String(packet.getData(), 0, packet.getLength());
 					if(message.equals(PROBE)){
-						if(senderPort > previousHop)
+						if(senderPort > previousHop) {
 							previousHop = senderPort;
-						//TODO: Reply to probe
+							System.out.println("Updating previous hop to " + previousHop);
+						}
+						send(PROBE_REPLY, senderPort);
 					} else if (message.equals(PROBE_REPLY)) {
-						if(receivedTimestamp - probetime < 1000) {
+						long elapsed = receivedTimestamp - probetime;
+						System.out.println("Probe reply time : " + elapsed);
+						if(elapsed < TIMEOUT) {
 							nextHop = senderPort;
+							probeSuccess = true;
 						}
 					} else if(message.equals(TOKEN)) {
 						if(nextHop == -1)
@@ -151,7 +156,7 @@ public class Peer {
 						}
 					}
 					//System.out.println("Received message reads : " + new String(packet.getData(), 0, packet.getLength()));
-				} catch (IOException e) {
+				} catch (IOException | PeerException e) {
 					System.err.println("There was a problem while receiving server request :" + e.getMessage());
 					socket.close();
 					System.exit(1);
@@ -160,8 +165,39 @@ public class Peer {
 			//socket.close();
 		}
 	};
+	
+	class Probe extends Thread {
+		@Override
+		public void run() {
+			probeSuccess = false;
+			for(int i = rangeStart; i <= rangeEnd; i++) {
+				if(i == port) {
+					if(i == rangeEnd)
+						i = rangeStart - 1;
+					continue;
+				}
+				System.out.println("Probing " + i);
+				try {
+					send(PROBE, i);
+					probetime = System.currentTimeMillis();
+					Thread.sleep(SLEEP);
+				} catch (PeerException | InterruptedException e) {
+					//System.err.println("Error occured while probing client");
+					System.exit(1);
+				}
+				if(probeSuccess) {
+					System.out.println("Probe successful with " + i);
+					nextHop = i;
+					break;
+				}
+				//System.out.println("Probe unsuccessful with " + i);
+				if(i == rangeEnd)
+					i = rangeStart - 1;
+			}
+		}
+	};
 
-	public void send(String message) throws PeerException {
+	public void send(String message, int destPort) throws PeerException {
 		if(!isAlive())
 			return;
 		byte buffer[] = message.getBytes();
@@ -171,7 +207,7 @@ public class Peer {
 		} catch (UnknownHostException e) {
 			throw new PeerException("Failed to get address for the serving peer : " + e.getMessage());
 		}
-		DatagramPacket packet = new DatagramPacket(buffer, buffer.length, address, nextHop);
+		DatagramPacket packet = new DatagramPacket(buffer, buffer.length, address, destPort);
 		try {
 			socket.send(packet);
 		} catch (IOException e) {
@@ -180,8 +216,13 @@ public class Peer {
 	};
 
 	public void receive() {
-		listener = new Receive();;
-		listener.start();
+		receiveThread = new Receive();;
+		receiveThread.start();
+	};
+	
+	public void probe() {
+		probingThread = new Probe();;
+		probingThread.start();
 	};
 
 	public boolean isAlive() {
@@ -200,9 +241,6 @@ public class Peer {
 		argMap.put(args[0], args[1]);
 		argMap.put(args[2], args[3]);
 		argMap.put(args[4], args[5]);
-
-		
-		// Add code to halt the thread until it's time.
 		
 		Peer peer = null;
 		NavigableMap<Long, String> messages = null;
@@ -223,14 +261,14 @@ public class Peer {
 	}
 
 	private static void schedule(Peer peer) {
-		System.out.println("Scheduling peer" + peer.port);
+		System.out.println("Scheduling peer : " + peer.port);
 		long goLive = peer.getGoLiveTime();
 		long join = peer.getJoin();
 		long leave = peer.getLeave();
 		System.out.println("waiting to join");
 		while((System.currentTimeMillis()) - goLive < join) {
 			try {
-				Thread.sleep(1000);
+				Thread.sleep(SLEEP);
 			} catch (InterruptedException e) {
 				System.err.println("Sleep Error");
 				System.exit(1);
@@ -240,10 +278,11 @@ public class Peer {
 		System.out.println("joining");
 		peer.setAlive(true);
 		peer.receive();
+		peer.probe();
 		System.out.println("waiting to leave");
 		while((System.currentTimeMillis()) - goLive < leave) {			
 			try {
-				Thread.sleep(1000);
+				Thread.sleep(SLEEP);
 			} catch (InterruptedException e) {
 				System.err.println("Sleep Error");
 				System.exit(1);
@@ -251,7 +290,8 @@ public class Peer {
 		}
 		System.out.println("leaving");
 		peer.setAlive(false);
-		peer.listener.stop();
+		peer.receiveThread.stop();
+		peer.probingThread.stop();
 		peer.socket.close();
 	}
 
