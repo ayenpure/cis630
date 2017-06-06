@@ -74,24 +74,18 @@ public class Peer {
 		this.messages = messages;
 	}
 
-	public Peer(int port, int rangeStart, int rangeEnd, long join, long leave) throws PeerException {
+	public Peer(int port, int rangeStart, int rangeEnd, long join, long leave) {
 		this.port = port;
 		this.rangeStart = rangeStart;
 		this.rangeEnd = rangeEnd;
 		this.join = join;
 		this.leave = leave;
 		this.nextHop = -1;
-		this.previousHop = -1;
+		this.previousHop = Integer.MAX_VALUE;
 		System.out.println("Port : " + this.port);
 		System.out.println("Next hop : " + nextHop);
 		this.setAlive(false);
 		this.probeSuccess = false;
-		try {
-			socket = new DatagramSocket(this.port);
-			socket.setSoTimeout((int) TIMEOUT);
-		} catch (SocketException e) {
-			throw new PeerException("Failed to create socket with port " + port);
-		}
 	}
 
 	class Receive extends Thread {
@@ -106,22 +100,25 @@ public class Peer {
 					long receivedTimestamp = System.currentTimeMillis();
 					int senderPort = packet.getPort();
 					String message = new String(packet.getData(), 0, packet.getLength());
-					//Check for cyclic greater
+					//Check for cyclic great
 					if(message.equals(PROBE)){
-						if(senderPort > previousHop) {
+						if(senderPort < previousHop) {
 							previousHop = senderPort;
 							System.out.println("Previous Hop ===> " + previousHop);
 						}
 						send(PROBE_REPLY, senderPort);
 					} else if (message.equals(PROBE_REPLY)) {
-						long elapsed = receivedTimestamp - probetime;
-						//System.out.println("Probe reply time from " + senderPort + " : " + elapsed);
-						nextHop = senderPort;
-						System.out.println("Next Hop ===> " + nextHop);
-						probeSuccess = true;
+						//long elapsed = receivedTimestamp - probetime;
+						if(senderPort > nextHop) {
+							nextHop = senderPort;
+							System.out.println("Next Hop ===> " + nextHop);
+							probeSuccess = true;
+						}
 						
 					}
 				} catch(SocketTimeoutException e) {
+						nextHop = -1;
+						previousHop = -1;
 						if(!probingThread.isAlive()) {
 							probingThread = new Probe();
 							probingThread.start();
@@ -139,6 +136,7 @@ public class Peer {
 	class Probe extends Thread {
 		@Override
 		public void run() {
+			System.out.println("Started Probing");
 			probeSuccess = false;
 			for(int i = port + 1; i <= rangeEnd; i++) {
 				if(i == port) {
@@ -205,32 +203,8 @@ public class Peer {
 		this.alive = alive;
 	}
 
-	public static void main(String[] args) {
-
-		Map<String, String> argMap = new HashMap<String, String>();
-		argMap.put(args[0], args[1]);
-		argMap.put(args[2], args[3]);
-		argMap.put(args[4], args[5]);
-		
-		Peer peer = null;
-		NavigableMap<Long, String> messages = null;
-		try {
-			peer = constructPeer(argMap.get(CONFIG));
-			messages = getMessageMap(argMap.get(INPUT));
-		} catch (IOException | ParseException e) {
-			
-		}
-		if(peer == null || messages == null) {
-			System.err.println("System might be in an inconsistent state. "
-					+ "Either the peer of the messages were not initialized");
-			System.exit(1);
-		}
-		peer.setGoLiveTime(System.currentTimeMillis());
-		peer.setMessages(messages);
-		schedule(peer);
-	}
-
-	private static void schedule(Peer peer) {
+	@SuppressWarnings("deprecation")
+	private static void schedule(Peer peer) throws PeerException {
 		System.out.println("Scheduling peer : " + peer.port);
 		long goLive = peer.getGoLiveTime();
 		long join = peer.getJoin();
@@ -247,6 +221,7 @@ public class Peer {
 		}
 		System.out.println("joining");
 		peer.setAlive(true);
+		peer.initSocket();
 		peer.receive();
 		peer.probe();
 		System.out.println("waiting to leave");
@@ -263,6 +238,16 @@ public class Peer {
 		peer.receiveThread.stop();
 		peer.probingThread.stop();
 		peer.socket.close();
+	}
+
+	private void initSocket() throws PeerException {
+		try {
+			socket = new DatagramSocket(this.port);
+			socket.setSoTimeout((int) TIMEOUT);
+		} catch (SocketException e) {
+			throw new PeerException("Failed to create socket with port " + port);
+		}
+		
 	}
 
 	private static NavigableMap<Long, String> getMessageMap(String fileName) throws IOException, ParseException {
@@ -340,7 +325,7 @@ public class Peer {
 				}
 			}
 			peer = new Peer(port, rangeStart, rangeEnd, join, leave);
-		} catch (NumberFormatException | IOException | PeerException | ParseException e) {
+		} catch (NumberFormatException | IOException | ParseException e) {
 			System.err.println("Error occured while reading config file" + e.getMessage());
 			if (peer != null)
 				peer.socket.close();
@@ -348,6 +333,37 @@ public class Peer {
 		}
 		return peer;
 	}
+		
+	public static void main(String[] args) {
+
+		Map<String, String> argMap = new HashMap<String, String>();
+		argMap.put(args[0], args[1]);
+		argMap.put(args[2], args[3]);
+		argMap.put(args[4], args[5]);
+		
+		Peer peer = null;
+		NavigableMap<Long, String> messages = null;
+		try {
+			peer = constructPeer(argMap.get(CONFIG));
+			messages = getMessageMap(argMap.get(INPUT));
+		} catch (IOException | ParseException e) {
+			
+		}
+		if(peer == null || messages == null) {
+			System.err.println("System might be in an inconsistent state. "
+					+ "Either the peer of the messages were not initialized");
+			System.exit(1);
+		}
+		peer.setGoLiveTime(System.currentTimeMillis());
+		peer.setMessages(messages);
+		try {
+			schedule(peer);
+		} catch (PeerException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
 };
 
 class PeerException extends Exception {
