@@ -5,10 +5,12 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.Serializable;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -27,8 +29,14 @@ public class Peer {
 	private static final String TOKEN = "TOKEN";
 	private static final String PROBE = "PROBE";
 	private static final String PROBE_REPLY = "PROBE-REPLY";
-	private static final long TIMEOUT = 500;
+	private static final long TIMEOUT = 1000;
 	private static final long SLEEP = 1000;
+	
+	class Message implements Serializable {
+		private static final long serialVersionUID = 2111001394711772492L;
+		String type;
+		Object content;
+	}
 
 	private static final String INPUT = "-i";
 	private static final String CONFIG = "-c";
@@ -48,17 +56,9 @@ public class Peer {
 	public long getJoin() {
 		return join;
 	}
-
-	public void setJoin(long join) {
-		this.join = join;
-	}
 	
 	public long getLeave() {
 		return leave;
-	}
-
-	public void setLeave(long leave) {
-		this.leave = leave;
 	}
 
 	public long getGoLiveTime() {
@@ -88,28 +88,9 @@ public class Peer {
 		this.probeSuccess = false;
 		try {
 			socket = new DatagramSocket(this.port);
+			socket.setSoTimeout((int) TIMEOUT);
 		} catch (SocketException e) {
 			throw new PeerException("Failed to create socket with port " + port);
-		}
-	}
-	
-	private void sendMessages(long receivedTimestamp) {
-		NavigableMap<Long, String> headMap = messages.headMap(receivedTimestamp, true);
-		while (!headMap.isEmpty()) {
-			Long firstKey = headMap.firstKey();
-			String message = headMap.get(firstKey);
-			/*SimpleDateFormat formatter = new SimpleDateFormat("mm:ss");
-			formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
-			System.out.println(formatter.format(new Date(firstKey)) + " : " + message);*/
-			//TODO: Send all these messages
-			headMap.remove(firstKey);
-			messages.remove(firstKey);
-		}
-		try {
-			Thread.sleep(SLEEP);
-		} catch (InterruptedException e) {
-			System.err.println("Sleep error");
-			System.exit(1);
 		}
 	}
 
@@ -125,44 +106,33 @@ public class Peer {
 					long receivedTimestamp = System.currentTimeMillis();
 					int senderPort = packet.getPort();
 					String message = new String(packet.getData(), 0, packet.getLength());
+					//Check for cyclic greater
 					if(message.equals(PROBE)){
 						if(senderPort > previousHop) {
 							previousHop = senderPort;
-							System.out.println("Updating previous hop to " + previousHop);
+							System.out.println("Previous Hop ===> " + previousHop);
 						}
 						send(PROBE_REPLY, senderPort);
 					} else if (message.equals(PROBE_REPLY)) {
 						long elapsed = receivedTimestamp - probetime;
-						System.out.println("Probe reply time : " + elapsed);
-						if(elapsed < TIMEOUT) {
-							nextHop = senderPort;
-							probeSuccess = true;
-						}
-					} else if(message.equals(TOKEN)) {
-						if(nextHop == -1)
-							continue;
-						if(senderPort == previousHop){
-							if(messages.isEmpty()) {
-								//TODO: Forward token
-							} else {
-								sendMessages(receivedTimestamp);
-							}
-						}
-					} else {
-						if(nextHop == -1)
-							continue;
-						if(senderPort == previousHop){
-							//TODO: Forward Message
-						}
+						//System.out.println("Probe reply time from " + senderPort + " : " + elapsed);
+						nextHop = senderPort;
+						System.out.println("Next Hop ===> " + nextHop);
+						probeSuccess = true;
+						
 					}
-					//System.out.println("Received message reads : " + new String(packet.getData(), 0, packet.getLength()));
-				} catch (IOException | PeerException e) {
-					System.err.println("There was a problem while receiving server request :" + e.getMessage());
+				} catch(SocketTimeoutException e) {
+						if(!probingThread.isAlive()) {
+							probingThread = new Probe();
+							probingThread.start();
+						}
+				} catch (PeerException | IOException e) {
+					System.err.println("There was a problem while receiving server request :" + e.getMessage()
+					+ " " + e.getClass().getName());
 					socket.close();
 					System.exit(1);
 				}
 			}
-			//socket.close();
 		}
 	};
 	
@@ -170,13 +140,13 @@ public class Peer {
 		@Override
 		public void run() {
 			probeSuccess = false;
-			for(int i = rangeStart; i <= rangeEnd; i++) {
+			for(int i = port + 1; i <= rangeEnd; i++) {
 				if(i == port) {
 					if(i == rangeEnd)
 						i = rangeStart - 1;
 					continue;
 				}
-				System.out.println("Probing " + i);
+				//System.out.println("Probing " + i);
 				try {
 					send(PROBE, i);
 					probetime = System.currentTimeMillis();
@@ -186,7 +156,7 @@ public class Peer {
 					System.exit(1);
 				}
 				if(probeSuccess) {
-					System.out.println("Probe successful with " + i);
+					//System.out.println("Probe successful with " + i);
 					nextHop = i;
 					break;
 				}
