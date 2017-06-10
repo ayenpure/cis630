@@ -32,7 +32,8 @@ public class Peer {
 	private static final String ELECTION = "ELECTION";
 	private static final String ELECTED = "ELECTED";
 	private static final String TOKEN = "TOKEN";
-	private static final long TIMEOUT = 1000;
+	private static final String MESSAGE = "MESSAGE";
+	private static final long TIMEOUT = 300;
 	private static final long SLEEP = 1000;
 
 	private static SimpleDateFormat formatter = new SimpleDateFormat("mm:ss");
@@ -53,7 +54,10 @@ public class Peer {
 	private boolean probeSuccess;
 	private Receive receiveThread;
 	private Probe probingThread;
+	private int token;
+	private long tokenstamp;
 	private NavigableMap<Long, String> messages;
+	private boolean elected;
 
 	public long getJoin() {
 		return join;
@@ -93,13 +97,16 @@ public class Peer {
 		this.leave = leave;
 		this.nextHop = -1;
 		this.lastHop = -1;
+		this.token = -1;
+		this.tokenstamp = -1;
 		System.out.println("Port : " + this.port);
 		this.setAlive(false);
 		this.probeSuccess = false;
+		this.elected = false;
 	}
 
 	public void send(String message, int destPort) throws PeerException {
-		if (!isAlive())
+		if (!isAlive() && destPort != -1)
 			return;
 		byte buffer[] = message.getBytes();
 		InetAddress address = null;
@@ -120,6 +127,7 @@ public class Peer {
 
 		public Probe() {
 			reInitPorts();
+			elected = false;
 		}
 
 		@Override
@@ -134,7 +142,7 @@ public class Peer {
 				}
 				try {
 					send(PROBE, probePort);
-					Thread.sleep(SLEEP / 10);
+					Thread.sleep(SLEEP / 20);
 				} catch (PeerException | InterruptedException e) {
 					System.err.println("Error occured while sending probing message");
 					System.exit(1);
@@ -195,14 +203,13 @@ public class Peer {
 						}
 					}
 					/*
-					 * If probing was not successful and last hope was not
-					 * initialized / or last hop was not same as the sender,
-					 * continue
+					 * If probing was not successful and last hop was not initialized,
+					 * or last hop was not same as the sender, continue
 					 */
 					if (!probeSuccess || senderPort != lastHop)
 						continue;
 
-					if (message.startsWith(ELECTION)) {
+					if (message.startsWith(ELECTION) && !elected) {
 
 						int electionPort = Integer.parseInt((message.split(":"))[1]);
 						if (electionPort < port) {
@@ -213,20 +220,39 @@ public class Peer {
 							send(message, nextHop);
 						} else {
 							send(ELECTED + ":" + port, nextHop);
+							elected = true;
 						}
 
 					} else if (message.startsWith(ELECTED)) {
 						int electionPort = Integer.parseInt((message.split(":"))[1]);
 						if (electionPort < port) {
-
+							send(ELECTED+":"+port, nextHop);
+							elected = true;
 						} else if (electionPort > port) {
+							elected = false;
 							send(message, nextHop);
 						} else {
-							generateToken();
+							if(token == -1)
+								generateToken();
 							sendMessages();
 						}
 					} else if (message.startsWith(TOKEN)) {
-						send(message, nextHop);
+						updateToken(message);
+						sendMessages();
+					} else if (message.startsWith(MESSAGE)) {
+						String[] split = message.split(":", 4);
+						int messageOrigin = Integer.parseInt(split[1].trim());
+						if(messageOrigin == port) {
+							long messagetime = Long.parseLong(split[2].trim());
+							if(!messages.containsKey(messagetime)) {
+								System.out.println("Message is not what was send out");
+							} else {
+								messages.remove(messagetime);
+								sendMessages();
+							}
+						} else {
+							send(message, nextHop);
+						}
 					}
 				} catch (SocketTimeoutException e) {
 					if (!probingThread.isAlive()) {
@@ -241,6 +267,7 @@ public class Peer {
 				}
 			}
 		}
+
 	};
 
 	public void receive() {
@@ -249,13 +276,28 @@ public class Peer {
 	};
 
 	public void sendMessages() throws PeerException {
-		send(TOKEN + ":" + port, nextHop);
+		NavigableMap<Long,String> headMap = messages.headMap(tokenstamp, true);
+		if(headMap.isEmpty()){
+			send(TOKEN+":"+token, nextHop);
+			this.token = -1;
+			this.tokenstamp = -1;
+		} else {
+			Long messagetime = headMap.firstKey();
+			String toPost = headMap.get(messagetime);
+			send(MESSAGE+":"+port+":"+messagetime+":"+toPost, nextHop);
+		}
 	}
 
-	public int generateToken() {
-		return new Random().nextInt(10000);
+	public void generateToken() {
+		this.token = new Random().nextInt(10000);
+		this.tokenstamp = System.currentTimeMillis() - goLiveTime;
 	}
 
+	private void updateToken(String message) {
+		this.token = Integer.parseInt(((message.split(":"))[1]));
+		this.tokenstamp = System.currentTimeMillis() - goLiveTime;
+	}
+	
 	public void probe() {
 		probingThread = new Probe();
 		probingThread.start();
