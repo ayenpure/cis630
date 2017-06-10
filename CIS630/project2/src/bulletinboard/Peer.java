@@ -13,6 +13,7 @@ import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.NavigableMap;
@@ -34,6 +35,11 @@ public class Peer {
 	private static final long TIMEOUT = 1000;
 	private static final long SLEEP = 1000;
 
+	private static SimpleDateFormat formatter = new SimpleDateFormat("mm:ss");
+	static {
+		formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
+	}
+
 	private static final String INPUT = "-i";
 	private static final String CONFIG = "-c";
 	private DatagramSocket socket;
@@ -48,9 +54,13 @@ public class Peer {
 	private Receive receiveThread;
 	private Probe probingThread;
 	private NavigableMap<Long, String> messages;
-	
+
 	public long getJoin() {
 		return join;
+	}
+
+	private String getTimestamp() {
+		return "[" + formatter.format(new Date(System.currentTimeMillis() - goLiveTime)) + "]";
 	}
 
 	public long getLeave() {
@@ -89,7 +99,7 @@ public class Peer {
 	}
 
 	public void send(String message, int destPort) throws PeerException {
-		if(!isAlive())
+		if (!isAlive())
 			return;
 		byte buffer[] = message.getBytes();
 		InetAddress address = null;
@@ -111,35 +121,35 @@ public class Peer {
 		public Probe() {
 			reInitPorts();
 		}
-		
+
 		@Override
 		public void run() {
 			System.out.println("Started Probing " + stateCount);
 			probeSuccess = false;
-			for(int probePort = port + 1; probePort <= rangeEnd; probePort++) {
-				if(probePort == port) {
-					if(probePort == rangeEnd)
+			for (int probePort = port + 1; probePort <= rangeEnd; probePort++) {
+				if (probePort == port) {
+					if (probePort == rangeEnd)
 						probePort = rangeStart - 1;
 					continue;
 				}
 				try {
 					send(PROBE, probePort);
-					Thread.sleep(SLEEP/10);
+					Thread.sleep(SLEEP / 10);
 				} catch (PeerException | InterruptedException e) {
 					System.err.println("Error occured while sending probing message");
 					System.exit(1);
 				}
-				if(probeSuccess) {
+				if (probeSuccess) {
 					nextHop = probePort;
 					break;
 				}
-				if(probePort == rangeEnd)
+				if (probePort == rangeEnd)
 					probePort = rangeStart - 1;
 			}
 			/*
 			 * Initiate probing after you have received a successful probe
 			 */
-			if(probeSuccess) {
+			if (probeSuccess) {
 				try {
 					sleep(new Random().nextInt(1000));
 				} catch (InterruptedException e) {
@@ -147,7 +157,7 @@ public class Peer {
 					System.exit(1);
 				}
 				try {
-					send(ELECTION+":"+port, nextHop);
+					send(ELECTION + ":" + port, nextHop);
 				} catch (PeerException e) {
 					System.err.println("Error occurred while sending election");
 					System.exit(1);
@@ -167,63 +177,65 @@ public class Peer {
 					socket.receive(packet);
 					int senderPort = packet.getPort();
 					String message = new String(packet.getData(), 0, packet.getLength());
-					System.out.println(message +" sender port : " + senderPort + " next hop : " + nextHop + " last hop :" + lastHop);
-					if(message.equals(PROBE)){
-						if(senderPort > lastHop || lastHop == -1) {
+					System.out.println(getTimestamp() + " : " + message + " sender port : " + senderPort
+							+ " next hop : " + nextHop + " last hop :" + lastHop);
+					if (message.equals(PROBE)) {
+						if (lastHop == -1 || (Math.floorMod(senderPort - port, rangeEnd - rangeStart) > Math
+								.floorMod(lastHop - port, rangeEnd - rangeStart))) {
 							lastHop = senderPort;
-							System.out.println("Changed previous hop " + lastHop);
+							System.out.println(getTimestamp() + " : " + "Changed previous hop " + lastHop);
 							send(PROBE_REPLY, senderPort);
 						}
 					} else if (message.equals(PROBE_REPLY)) {
-						if(senderPort < nextHop  || nextHop == -1) {
+						if (nextHop == -1 || (Math.floorMod(senderPort - port, rangeEnd - rangeStart) < Math
+								.floorMod(nextHop - port, rangeEnd - rangeStart))) {
 							nextHop = senderPort;
 							probeSuccess = true;
-							System.out.println("Changed next hop " + nextHop);
+							System.out.println(getTimestamp() + " : " + "Changed next hop " + nextHop);
 						}
 					}
 					/*
-					 * If probing was not successful and last hope was not initialized
-					 * / or last hop was not same as the sender, continue 
+					 * If probing was not successful and last hope was not
+					 * initialized / or last hop was not same as the sender,
+					 * continue
 					 */
-					if(!probeSuccess && senderPort != lastHop)
+					if (!probeSuccess || senderPort != lastHop)
 						continue;
-					
-					if(message.startsWith(ELECTION)) {
-						
+
+					if (message.startsWith(ELECTION)) {
+
 						int electionPort = Integer.parseInt((message.split(":"))[1]);
-						if(electionPort < port) {
-							//Replace the 
-							send(ELECTION+":"+port, nextHop);
+						if (electionPort < port) {
+							// Replace the
+							send(ELECTION + ":" + port, nextHop);
 						} else if (electionPort > port) {
-							//Forward the election message as is
+							// Forward the election message as is
 							send(message, nextHop);
 						} else {
-							send(ELECTED+":"+port, nextHop);
+							send(ELECTED + ":" + port, nextHop);
 						}
 
-					} else if(message.startsWith(ELECTED)) {
+					} else if (message.startsWith(ELECTED)) {
 						int electionPort = Integer.parseInt((message.split(":"))[1]);
-						if(electionPort < port) {
-							
+						if (electionPort < port) {
+
 						} else if (electionPort > port) {
 							send(message, nextHop);
 						} else {
 							generateToken();
 							sendMessages();
 						}
-					} else if(message.startsWith(TOKEN)) {
+					} else if (message.startsWith(TOKEN)) {
 						send(message, nextHop);
 					}
-					
-				} catch(SocketTimeoutException e) {
-					if(!probingThread.isAlive()) {
+				} catch (SocketTimeoutException e) {
+					if (!probingThread.isAlive()) {
 						probingThread = new Probe();
 						probingThread.start();
 					}
 				} catch (PeerException | IOException e) {
-					System.err.println("There was a problem while "
-							+ "receiving server request :"
-							+ e.getMessage()+ " " + e.getClass().getName());
+					System.err.println("There was a problem while " + "receiving server request :" + e.getMessage()
+							+ " " + e.getClass().getName());
 					socket.close();
 					System.exit(1);
 				}
@@ -237,7 +249,7 @@ public class Peer {
 	};
 
 	public void sendMessages() throws PeerException {
-		send(TOKEN+":"+port, nextHop);
+		send(TOKEN + ":" + port, nextHop);
 	}
 
 	public int generateToken() {
@@ -264,7 +276,7 @@ public class Peer {
 		long join = peer.getJoin();
 		long leave = peer.getLeave();
 		System.out.println("waiting to join");
-		while((System.currentTimeMillis()) - goLive < join) {
+		while ((System.currentTimeMillis()) - goLive < join) {
 			try {
 				Thread.sleep(SLEEP);
 			} catch (InterruptedException e) {
@@ -279,7 +291,7 @@ public class Peer {
 		peer.receive();
 		peer.probe();
 		System.out.println("waiting to leave");
-		while((System.currentTimeMillis()) - goLive < leave) {
+		while ((System.currentTimeMillis()) - goLive < leave) {
 			try {
 				Thread.sleep(SLEEP);
 			} catch (InterruptedException e) {
@@ -297,7 +309,7 @@ public class Peer {
 	private void initSocket() throws PeerException {
 		try {
 			socket = new DatagramSocket(this.port);
-			socket.setSoTimeout((int)TIMEOUT);
+			socket.setSoTimeout((int) TIMEOUT);
 		} catch (SocketException e) {
 			throw new PeerException("Failed to create socket with port " + port);
 		}
@@ -316,22 +328,20 @@ public class Peer {
 			System.err.println("Failed to read config file");
 			System.exit(1);
 		}
-		if(reader != null)
+		if (reader != null)
 			buffReader = new BufferedReader(reader);
 		else {
 			System.err.println("Error occured while reading config file");
 			System.exit(1);
 		}
-		SimpleDateFormat formatter = new SimpleDateFormat("mm:ss");
-		formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
 		String line;
 		while ((line = buffReader.readLine()) != null) {
-			if(line.trim().isEmpty())
+			if (line.trim().isEmpty())
 				continue;
 			String[] split = line.split("\t");
 			long timestamp = 0;
 			timestamp = formatter.parse(split[0].trim()).getTime();
-			messages.put(timestamp , split[1].trim());
+			messages.put(timestamp, split[1].trim());
 		}
 		return messages;
 	}
@@ -349,14 +359,12 @@ public class Peer {
 			System.err.println("Failed to read config file");
 			System.exit(1);
 		}
-		if(reader != null)
+		if (reader != null)
 			buffReader = new BufferedReader(reader);
 		else {
 			System.err.println("Error occured while reading config file");
 			System.exit(1);
 		}
-		SimpleDateFormat formatter = new SimpleDateFormat("mm:ss");
-		formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
 		String line;
 		try {
 			int port = 0, rangeStart = 0, rangeEnd = 0;
@@ -403,10 +411,11 @@ public class Peer {
 		} catch (IOException | ParseException e) {
 
 		}
-		if(peer == null || messages == null) {
+		if (peer == null || messages == null) {
 			System.err.println("System might be in an inconsistent state. "
 					+ "Either the peer or the messages were not initialized");
 			System.exit(1);
+
 		}
 		peer.setGoLiveTime(System.currentTimeMillis());
 		peer.setMessages(messages);
