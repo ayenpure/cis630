@@ -1,3 +1,0 @@
-/home/abhishek/Projects/OpenGL tutorial/tutorial01_first_window/CMakeFiles/edit_cache.dir
-/home/abhishek/Projects/OpenGL tutorial/tutorial01_first_window/CMakeFiles/rebuild_cache.dir
-/home/abhishek/Projects/OpenGL tutorial/tutorial01_first_window/CMakeFiles/tutorial01.dir

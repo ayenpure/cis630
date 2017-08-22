@@ -1,8 +1,0 @@
-*.tar.gz
-*.zip
-*.vtk
-*.png
-CMakeFiles
-MakeFile
-CMakeCache.txt
-cmake_install.cmake

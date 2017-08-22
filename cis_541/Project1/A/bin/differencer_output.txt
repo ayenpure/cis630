@@ -1,6 +1,0 @@
-abhishek@abhishek:~/Desktop/CG_Project/differentator/bin$ ./differencer /home/abhishek/Desktop/CG_Project/Project1/misc/allColors.png /home/abhishek/Desktop/CG_Project/Project1/bin/project1A.png 
-Both images have 1382400 pixels, good.
-The number of different pixels is 0
-Congratulations
-abhishek@abhishek:~/Desktop/CG_Project/differentator/bin$ 
-

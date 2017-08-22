@@ -1,3 +1,0 @@
-/home/abhishek/Desktop/CG_Project/Project1/B/bin/CMakeFiles/edit_cache.dir
-/home/abhishek/Desktop/CG_Project/Project1/B/bin/CMakeFiles/rebuild_cache.dir
-/home/abhishek/Desktop/CG_Project/Project1/B/bin/CMakeFiles/project1B.dir
